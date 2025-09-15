@@ -66,38 +66,44 @@ class MobilePhone {
 
   // 创建弹出按钮
   createPhoneButton() {
-    try {
-      // 检查是否已经存在按钮
-      const existingButton = document.getElementById('mobile-phone-trigger');
-      if (existingButton) {
-        console.log('[Mobile Phone] 按钮已存在，移除旧按钮');
-        existingButton.remove();
-      }
+  try {
+    // 1. 先打印当前DOM状态，排查body是否存在
+    console.log('[Mobile Phone] 创建按钮前检查:', {
+      documentBodyExists: !!document.body,
+      existingButton: document.getElementById('mobile-phone-trigger')
+    });
 
-      const button = document.createElement('button');
-      button.id = 'mobile-phone-trigger';
-      button.className = 'mobile-phone-trigger';
-      button.innerHTML = '📱';
-      button.title = '打开手机界面';
-      button.addEventListener('click', () => this.togglePhone());
-
-      // 确保body存在
-      if (!document.body) {
-        console.error('[Mobile Phone] document.body 不存在，延迟创建按钮');
-        setTimeout(() => this.createPhoneButton(), 100);
-        return;
-      }
-
-      document.body.appendChild(button);
-
-      // 初始化拖拽功能
-      this.initDragForButton(button);
-
-      console.log('[Mobile Phone] 手机按钮创建成功');
-    } catch (error) {
-      console.error('[Mobile Phone] 创建按钮时发生错误:', error);
+    // 2. 检查是否已经存在按钮（包括是否被index.js创建/删除过）
+    const existingButton = document.getElementById('mobile-phone-trigger');
+    if (existingButton) {
+      console.log('[Mobile Phone] 发现外部创建的按钮，强制移除并重新创建');
+      existingButton.remove();
     }
+
+    const button = document.createElement('button');
+    button.id = 'mobile-phone-trigger';
+    button.className = 'mobile-phone-trigger';
+    button.innerHTML = '📱';
+    button.title = '打开手机界面';
+    button.addEventListener('click', () => this.togglePhone());
+
+    // 3. 再次确认body存在（防止index.js删除body或阻断DOM）
+    if (!document.body) {
+      console.error('[Mobile Phone] 严重错误：document.body 仍不存在！');
+      // 增加更长延迟重试，避免立即失败
+      setTimeout(() => this.createPhoneButton(), 500);
+      return;
+    }
+
+    document.body.appendChild(button);
+    this.initDragForButton(button);
+    console.log('[Mobile Phone] 手机按钮创建成功（已规避外部干扰）');
+
+  } catch (error) {
+    // 4. 打印完整错误栈，方便定位
+    console.error('[Mobile Phone] 创建按钮时发生错误（含完整栈）:', error.stack);
   }
+}
 
   // 为按钮初始化拖拽功能
   initDragForButton(button) {
@@ -6996,7 +7002,7 @@ function initMobilePhone() {
 
   if (document.readyState === 'complete' || document.readyState === 'interactive') {
     // 文档已加载完成/交互就绪，延迟50ms确保body挂载
-    setTimeout(init, 50);
+    setTimeout(init, 300);
   } else {
     // 文档未加载，等待DOMContentLoaded
     document.addEventListener('DOMContentLoaded', init);
