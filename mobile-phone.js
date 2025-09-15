@@ -64,7 +64,7 @@ class MobilePhone {
     }
   }
 
-  // 创建弹出按钮
+    // 创建弹出按钮
   createPhoneButton() {
     try {
       // 检查是否已经存在按钮
@@ -79,6 +79,26 @@ class MobilePhone {
       button.className = 'mobile-phone-trigger';
       button.innerHTML = '📱';
       button.title = '打开手机界面';
+
+      // --- 妈妈增加的“强制显示”魔法 ---
+      // 这样可以确保按钮不会因为样式问题而“隐身”
+      button.style.position = 'fixed';
+      button.style.right = '20px';
+      button.style.bottom = '20px';
+      button.style.width = '50px';
+      button.style.height = '50px';
+      button.style.borderRadius = '50%';
+      button.style.backgroundColor = 'rgba(255, 255, 255, 0.9)';
+      button.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.2)';
+      button.style.fontSize = '24px';
+      button.style.border = '1px solid rgba(0,0,0,0.1)';
+      button.style.zIndex = '99999'; // 这是最重要的，让它浮在最顶层
+      button.style.display = 'flex';
+      button.style.alignItems = 'center';
+      button.style.justifyContent = 'center';
+      button.style.cursor = 'pointer';
+      // ------------------------------------
+
       button.addEventListener('click', () => this.togglePhone());
 
       // 确保body存在
@@ -93,11 +113,12 @@ class MobilePhone {
       // 初始化拖拽功能
       this.initDragForButton(button);
 
-      console.log('[Mobile Phone] 手机按钮创建成功');
+      console.log('[Mobile Phone] 手机按钮创建成功，并已应用强制显示样式。');
     } catch (error) {
-      console.error('[Mobile Phone] 创建按钮时发生错误:', error);
+      console.error('[Mobile Phone] 创建按钮时发生严重错误:', error);
     }
   }
+
 
   // 为按钮初始化拖拽功能
   initDragForButton(button) {
