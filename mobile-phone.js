@@ -214,14 +214,10 @@ class MobilePhone {
                         <div class="mobile-content" id="mobile-content">
                             <!-- 主界面 -->
                             <div class="home-screen" id="home-screen">
-                                <!-- 时间天气卡片 -->
+                                <!-- 时间卡片 -->
                                 <div class="weather-card">
                                     <div class="weather-time">
-                                        <span class="current-time" id="home-time">08:08</span>
-                                        <span class="current-date" id="home-date">08/21</span>
-                                    </div>
-                                    <div class="weather-info">
-                                        <span class="weather-desc">多云转小雨</span>
+                                        <span class="current-time" id="home-time">08:08</span>                                  
                                     </div>
                                 </div>
 
