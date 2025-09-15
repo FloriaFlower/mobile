@@ -1,3 +1,5 @@
+window.forumUIReady = true;
+
 /**
  * 手机前端框架
  * 可爱的iOS风格手机界面
