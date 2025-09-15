@@ -5,6 +5,7 @@
 
 class MobilePhone {
   constructor() {
+    console.log('[Mobile Phone] ♻️MobilePhone 类开始实例化！');
     this.isVisible = false;
     this.currentApp = null;
     this.apps = {};
@@ -29,9 +30,13 @@ class MobilePhone {
   }
 
   init() {
+    console.log('[Mobile Phone] ♻️init 方法开始执行：♻️1. 加载拖拽插件');
     this.loadDragHelper();
-    this.clearPositionCache(); // 清理位置缓存
-    this.createPhoneButton();
+    console.log('[Mobile Phone] ♻️init 执行：♻️2. 清理位置缓存');
+    this.clearPositionCache();
+    console.log('[Mobile Phone] ♻️init 执行：♻️3. 准备创建按钮');
+    this.createPhoneButton(); 
+    console.log('[Mobile Phone] ♻️init 执行：♻️4. 创建容器');
     this.createPhoneContainer();
     this.registerApps();
     this.startClock();
@@ -6994,6 +6999,7 @@ async loadYuseTheaterApp() {
 
 // 初始化手机界面
 function initMobilePhone() {
+  console.log('[Mobile Phone] ♻️initMobilePhone 函数已被调用！入口正常');
   if (document.readyState === 'loading') {
     // 如果文档还在加载，等待DOMContentLoaded
     document.addEventListener('DOMContentLoaded', () => {
@@ -7012,3 +7018,4 @@ initMobilePhone();
 
 // 创建全局的showToast函数供其他模块使用
 window.showMobileToast = MobilePhone.showToast.bind(MobilePhone);
+
