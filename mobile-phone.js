@@ -6992,19 +6992,23 @@ async loadYuseTheaterApp() {
   }
 }
 
-// 初始化手机界面（确保DOM完全就绪后再执行）
+// 初始化手机界面
 function initMobilePhone() {
-  // 无论文档是否加载中，都等待DOMContentLoaded，确保document.body存在
-  const init = () => {
-    window.mobilePhone = new MobilePhone();
-    console.log('[Mobile Phone] 手机界面初始化完成（DOM已完全就绪）');
-  };
-
-  if (document.readyState === 'complete' || document.readyState === 'interactive') {
-    // 文档已加载完成/交互就绪，延迟50ms确保body挂载
-    setTimeout(init, 300);
+  if (document.readyState === 'loading') {
+    // 如果文档还在加载，等待DOMContentLoaded
+    document.addEventListener('DOMContentLoaded', () => {
+      window.mobilePhone = new MobilePhone();
+      console.log('[Mobile Phone] 手机界面初始化完成');
+    });
   } else {
-    // 文档未加载，等待DOMContentLoaded
-    document.addEventListener('DOMContentLoaded', init);
+    // 如果文档已经加载完成，直接初始化
+    window.mobilePhone = new MobilePhone();
+    console.log('[Mobile Phone] 手机界面初始化完成');
   }
 }
+
+// 立即执行初始化
+initMobilePhone();
+
+// 创建全局的showToast函数供其他模块使用
+window.showMobileToast = MobilePhone.showToast.bind(MobilePhone);
