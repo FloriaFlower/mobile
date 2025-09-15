@@ -2236,6 +2236,23 @@
   content:''
 }
 
+
+/* 10. "欲色剧场"图标 */
+.app-icon[data-app='yuse-theater'] .app-icon-bg::before {
+  content: '\f008'; /* film icon */
+  font-family: 'Font Awesome 5 Free';
+  font-weight: 900;
+  position: absolute;
+  font-size: 28px;
+  color: rgba(214, 51, 132, 0.7); /* d63384 with opacity */
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+  transition: all 0.2s ease;
+}
+
+
 .config-section {
   padding: 10px !important;
 }
@@ -2323,4 +2340,401 @@
 
 .shop-accent-btn:hover {
   filter: brightness(1.05);
+}
+
+/* Yuse Theater App Styles */
+.yuse-theater-app {
+  display: flex;
+  flex-direction: column;
+  height: 100%; /* Changed from 100vh to 100% for container fitting */
+  background: linear-gradient(135deg, #fff0f5 0%, #ffe4e1 100%);
+}
+
+/* 页面头部（标题+刷新按钮） */
+.yuse-page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 16px;
+  background: #fff;
+  border-bottom: 1px solid #f0c0d0;
+  flex-shrink: 0; /* Prevent header from shrinking */
+}
+
+.yuse-page-header h3 {
+  margin: 0;
+  font-size: 16px;
+  color: #d63384;
+}
+
+.refresh-btn {
+  background: #d63384;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  padding: 4px 10px;
+  font-size: 12px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.refresh-btn:hover {
+  background: #b92c73;
+}
+
+/* 内容区域 */
+.yuse-content-area {
+  flex: 1;
+  overflow-y: auto;
+  padding: 12px 16px;
+}
+
+/* 列表容器通用样式 */
+.yuse-announcement-list,
+.yuse-customization-list,
+.yuse-theater-list,
+.yuse-shop-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+/* 列表项样式（保留原版美化） */
+.list-item {
+  background: #fff;
+  border-radius: 12px;
+  padding: 12px 16px;
+  box-shadow: 0 2px 6px rgba(214, 51, 132, 0.1);
+  transition: all 0.3s ease;
+  cursor: pointer;
+  position: relative;
+}
+
+.list-item:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(214, 51, 132, 0.15);
+}
+
+.item-title {
+  font-size: 15px;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 8px;
+}
+
+.item-meta {
+  font-size: 12px;
+  color: #666;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 12px;
+  margin-bottom: 8px;
+}
+
+.item-tag {
+  background: #ffe6f2;
+  color: #d63384;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 500;
+}
+
+.item-price {
+  color: #d63384;
+  font-weight: 600;
+}
+
+/* 操作按钮 */
+.item-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.action-button {
+  padding: 5px 12px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.accept-btn {
+  background: #d63384;
+  color: #fff;
+  border: 1px solid #d63384;
+}
+
+.accept-btn:hover {
+  background: #fff;
+  color: #d63384;
+}
+
+.reject-btn {
+  background: #fff;
+  color: #666;
+  border: 1px solid #ddd;
+}
+
+.reject-btn:hover {
+  background: #f8f8f8;
+}
+
+/* 底部导航栏 */
+.yuse-nav-bar {
+  display: flex;
+  justify-content: space-around;
+  padding: 8px 0;
+  background: #fff;
+  border-top: 1px solid #f0c0d0;
+  flex-shrink: 0; /* Prevent nav from shrinking */
+}
+
+.yuse-nav-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  background: none;
+  border: none;
+  color: #666;
+  font-size: 10px;
+  cursor: pointer;
+  padding: 4px 0;
+  flex: 1;
+}
+
+.yuse-nav-btn.active {
+  color: #d63384;
+  font-weight: 600;
+}
+
+.yuse-nav-btn .icon {
+  font-size: 16px;
+}
+
+/* 剧场筛选栏 */
+.theater-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.filter-btn {
+  background: #ffe6f2;
+  color: #d63384;
+  border: none;
+  border-radius: 16px;
+  padding: 5px 12px;
+  font-size: 12px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.filter-btn:hover {
+  background: #d63384;
+  color: #fff;
+}
+
+/* 详情弹窗 */
+.yuse-modal {
+  position: fixed; /* Changed to fixed to overlay the entire screen */
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 1000;
+}
+
+.modal-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  opacity: 0;
+  visibility: hidden;
+  transition: all 0.3s ease;
+}
+
+.modal-overlay.visible {
+  opacity: 1;
+  visibility: visible;
+}
+
+.modal-content {
+  background: #fff;
+  width: 90%;
+  max-width: 340px; /* Added max-width for consistency */
+  max-height: 80%;
+  border-radius: 12px;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+}
+
+.modal-header {
+  padding: 12px 16px;
+  border-bottom: 1px solid #eee;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.modal-header h3 {
+  margin: 0;
+  font-size: 16px;
+  color: #d63384;
+}
+
+.close-btn {
+  background: none;
+  border: none;
+  font-size: 18px;
+  color: #666;
+  cursor: pointer;
+}
+
+.modal-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 16px;
+}
+
+.modal-footer {
+  padding: 12px 16px;
+  border-top: 1px solid #eee;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.close-modal-btn {
+  background: #d63384;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  padding: 6px 16px;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+/* 详情页组件 */
+.detail-section {
+  margin-bottom: 16px;
+}
+
+.detail-section h4 {
+  margin: 0 0 8px 0;
+  font-size: 14px;
+  color: #333;
+}
+
+.detail-section p {
+  margin: 0;
+  font-size: 13px;
+  color: #666;
+  line-height: 1.5;
+}
+
+.cover-image {
+  width: 100%;
+  height: 160px;
+  border-radius: 8px;
+  background: #ffe6f2;
+  background-size: cover;
+  background-position: center;
+  margin-bottom: 16px;
+}
+
+.comment {
+  background: #f8f8f8;
+  padding: 8px 12px;
+  border-radius: 8px;
+  margin-bottom: 8px;
+  font-size: 12px;
+}
+
+.comment-user {
+  color: #d63384;
+  font-weight: 600;
+}
+
+/* 空状态与加载状态 */
+.empty-state {
+  text-align: center;
+  padding: 40px 20px;
+  color: #666;
+  font-size: 14px;
+}
+
+.loading {
+  text-align: center;
+  padding: 20px;
+  color: #666;
+  font-size: 14px;
+}
+
+/* 提示框 */
+.yuse-toast {
+  position: fixed;
+  top: 20px;
+  left: 50%;
+  transform: translateX(-50%) translateY(-20px);
+  background: rgba(0, 0, 0, 0.8);
+  color: #fff;
+  padding: 8px 16px;
+  border-radius: 4px;
+  font-size: 13px;
+  z-index: 1001;
+  opacity: 0;
+  transition: all 0.3s ease;
+}
+
+.yuse-toast.show {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
+
+/* 滚动条美化 */
+.yuse-content-area::-webkit-scrollbar,
+.modal-body::-webkit-scrollbar {
+  width: 6px;
+}
+
+.yuse-content-area::-webkit-scrollbar-track,
+.modal-body::-webkit-scrollbar-track {
+  background: #f8f8f8;
+  border-radius: 3px;
+}
+
+.yuse-content-area::-webkit-scrollbar-thumb,
+.modal-body::-webkit-scrollbar-thumb {
+  background: #d63384;
+  border-radius: 3px;
+}
+
+/* 响应式适配 */
+@media (max-width: 375px) {
+  .yuse-page-header {
+    padding: 10px 12px;
+  }
+
+  .yuse-content-area {
+    padding: 8px 12px;
+  }
+
+  .list-item {
+    padding: 10px 12px;
+  }
 }
