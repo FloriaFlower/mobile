@@ -6985,24 +6985,3 @@ async loadYuseTheaterApp() {
     return friendId.includes('group') || friendId.includes('群') || friendId.length > 10;
   }
 }
-
-// 初始化手机界面
-function initMobilePhone() {
-  if (document.readyState === 'loading') {
-    // 如果文档还在加载，等待DOMContentLoaded
-    document.addEventListener('DOMContentLoaded', () => {
-      window.mobilePhone = new MobilePhone();
-      console.log('[Mobile Phone] 手机界面初始化完成');
-    });
-  } else {
-    // 如果文档已经加载完成，直接初始化
-    window.mobilePhone = new MobilePhone();
-    console.log('[Mobile Phone] 手机界面初始化完成');
-  }
-}
-
-// 立即执行初始化
-initMobilePhone();
-
-// 创建全局的showToast函数供其他模块使用
-window.showMobileToast = MobilePhone.showToast.bind(MobilePhone);
