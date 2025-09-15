@@ -1105,7 +1105,7 @@ class MobilePhone {
       const endBtn = document.createElement('button');
       endBtn.className = 'app-header-btn end-stream-btn';
       endBtn.title = '结束直播';
-      endBtn.innerHTML = '⏻';
+      endBtn.innerHTML = '⭕️';
       endBtn.addEventListener('click', () => {
         if (window.liveAppEndLive) {
           window.liveAppEndLive();
@@ -1127,7 +1127,7 @@ class MobilePhone {
       const exitBtn = document.createElement('button');
       exitBtn.className = 'app-header-btn end-stream-btn';
       exitBtn.title = '退出直播间';
-      exitBtn.innerHTML = '⏻';
+      exitBtn.innerHTML = '🚪';
       exitBtn.addEventListener('click', () => {
         if (window.watchLiveAppEndLive) {
           window.watchLiveAppEndLive();
