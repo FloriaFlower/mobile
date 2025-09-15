@@ -224,41 +224,56 @@ class MobilePhone {
 
                                 <!-- 应用图标网格 -->
                                 <div class="app-grid">
-                                    <!-- 第一行：信息，购物，任务 -->
+                                    <!-- 第一行：购物，手帐，信息 -->
                                     <div class="app-row">
-                                        <div class="app-icon" data-app="messages">
-                                            <div class="app-icon-bg pink">💬</div>
-                                            <span class="app-label">信息</span>
-                                        </div>
                                         <div class="app-icon" data-app="shop">
-                                            <div class="app-icon-bg purple">购</div>
+                                            <div class="app-icon-bg purple">🛍</div>
                                             <span class="app-label">购物</span>
                                         </div>
                                         <div class="app-icon" data-app="task">
-                                            <div class="app-icon-bg purple">📰</div>
-                                            <span class="app-label">任务</span>
+                                            <div class="app-icon-bg purple">📝</div>
+                                            <span class="app-label">手帐</span>
+                                        </div>
+                                        <div class="app-icon" data-app="messages">
+                                            <div class="app-icon-bg pink">💬</div>
+                                            <span class="app-label">信息</span>
+                                        </div>                                  
+                                    </div>
+                                    <!-- 第二行：嗷咔，直播，欲色剧场 -->
+                                    <div class="app-row">
+                                        <div class="app-icon" data-app="aoka">
+                                            <div class="app-icon-bg orange">🐾</div>
+                                            <span class="app-label">嗷咔</span>
+                                        </div>
+                                        <div class="app-icon" data-app="live">
+                                            <div class="app-icon-bg red">🎥</div>
+                                            <span class="app-label">直播</span>
+                                        </div>
+                                        <div class="app-icon" data-app="yuse-theater">
+                                            <div class="app-icon-bg pink">🎬</div>
+                                            <span class="app-label">欲色剧场</span>
                                         </div>
                                     </div>
-                                    <!-- 第二行：论坛，微博，直播 -->
+                                    <!-- 第三行：论坛，微博，小红书 -->
                                     <div class="app-row">
                                         <div class="app-icon" data-app="forum">
                                             <div class="app-icon-bg red">📰</div>
                                             <span class="app-label">论坛</span>
                                         </div>
                                         <div class="app-icon" data-app="weibo">
-                                            <div class="app-icon-bg orange" style="font-size: 22px;color:rgba(0,0,0,0.4)">微</div>
+                                            <div class="app-icon-bg orange" style="font-size: 22px;color:rgba(0,0,0,0.4)">🧣</div>
                                             <span class="app-label">微博</span>
-                                        </div>
-                                        <div class="app-icon" data-app="live">
-                                            <div class="app-icon-bg red">🎬</div>
-                                            <span class="app-label">直播</span>
+                                        </div>                         
+                                        <div class="app-icon" data-app="redbook">
+                                            <div class="app-icon-bg purple">🍠</div>
+                                            <span class="app-label">小红书</span>
                                         </div>
                                     </div>
-                                    <!-- 第三行：背包，API，设置 -->
+                                    <!-- 第四行：浏览器，API，设置 -->
                                     <div class="app-row">
-                                        <div class="app-icon" data-app="backpack">
-                                            <div class="app-icon-bg orange">🎒</div>
-                                            <span class="app-label">背包</span>
+                                        <div class="app-icon" data-app="browser">
+                                            <div class="app-icon-bg orange">💻</div>
+                                            <span class="app-label">浏览器</span>
                                         </div>
                                         <div class="app-icon" data-app="api">
                                             <div class="app-icon-bg orange" style="font-size: 22px;color:rgba(0,0,0,0.4)">AI</div>
