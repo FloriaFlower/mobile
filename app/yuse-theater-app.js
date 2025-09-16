@@ -511,7 +511,7 @@ if (typeof window.YuseTheaterApp === 'undefined') {
 }
 
 // 全局调用接口（适配插件体系）
-window.getYuseTheaterContent = function () {
+window.getYuseTheaterAppContent = function () {
   if (window.yuseTheaterApp) {
     return window.yuseTheaterApp.getAppContent();
   }
