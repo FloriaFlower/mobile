@@ -7012,7 +7012,8 @@ function initMobilePhone() {
     console.log('[Mobile Phone] 手机界面初始化完成');
   }
 }
-
+// 加这行：定义后立即打印，看函数是否被创建
+console.log('[Mobile Phone] ♻️initMobilePhone 函数定义完成！', typeof initMobilePhone);
 // 立即执行初始化
 initMobilePhone();
 
