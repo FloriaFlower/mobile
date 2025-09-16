@@ -1410,7 +1410,7 @@ class MobilePhone {
       name: '手帐',
       content: '<div style="padding:20px; text-align:center;">手帐应用正在开发中...</div>',
       },
-      yuse-theater: {
+      'yuse-theater': {
       name: '欲色剧场',
       content: null,
       isCustomApp: true,
