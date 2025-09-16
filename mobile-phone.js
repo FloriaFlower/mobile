@@ -5874,14 +5874,23 @@ async loadYuseTheaterApp() {
       loadedCount++;
       if (loadedCount === totalFiles) {
         setTimeout(() => {
-          if (window.getYuseTheaterAppContent && window.bindYuseTheaterAppEvents) {
+          console.log('[YuseTheater Debug] 全局函数状态:', {
+          getYuseTheaterAppContent: typeof window.getYuseTheaterAppContent, 
+          bindYuseTheaterEvents: typeof window.bindYuseTheaterEvents
+          });
+          console.log('[YuseTheater Debug] YuseTheaterDefaultData 状态:', typeof window.YuseTheaterDefaultData);
+          if (window.getYuseTheaterAppContent && window.bindYuseTheaterEvents) {
             console.log('[Mobile Phone] ✅ 欲色剧场模块加载并初始化完成');
             window._yuseTheaterAppLoading = null;
             resolve();
           } else {
-            reject(new Error('欲色剧场模块初始化失败（缺少必要全局函数）'));
+            // 明确提示缺失的函数
+            const missing = [];
+            if (typeof window.getYuseTheaterAppContent !== 'function') missing.push('getYuseTheaterAppContent');
+            if (typeof window.bindYuseTheaterEvents !== 'function') missing.push('bindYuseTheaterEvents');
+            reject(new Error(`欲色剧场模块初始化失败（缺少全局函数：${missing.join(', ')}）`));
           }
-        }, 500);
+        }, 800);
       }
     };
     const handleError = (name) => {
@@ -7019,4 +7028,3 @@ initMobilePhone();
 
 // 创建全局的showToast函数供其他模块使用
 window.showMobileToast = MobilePhone.showToast.bind(MobilePhone);
-
