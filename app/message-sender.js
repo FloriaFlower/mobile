@@ -20,6 +20,42 @@ if (typeof window.MessageSender === 'undefined') {
     }
 
     /**
+     * 检查是否启用延迟点击发送按钮
+     */
+    isDelayClickEnabled() {
+      try {
+        const settings = localStorage.getItem('messageSenderSettings');
+        if (settings) {
+          const parsed = JSON.parse(settings);
+          // 如果明确设置了 delayClickEnabled，使用该值；否则默认为 true
+          return parsed.delayClickEnabled === undefined ? true : parsed.delayClickEnabled;
+        }
+        return true; // 默认启用
+      } catch (error) {
+        console.warn('[Message Sender] 获取延迟点击设置失败:', error);
+        return true; // 默认启用
+      }
+    }
+
+    /**
+     * 设置是否启用延迟点击发送按钮
+     */
+    setDelayClickEnabled(enabled) {
+      try {
+        let settings = {};
+        const existing = localStorage.getItem('messageSenderSettings');
+        if (existing) {
+          settings = JSON.parse(existing);
+        }
+        settings.delayClickEnabled = enabled;
+        localStorage.setItem('messageSenderSettings', JSON.stringify(settings));
+        console.log('[Message Sender] 延迟点击设置已保存:', enabled);
+      } catch (error) {
+        console.error('[Message Sender] 保存延迟点击设置失败:', error);
+      }
+    }
+
+    /**
      * 加载上下文编辑器
      */
     loadContextEditor() {
@@ -77,18 +113,29 @@ if (typeof window.MessageSender === 'undefined') {
           return false;
         }
 
-        // 设置值
-        originalInput.value = message;
-        console.log('[Message Sender] 已设置输入框值:', originalInput.value);
+        // 追加消息到现有内容
+        const existingValue = originalInput.value;
+        const newValue = existingValue ? existingValue + '\n' + message : message;
+        originalInput.value = newValue;
+        console.log('[Message Sender] 已追加消息到输入框:', {
+          原有内容: existingValue,
+          新增内容: message,
+          最终内容: newValue
+        });
 
         // 触发输入事件
         originalInput.dispatchEvent(new Event('input', { bubbles: true }));
         originalInput.dispatchEvent(new Event('change', { bubbles: true }));
 
-        // 延迟点击发送按钮
-        await new Promise(resolve => setTimeout(resolve, 300));
-        sendButton.click();
-        console.log('[Message Sender] 已点击发送按钮');
+        // 根据设置决定是否延迟点击发送按钮
+        if (this.isDelayClickEnabled()) {
+          // 延迟点击发送按钮
+          await new Promise(resolve => setTimeout(resolve, 300));
+          sendButton.click();
+          console.log('[Message Sender] 已延迟点击发送按钮');
+        } else {
+
+        }
 
         return true;
       } catch (error) {
