@@ -490,7 +490,7 @@ const defaultSettings = {
   hidePhone: false,
 };
 
-// 插件设置
+// 插件设置 - 将在初始化时与 SillyTavern 的 extension_settings 集成
 let extension_settings = {
   mobile_context: { ...defaultSettings },
 };
@@ -564,6 +564,23 @@ function waitForAllModules() {
  */
 async function initMobileContextPlugin() {
   try {
+    // 集成 SillyTavern 的 extension_settings
+    const context = SillyTavern.getContext();
+    if (!context.extensionSettings.mobile_context) {
+      context.extensionSettings.mobile_context = { ...defaultSettings };
+      context.saveSettingsDebounced();
+    } else {
+      // 合并默认设置，确保新增的设置项存在
+      for (const key of Object.keys(defaultSettings)) {
+        if (context.extensionSettings.mobile_context[key] === undefined) {
+          context.extensionSettings.mobile_context[key] = defaultSettings[key];
+        }
+      }
+      context.saveSettingsDebounced();
+    }
+    // 使用 SillyTavern 的 extensionSettings
+    extension_settings = context.extensionSettings;
+
     // 等待 ContextMonitor 类加载
     await waitForContextMonitor();
 
@@ -834,63 +851,6 @@ function createSettingsUI() {
             </div>
             <div class="inline-drawer-content">
                 <div class="flex-container" style='flex-wrap: wrap;flex-direction: row;'>
-                    <label class="checkbox_label" for="mobile_context_enabled">
-                        <input id="mobile_context_enabled" type="checkbox" />
-                        <span>启用上下文监控</span>
-                    </label>
-                    <label class="checkbox_label" for="mobile_context_monitor_chat">
-                        <input id="mobile_context_monitor_chat" type="checkbox" />
-                        <span>监控聊天变化</span>
-                    </label>
-                    <label class="checkbox_label" for="mobile_context_monitor_character">
-                        <input id="mobile_context_monitor_character" type="checkbox" />
-                        <span>监控角色变化</span>
-                    </label>
-                    <label class="checkbox_label" for="mobile_context_monitor_events">
-                        <input id="mobile_context_monitor_events" type="checkbox" />
-                        <span>监控系统事件</span>
-                    </label>
-
-                                        <hr style="margin: 15px 0;">
-                    <h4>文件上传设置</h4>
-
-                    <label class="checkbox_label" for="mobile_upload_enabled">
-                        <input id="mobile_upload_enabled" type="checkbox" />
-                        <span>启用文件上传功能</span>
-                    </label>
-                    <label class="checkbox_label" for="mobile_upload_notifications">
-                        <input id="mobile_upload_notifications" type="checkbox" />
-                        <span>显示上传通知</span>
-                    </label>
-
-                    <hr style="margin: 15px 0;">
-                    <h4>上下文编辑器设置</h4>
-
-                    <label class="checkbox_label" for="mobile_context_editor_enabled">
-                        <input id="mobile_context_editor_enabled" type="checkbox" />
-                        <span>启用上下文编辑器</span>
-                    </label>
-
-                    <hr style="margin: 15px 0;">
-                    <h4>自定义API配置设置</h4>
-
-                    <label class="checkbox_label" for="mobile_custom_api_enabled">
-                        <input id="mobile_custom_api_enabled" type="checkbox" />
-                        <span>启用自定义API配置功能</span>
-                    </label>
-                    <label class="checkbox_label" for="mobile_show_api_config_button">
-                        <input id="mobile_show_api_config_button" type="checkbox" />
-                        <span>显示API配置按钮</span>
-                    </label>
-
-                    <hr style="margin: 15px 0;">
-                    <h4>移动端界面样式设置</h4>
-
-
-
-                    <hr style="margin: 15px 0;">
-                    <h4>手机交互设置</h4>
-
                     <label class="checkbox_label" for="mobile_tavern_compatibility_mode">
                         <input id="mobile_tavern_compatibility_mode" type="checkbox" />
                         <span>酒馆页面与手机控制兼容</span>
@@ -898,6 +858,10 @@ function createSettingsUI() {
                     <label class="checkbox_label" for="mobile_hide_phone">
                         <input id="mobile_hide_phone" type="checkbox" />
                         <span>隐藏手机按钮</span>
+                    </label>
+                    <label class="checkbox_label" for="mobile_auto_send_enabled">
+                        <input id="mobile_auto_send_enabled" type="checkbox" />
+                        <span>专一模式（一次只和一人聊天）</span>
                     </label>
                     <div class="flex m-t-1" style='flex-wrap: wrap;'>
                         <button id="mobile_context_status_btn" class="menu_button" style='width: auto;background:#777;color:#fff;display:none'>查看状态</button>
@@ -1282,14 +1246,76 @@ function bindSettingsControls() {
       console.warn('[Mobile Context] 论坛管理器未就绪');
     }
   });
-}
 
+  // 消息自动发送功能启用/禁用
+  $('#mobile_auto_send_enabled')
+    .prop('checked', getAutoSendEnabled())
+    .on('change', function () {
+      const enabled = $(this).prop('checked');
+      setAutoSendEnabled(enabled);
+      console.log('[Mobile Context] 消息自动发送功能已', enabled ? '启用' : '禁用');
+    });
+}
+/**
+ * 获取消息自动发送功能启用状态
+ */
+function getAutoSendEnabled() {
+  if (window.messageSender && typeof window.messageSender.isDelayClickEnabled === 'function') {
+    return window.messageSender.isDelayClickEnabled();
+  }
+  // 如果 MessageSender 还未初始化，从 localStorage 直接读取
+  try {
+    const settings = localStorage.getItem('messageSenderSettings');
+    if (settings) {
+      const parsed = JSON.parse(settings);
+      // 如果明确设置了 delayClickEnabled，使用该值；否则默认为 true
+      return parsed.delayClickEnabled === undefined ? true : parsed.delayClickEnabled;
+    }
+    return true; // 默认启用
+  } catch (error) {
+    console.warn('[Mobile Context] 获取消息自动发送设置失败:', error);
+    return true; // 默认启用
+  }
+}
+/**
+ * 设置消息自动发送功能启用状态
+ */
+function setAutoSendEnabled(enabled) {
+  if (window.messageSender && typeof window.messageSender.setDelayClickEnabled === 'function') {
+    window.messageSender.setDelayClickEnabled(enabled);
+  } else {
+    // 如果 MessageSender 还未初始化，直接写入 localStorage
+    try {
+      let settings = {};
+      const existing = localStorage.getItem('messageSenderSettings');
+      if (existing) {
+        settings = JSON.parse(existing);
+      }
+      settings.delayClickEnabled = enabled;
+      localStorage.setItem('messageSenderSettings', JSON.stringify(settings));
+      console.log('[Mobile Context] 消息自动发送设置已保存:', enabled);
+    } catch (error) {
+      console.error('[Mobile Context] 保存消息自动发送设置失败:', error);
+    }
+  }
+}
 /**
  * 保存设置
  */
 function saveSettings() {
-  if (window.saveSettingsDebounced) {
-    window.saveSettingsDebounced();
+  try {
+    const context = SillyTavern.getContext();
+    if (context && context.saveSettingsDebounced) {
+      context.saveSettingsDebounced();
+    } else if (window.saveSettingsDebounced) {
+      window.saveSettingsDebounced();
+    }
+  } catch (error) {
+    console.warn('[Mobile Context] 保存设置失败:', error);
+    // 回退到旧的保存方式
+    if (window.saveSettingsDebounced) {
+      window.saveSettingsDebounced();
+    }
   }
 }
 
