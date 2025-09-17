@@ -2838,10 +2838,8 @@ class MobilePhone {
 
                             <div class="setting-group">
                                 <label>启用监听:</label>
-                                <div class="toggle-switch">
+                                <div class="toggle-switch2">
                                     <input type="checkbox" id="parallel-events-enabled" ${parallelEventsSettings.enabled ? 'checked' : ''}>
-                                    <label for="parallel-events-enabled" class="toggle-label">
-                                    </label>
                                 </div>
                                 <small>开启后将持续监听楼层变化，无论手机界面是否打开</small>
                             </div>
