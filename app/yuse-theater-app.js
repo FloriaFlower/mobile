@@ -480,7 +480,7 @@ if (typeof window.YuseTheaterApp === 'undefined') {
     } else {
       console.log('[YuseTheater] 等待 YuseTheaterDefaultData 加载...（来自 yuse-theater-data.js）');
       // 每100ms检查一次，直到依赖加载完成
-      setTimeout(initAppWhenReady, 100);
+      setTimeout(initAppWhenReady, 500);
     }
   };
   // 启动依赖检查与实例初始化
