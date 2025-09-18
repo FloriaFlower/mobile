@@ -473,19 +473,40 @@ if (typeof window.YuseTheaterApp === 'undefined') {
 
   // 关键修改：等待 YuseTheaterDefaultData（data.js）加载完成后再创建实例
   const initAppWhenReady = () => {
-    // 检查依赖是否存在（YuseTheaterDefaultData 来自 yuse-theater-data.js）
-    if (typeof window.YuseTheaterDefaultData === 'object') {
-      console.log('[YuseTheater] 检测到 YuseTheaterDefaultData，初始化 app 实例');
-      window.yuseTheaterApp = new YuseTheaterApp();
-    } else {
-      console.log('[YuseTheater] 等待 YuseTheaterDefaultData 加载...（来自 yuse-theater-data.js）');
-      // 每100ms检查一次，直到依赖加载完成
-      setTimeout(initAppWhenReady, 100);
-    }
-  };
-  // 启动依赖检查与实例初始化
-  initAppWhenReady();
-}
+  if (typeof window.YuseTheaterDefaultData === 'object') {
+    console.log('[YuseTheater] 检测到 YuseTheaterDefaultData，初始化 app 实例');
+    window.yuseTheaterApp = new YuseTheaterApp();
+    return;
+  }
+
+  const dataScript = document.querySelector('script[src*="yuse-theater-data"]') || 
+                     document.querySelector('script[src*="yuse-theater-data"]');
+  
+  if (dataScript) {
+
+    console.log('[YuseTheater] 数据脚本已加载，等待生成数据对象...');
+    setTimeout(initAppWhenReady, 2000);
+  } else {
+
+    console.log('[YuseTheater] 未找到数据脚本，尝试动态加载...');
+    const script = document.createElement('script');
+
+    script.src = 'yuse-theater-data .js'; 
+    script.type = 'text/javascript';
+    
+    script.onload = () => {
+      console.log('[YuseTheater] 动态加载数据脚本成功，开始检查数据对象');
+      setTimeout(initAppWhenReady, 1000); 
+    };
+    
+    script.onerror = () => {
+      console.error('[YuseTheater] 动态加载数据脚本失败！请检查脚本路径是否正确');
+    };
+
+    document.head.appendChild(script);
+  }
+};
+
 
 // 全局调用接口（已确保函数名与 mobile-phone.js 匹配，无需修改）
 window.getYuseTheaterAppContent = function () {
