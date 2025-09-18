@@ -61,56 +61,56 @@ window.YuseTheaterDefaultData = {
         <div class="item-meta"><span>⏰ 下周五晚</span><span class="item-price">💰 1,000,000</span></div>
         <div class="item-actions"><button class="action-button reject-btn" data-id="cust_1">拒绝</button><button class="action-button accept-btn" data-id="cust_1">接取</button></div>
       </div>
-<div class="list-item" data-id="cust_2" data-type="customization" data-fan-id="X" data-type-name="24小时监控录像" data-request="在你家里安装一个摄像头，我想看你24小时的日常生活，不需要你特意表演什么，吃饭、睡觉、发呆......我只想看着你。作为回报，你每天会收到一笔不菲的“生活费”。当然，如果你愿意在摄像头前自慰，我会支付额外费用，我想看你用我送的那个粉色章鱼形状的玩具，看你被它的触手玩到喷水。" data-deadline="即刻生效，为期一周" data-payment="800,000" data-notes="如果可以，希望镜头角度能更清晰一点。">
-  <div class="item-title">X 的 24小时监控录像 定制</div>
-  <div class="item-meta"><span>⏰ 即刻生效，为期一周</span><span class="item-price">💰 800,000</span></div>
-  <div class="item-actions"><button class="action-button reject-btn" data-id="cust_2">拒绝</button><button class="action-button accept-btn" data-id="cust_2">接取</button></div>
-</div>
-<div class="list-item" data-id="cust_3" data-type="customization" data-fan-id="难言" data-type-name="专属ASMR" data-request="录一段专属的ASMR音频。穿着你的真丝睡衣，在床上辗转反侧，想象我在你身边，对着麦克风小声地呻吟，叫我的名字......告诉我你有多想要，描述你身体的感觉，下面是不是已经湿了，乳头是不是变硬了。我只想听你的声音，听你为我一个人意乱情迷。" data-deadline="三天内" data-payment="300,000" data-notes="如果觉得为难就算了...但是真的很想要。">
-  <div class="item-title">难言 的 专属ASMR 定制</div>
-  <div class="item-meta"><span>⏰ 三天内</span><span class="item-price">💰 300,000</span></div>
-  <div class="item-actions"><button class="action-button reject-btn" data-id="cust_3">拒绝</button><button class="action-button accept-btn" data-id="cust_3">接取</button></div>
-</div>
-<div class="list-item" data-id="cust_4" data-type="customization" data-fan-id="DragonSlayer88" data-type-name="游戏陪玩（裸体版）" data-request="陪我打一晚上游戏，输一局脱一件衣服，直到脱光。然后每输一局，就用跳蛋惩罚自己五分钟，我要在语音里听到你压抑不住的呻吟声。如果我赢了，你就得夸我‘老公好厉害’，然后用淫水在肚子上写我的ID。" data-deadline="今晚" data-payment="5万/小时" data-notes="就玩王者1v1单挑">
-  <div class="item-title">DragonSlayer88 的 游戏陪玩（裸体版） 定制</div>
-  <div class="item-meta"><span>⏰ 今晚</span><span class="item-price">💰 5万/小时</span></div>
-  <div class="item-actions"><button class="action-button reject-btn" data-id="cust_4">拒绝</button><button class="action-button accept-btn" data-id="cust_4">接取</button></div>
-</div>
-<div class="list-item" data-id="cust_5" data-type="customization" data-fan-id="匿名用户" data-type-name="公开羞耻任务" data-request="在人流量大的商场里，穿着那件开叉到腰部的裤子，不穿内裤。在试衣间里自慰，并拍下淫水顺着大腿流下来的照片发给我。任务期间需要和我保持通话，我会随时给你下达新的指令，比如故意弯腰捡东西，或者找男店员问路。" data-deadline="本周六下午" data-payment="50万" data-notes="风险越高，报酬越高。">
-  <div class="item-title">匿名用户 的 公开羞耻任务 定制</div>
-  <div class="item-meta"><span>⏰ 本周六下午</span><span class="item-price">💰 50万</span></div>
-  <div class="item-actions"><button class="action-button reject-btn" data-id="cust_5">拒绝</button><button class="action-button accept-btn" data-id="cust_5">接取</button></div>
-</div>
-<div class="list-item" data-id="cust_6" data-type="customization" data-fan-id="霍" data-type-name="商务差旅伴游" data-request="下周我需要去欧洲出差一周，希望{{user}}能作为我的“特别助理”陪同。白天你可以自由活动，购物消费全部由我承担。晚上，我希望你能在我处理完工作后，用你的身体帮我放松。地点可以是酒店，也可以是私人飞机上。我保证会提供最高级别的安全和隐私保护。" data-deadline="下周一出发" data-payment="300万 + 无上限消费额度" data-notes="如果您愿意，这可以成为一个长期的合作。">
-  <div class="item-title">霍 的 商务差旅伴游 定制</div>
-  <div class="item-meta"><span>⏰ 下周一出发</span><span class="item-price">💰300万 + 无上限消费额度</span></div>
-  <div class="item-actions"><button class="action-button reject-btn" data-id="cust_6">拒绝</button><button class="action-button accept-btn" data-id="cust_6">接取</button></div>
-</div>
-<div class="list-item" data-id="cust_7" data-type="customization" data-fan-id="平平无奇的有钱人" data-type-name="重现影片场景" data-request="我想让你和温言老师，重现你们那部《禁闭岛》的经典场景。我想亲眼看着你被温言老师按在地上操，看你的眼泪和淫水一起流出来，听你哭着求他射给你。" data-deadline="两周内" data-payment="200万" data-notes="场地和人员由我安排。">
-  <div class="item-title">平平无奇的有钱人 的 重现影片场景 定制</div>
-  <div class="item-meta"><span>⏰ 两周内</span><span class="item-price">💰200万</span></div>
-  <div class="item-actions"><button class="action-button reject-btn" data-id="cust_7">拒绝</button><button class="action-button accept-btn" data-id="cust_7">接取</button></div>
-</div>
-<div class="list-item" data-id="cust_8" data-type="customization" data-fan-id="王总的小秘" data-type-name="线上情欲指导" data-request="我老板最近对我好像有点冷淡，想请主播以我的身份，和他进行一周的线上匿名聊天，帮我重新勾起他的兴趣。需要你模仿我的语气，但内容要更骚、更主动。聊天记录需要同步给我学习。" data-deadline="下周一开始" data-payment="100,000" data-notes="成功了有重谢！">
-  <div class="item-title">王总的小秘 的 线上情欲指导 定制</div>
-  <div class="item-meta"><span>⏰ 下周一开始</span><span class="item-price">💰 100,000</span></div>
-  <div class="item-actions"><button class="action-button reject-btn" data-id="cust_8">拒绝</button><button class="action-button accept-btn" data-id="cust_8">接取</button></div>
-</div>
-<div class="list-item" data-id="cust_9" data-type="customization" data-fan-id="只想给你花钱" data-type-name="原味内衣裤拍卖" data-request="把你刚拍完片穿的那套内裤，带着你的体温和体液，不要清洗，直接寄给我。我想闻闻上面混合着汗水和爱液的味道，想象你被操干时的样子。如果上面能有一点点高潮时的喷出的水渍就更好了。" data-deadline="一周内" data-payment="100,000" data-notes="邮费我出，包装得隐秘一点。">
-  <div class="item-title">只想给你花钱 的 原味内衣裤拍卖 定制</div>
-  <div class="item-meta"><span>⏰ 一周内</span><span class="item-price">💰 20万</span></div>
-  <div class="item-actions"><button class="action-button reject-btn" data-id="cust_9">拒绝</button><button class="action-button accept-btn" data-id="cust_9">接取</button></div>
-</div>
-<div class="list-item" data-id="cust_10" data-type="customization" data-fan-id="一个剧本编剧" data-type-name="角色扮演对话" data-request="我正在写一个剧本，想请你扮演其中的一个角色'阿芙拉'，和我进行几段关键剧情的对话。阿芙拉是一个周旋于多个男人之间的交际花，需要你演出那种既天真又堕落的感觉。" data-deadline="明晚8点" data-payment="80,000" data-notes="只是为了找灵感，谢谢！">
-  <div class="item-title">一个剧本编剧 的 角色扮演对话 定制</div>
-  <div class="item-meta"><span>⏰ 明晚8点</span><span class="item-price">💰 80,000</span></div>
-  <div class="item-actions"><button class="action-button reject-btn" data-id="cust_10">拒绝</button><button class="action-button accept-btn" data-id="cust_10">接取</button></div>
-</div>
-<div class="list-item" data-id="cust_11" data-type="customization" data-fan-id="难言" data-type-name="一起打游戏" data-request="就...就是想约你一起打几局游戏，就我们俩。我什么游戏都玩，你定。我不想在直播间看你和别人玩...就...不可以吗？输了赢了都行，我给你刷礼物。" data-deadline="今晚" data-payment="200,000" data-notes="求你了。">
-  <div class="item-title">难言 的 一起打游戏 定制</div>
-  <div class="item-meta"><span>⏰ 今晚</span><span class="item-price">💰 200,000</span></div>
-  <div class="item-actions"><button class="action-button reject-btn" data-id="cust_11">拒绝</button><button class="action-button accept-btn" data-id="cust_11">接取</button></div>
-</div>
+      <div class="list-item" data-id="cust_2" data-type="customization" data-fan-id="X" data-type-name="24小时监控录像" data-request="在你家里安装一个摄像头，我想看你24小时的日常生活，不需要你特意表演什么，吃饭、睡觉、发呆......我只想看着你。作为回报，你每天会收到一笔不菲的“生活费”。当然，如果你愿意在摄像头前自慰，我会支付额外费用，我想看你用我送的那个粉色章鱼形状的玩具，看你被它的触手玩到喷水。" data-deadline="即刻生效，为期一周" data-payment="800,000" data-notes="如果可以，希望镜头角度能更清晰一点。">
+        <div class="item-title">X 的 24小时监控录像 定制</div>
+        <div class="item-meta"><span>⏰ 即刻生效，为期一周</span><span class="item-price">💰 800,000</span></div>
+        <div class="item-actions"><button class="action-button reject-btn" data-id="cust_2">拒绝</button><button class="action-button accept-btn" data-id="cust_2">接取</button></div>
+      </div>
+      <div class="list-item" data-id="cust_3" data-type="customization" data-fan-id="难言" data-type-name="专属ASMR" data-request="录一段专属的ASMR音频。穿着你的真丝睡衣，在床上辗转反侧，想象我在你身边，对着麦克风小声地呻吟，叫我的名字......告诉我你有多想要，描述你身体的感觉，下面是不是已经湿了，乳头是不是变硬了。我只想听你的声音，听你为我一个人意乱情迷。" data-deadline="三天内" data-payment="300,000" data-notes="如果觉得为难就算了...但是真的很想要。">
+        <div class="item-title">难言 的 专属ASMR 定制</div>
+        <div class="item-meta"><span>⏰ 三天内</span><span class="item-price">💰 300,000</span></div>
+        <div class="item-actions"><button class="action-button reject-btn" data-id="cust_3">拒绝</button><button class="action-button accept-btn" data-id="cust_3">接取</button></div>
+      </div>
+      <div class="list-item" data-id="cust_4" data-type="customization" data-fan-id="DragonSlayer88" data-type-name="游戏陪玩（裸体版）" data-request="陪我打一晚上游戏，输一局脱一件衣服，直到脱光。然后每输一局，就用跳蛋惩罚自己五分钟，我要在语音里听到你压抑不住的呻吟声。如果我赢了，你就得夸我‘老公好厉害’，然后用淫水在肚子上写我的ID。" data-deadline="今晚" data-payment="5万/小时" data-notes="就玩王者1v1单挑">
+        <div class="item-title">DragonSlayer88 的 游戏陪玩（裸体版） 定制</div>
+        <div class="item-meta"><span>⏰ 今晚</span><span class="item-price">💰 5万/小时</span></div>
+        <div class="item-actions"><button class="action-button reject-btn" data-id="cust_4">拒绝</button><button class="action-button accept-btn" data-id="cust_4">接取</button></div>
+      </div>
+      <div class="list-item" data-id="cust_5" data-type="customization" data-fan-id="匿名用户" data-type-name="公开羞耻任务" data-request="在人流量大的商场里，穿着那件开叉到腰部的裤子，不穿内裤。在试衣间里自慰，并拍下淫水顺着大腿流下来的照片发给我。任务期间需要和我保持通话，我会随时给你下达新的指令，比如故意弯腰捡东西，或者找男店员问路。" data-deadline="本周六下午" data-payment="50万" data-notes="风险越高，报酬越高。">
+        <div class="item-title">匿名用户 的 公开羞耻任务 定制</div>
+        <div class="item-meta"><span>⏰ 本周六下午</span><span class="item-price">💰 50万</span></div>
+        <div class="item-actions"><button class="action-button reject-btn" data-id="cust_5">拒绝</button><button class="action-button accept-btn" data-id="cust_5">接取</button></div>
+      </div>
+      <div class="list-item" data-id="cust_6" data-type="customization" data-fan-id="霍" data-type-name="商务差旅伴游" data-request="下周我需要去欧洲出差一周，希望{{user}}能作为我的“特别助理”陪同。白天你可以自由活动，购物消费全部由我承担。晚上，我希望你能在我处理完工作后，用你的身体帮我放松。地点可以是酒店，也可以是私人飞机上。我保证会提供最高级别的安全和隐私保护。" data-deadline="下周一出发" data-payment="300万 + 无上限消费额度" data-notes="如果您愿意，这可以成为一个长期的合作。">
+        <div class="item-title">霍 的 商务差旅伴游 定制</div>
+        <div class="item-meta"><span>⏰ 下周一出发</span><span class="item-price">💰300万 + 无上限消费额度</span></div>
+        <div class="item-actions"><button class="action-button reject-btn" data-id="cust_6">拒绝</button><button class="action-button accept-btn" data-id="cust_6">接取</button></div>
+      </div>
+      <div class="list-item" data-id="cust_7" data-type="customization" data-fan-id="平平无奇的有钱人" data-type-name="重现影片场景" data-request="我想让你和温言老师，重现你们那部《禁闭岛》的经典场景。我想亲眼看着你被温言老师按在地上操，看你的眼泪和淫水一起流出来，听你哭着求他射给你。" data-deadline="两周内" data-payment="200万" data-notes="场地和人员由我安排。">
+        <div class="item-title">平平无奇的有钱人 的 重现影片场景 定制</div>
+        <div class="item-meta"><span>⏰ 两周内</span><span class="item-price">💰200万</span></div>
+        <div class="item-actions"><button class="action-button reject-btn" data-id="cust_7">拒绝</button><button class="action-button accept-btn" data-id="cust_7">接取</button></div>
+      </div>
+      <div class="list-item" data-id="cust_8" data-type="customization" data-fan-id="王总的小秘" data-type-name="线上情欲指导" data-request="我老板最近对我好像有点冷淡，想请主播以我的身份，和他进行一周的线上匿名聊天，帮我重新勾起他的兴趣。需要你模仿我的语气，但内容要更骚、更主动。聊天记录需要同步给我学习。" data-deadline="下周一开始" data-payment="100,000" data-notes="成功了有重谢！">
+        <div class="item-title">王总的小秘 的 线上情欲指导 定制</div>
+        <div class="item-meta"><span>⏰ 下周一开始</span><span class="item-price">💰 100,000</span></div>
+        <div class="item-actions"><button class="action-button reject-btn" data-id="cust_8">拒绝</button><button class="action-button accept-btn" data-id="cust_8">接取</button></div>
+      </div>
+      <div class="list-item" data-id="cust_9" data-type="customization" data-fan-id="只想给你花钱" data-type-name="原味内衣裤拍卖" data-request="把你刚拍完片穿的那套内裤，带着你的体温和体液，不要清洗，直接寄给我。我想闻闻上面混合着汗水和爱液的味道，想象你被操干时的样子。如果上面能有一点点高潮时的喷出的水渍就更好了。" data-deadline="一周内" data-payment="100,000" data-notes="邮费我出，包装得隐秘一点。">
+        <div class="item-title">只想给你花钱 的 原味内衣裤拍卖 定制</div>
+        <div class="item-meta"><span>⏰ 一周内</span><span class="item-price">💰 20万</span></div>
+        <div class="item-actions"><button class="action-button reject-btn" data-id="cust_9">拒绝</button><button class="action-button accept-btn" data-id="cust_9">接取</button></div>
+      </div>
+      <div class="list-item" data-id="cust_10" data-type="customization" data-fan-id="一个剧本编剧" data-type-name="角色扮演对话" data-request="我正在写一个剧本，想请你扮演其中的一个角色'阿芙拉'，和我进行几段关键剧情的对话。阿芙拉是一个周旋于多个男人之间的交际花，需要你演出那种既天真又堕落的感觉。" data-deadline="明晚8点" data-payment="80,000" data-notes="只是为了找灵感，谢谢！">
+        <div class="item-title">一个剧本编剧 的 角色扮演对话 定制</div>
+        <div class="item-meta"><span>⏰ 明晚8点</span><span class="item-price">💰 80,000</span></div>
+        <div class="item-actions"><button class="action-button reject-btn" data-id="cust_10">拒绝</button><button class="action-button accept-btn" data-id="cust_10">接取</button></div>
+      </div>
+      <div class="list-item" data-id="cust_11" data-type="customization" data-fan-id="难言" data-type-name="一起打游戏" data-request="就...就是想约你一起打几局游戏，就我们俩。我什么游戏都玩，你定。我不想在直播间看你和别人玩...就...不可以吗？输了赢了都行，我给你刷礼物。" data-deadline="今晚" data-payment="200,000" data-notes="求你了。">
+        <div class="item-title">难言 的 一起打游戏 定制</div>
+        <div class="item-meta"><span>⏰ 今晚</span><span class="item-price">💰 200,000</span></div>
+        <div class="item-actions"><button class="action-button reject-btn" data-id="cust_11">拒绝</button><button class="action-button accept-btn" data-id="cust_11">接取</button></div>
+      </div>
     </customizations>
 
     <!-- 默认剧场数据（全部剧场） -->
@@ -125,12 +125,11 @@ window.YuseTheaterDefaultData = {
         data-favorites="78.2w"
         data-views="345.1w"
         data-price="¥1288"
-        data-reviews='[{"user":"铁锅炖自己","text":"我就喜欢这种禁欲老师被操到哭着喊老公的剧情，朝刃那身腱子肉配上不耐烦的脸，干得老师淫水直流，太顶了！"},{"user":"X","text":"数据分析：心率从75飙升到182，皮肤电反应峰值出现在第28分41秒，穴口收缩频率增加了320%。嗯，表现不错。"}, {"user":"只想舔屏","text":"啊啊啊老婆穿制服的样子太美了，特别是被操到眼镜都歪了，眼角挂着泪，那种破碎感，我直接boki了！"}, {"user":"难言","text":"……（默默刷了10个火箭）"}, {"user":"霍","text":"这种粗鲁的小子有什么好的？{{user}}，如果你愿意，我可以给你提供一个更舒适、更奢华的“教学环境”。"}, {"user":"朝刃","text":"啧，烦死了，拍的时候一直哭，吵死了。"}, {"user":"白羽","text":"要是我的话，一定不会把{{user}}弄哭的，只会让{{user}}舒服地叫出来呢～(｡•́︿•̀｡)"}, {"user":"路人甲","text":"楼上几个别吵了，让我康康！老师被按在桌子上后入的镜头呢？怎么剪了！我花钱不是来看柏拉图的！"}, {"user":"牛牛爆炸了","text":"朝刃的腰也太好了吧，那个驰骋挞伐的劲儿，感觉能把小老师的子宫都给干出来，每次都顶到最深，啧啧，水声真好听。"}, {"user":"18cm纯情男大","text":"只有我注意到老师的白丝被肉棒磨破了吗？细节好评！"}, {"user":"我爱学习","text":"谁能告诉我23:17秒，老师高潮时候喊的那句是什么？是‘不要’还是‘再要一点’？( ͡° ͜ʖ ͡°)"}, {"user":"请和我结婚","text":"老婆的脚也好美，被江野抓着脚踝操的时候，脚趾蜷缩起来的样子，我能看一百遍！"}, {"user":"一滴都不许剩","text":"最后被内射在里面，肚子都鼓起来了，江野还不让流出来，太色了！"}, {"user":"理智评论员","text":"从教育学的角度看，这段关系是不健康的。但从我的几把的角度看，它很健康。"},{"user":"今天也要加油","text":"看完已经冲了三发，感觉身体被掏空。"}, {"user":"爱发电","text":"已下载，准备晚上再看亿遍。"}, {"user":"老衲法号梦遗","text":"贫僧就想问问，这制服哪里有卖？"}, {"user":"我直接进行一个冲","text":"这剧场列表里的片子都这么顶吗？这个就让我顶不住了。"}, {"user":"榨汁机","text":"朝刃你小子别得了便宜还卖乖，有本事放开那个老师让我来！"}]'
-        >
+        data-reviews='[{"user":"铁锅炖自己","text":"我就喜欢这种禁欲老师被操到哭着喊老公的剧情，朝刃那身腱子肉配上不耐烦的脸，干得老师淫水直流，太顶了！"},{"user":"X","text":"数据分析：心率从75飙升到182，皮肤电反应峰值出现在第28分41秒，穴口收缩频率增加了320%。嗯，表现不错。"}, {"user":"只想舔屏","text":"啊啊啊老婆穿制服的样子太美了，特别是被操到眼镜都歪了，眼角挂着泪，那种破碎感，我直接boki了！"}, {"user":"难言","text":"……（默默刷了10个火箭）"}, {"user":"霍","text":"这种粗鲁的小子有什么好的？{{user}}，如果你愿意，我可以给你提供一个更舒适、更奢华的“教学环境”。"}, {"user":"朝刃","text":"啧，烦死了，拍的时候一直哭，吵死了。"}, {"user":"白羽","text":"要是我的话，一定不会把{{user}}弄哭的，只会让{{user}}舒服地叫出来呢～(｡•́︿•̀｡)"}, {"user":"路人甲","text":"楼上几个别吵了，让我康康！老师被按在桌子上后入的镜头呢？怎么剪了！我花钱不是来看柏拉图的！"}, {"user":"牛牛爆炸了","text":"朝刃的腰也太好了吧，那个驰骋挞伐的劲儿，感觉能把小老师的子宫都给干出来，每次都顶到最深，啧啧，水声真好听。"}, {"user":"18cm纯情男大","text":"只有我注意到老师的白丝被肉棒磨破了吗？细节好评！"}, {"user":"我爱学习","text":"谁能告诉我23:17秒，老师高潮时候喊的那句是什么？是‘不要’还是‘再要一点’？( ͡° ͜ʖ ͡°)"}, {"user":"请和我结婚","text":"老婆的脚也好美，被江野抓着脚踝操的时候，脚趾蜷缩起来的样子，我能看一百遍！"}, {"user":"一滴都不许剩","text":"最后被内射在里面，肚子都鼓起来了，江野还不让流出来，太色了！"}, {"user":"理智评论员","text":"从教育学的角度看，这段关系是不健康的。但从我的几把的角度看，它很健康。"},{"user":"今天也要加油","text":"看完已经冲了三发，感觉身体被掏空。"}, {"user":"爱发电","text":"已下载，准备晚上再看亿遍。"}, {"user":"老衲法号梦遗","text":"贫僧就想问问，这制服哪里有卖？"}, {"user":"我直接进行一个冲","text":"这剧场列表里的片子都这么顶吗？这个就让我顶不住了。"}, {"user":"榨汁机","text":"朝刃你小子别得了便宜还卖乖，有本事放开那个老师让我来！"}]'>
         <div class="item-title">《沉沦的家庭教师》</div>
         <div class="item-meta"><span>❤️ 128.5w</span><span>⭐ 78.2w</span><span>▶️ 345.1w</span><span class="item-price">💰 ¥1288</span></div>
       </div>
-    <div class="list-item"
+      <div class="list-item"
         data-id="th_default_2"
         data-type="theater"
         data-title="《总裁的契约情人：探索剧场列表的秘密》"
@@ -140,12 +139,11 @@ window.YuseTheaterDefaultData = {
         data-favorites="180.9w"
         data-views="890.2w"
         data-price="¥1599"
-        data-reviews='[{"user":"温言","text":"看来你很喜欢我送你的项圈。"}, {"user":"霍","text":"用金钱换来的关系终究是虚假的。{{user}}，我能给你的，远不止这些。"}, {"user":"X","text":"契约期间，{{user}}的平均睡眠时间减少了2.7小时，皮质醇水平上升了48%。这种压力下的性爱，数据模型会更有趣。"}, {"user":"白羽","text":"为什么要把{{user}}弄哭呢？明明可以让{{user}}笑着高潮的呀。温言老师太坏了。"}, {"user":"顾麟","text":"...如果是我，我会把{{user}}养得很好。"}, {"user":"霸总文学爱好者","text":"啊啊啊我死了！温言老师解领带的样子太他妈性感了！斯文败类yyds！"}, {"user":"金钱的味道","text":"贫穷限制了我的想象力，原来有钱人都是这么玩的吗？在私人飞机上做，还是对着落地窗，外面都是云，太刺激了！"}, {"user":"水漫金山","text":"老婆被操到失禁那段我反复观看，那种羞耻又控制不住的样子，太涩了！温言还用手指蘸着{{user}}的尿去喂{{user}}，我的妈！"}, {"user":"评论区都是人才","text":"只有我好奇这个剧场列表的秘密到底是啥吗？是被操到怀孕吗？"}, {"user":"小穴爱好者","text":"安然的小穴肯定被开发得很好，从一开始的青涩到后面主动张开腿迎接，甚至学会了自己摇屁股，成长线好评！"}, {"user":"Daddy_Issues","text":"温言那种“我弄疼你但我也爱你”的眼神，谁懂啊！我愿意被他锁起来！"}, {"user":"多喝热水","text":"这个剧场列表的质量真高，每部都想看。"}, {"user":"精尽人亡","text":"游艇上那段，被海风吹着，下面被大肉棒干着，这得多爽啊。"}, {"user":"颜文字大法","text":"(⁄ ⁄•⁄ω⁄•⁄ ⁄)老婆哭起来梨花带雨的，好想抱在怀里狠狠欺负。"}, {"user":"拒绝黄赌毒","text":"我来这里是为了批判性地学习，绝对不是为了色色。嗯。"}, {"user":"我为老婆花花花","text":"已三刷，每次看温言掐着老婆的腰，从后面狠狠顶进去，我都忍不住跟着一起动。"}, {"user":"隔壁老王","text":"这个剧场列表值得深入研究，我已经准备好了我的“研究工具”。"}, {"user":"键盘侠","text":"就这？演技太假了，一看就是演的。有本事来真的啊。（已保存到本地）"}, {"user":"一个好人","text":"施主，苦海无涯，回头是岸。网址发我，我帮你批判一下。"}, {"user":"细节控","text":"温言的手真好看，骨节分明，抓在老婆雪白的屁股上，红印子都出来了，色疯了。"}]'
-        >
+        data-reviews='[{"user":"温言","text":"看来你很喜欢我送你的项圈。"}, {"user":"霍","text":"用金钱换来的关系终究是虚假的。{{user}}，我能给你的，远不止这些。"}, {"user":"X","text":"契约期间，{{user}}的平均睡眠时间减少了2.7小时，皮质醇水平上升了48%。这种压力下的性爱，数据模型会更有趣。"}, {"user":"白羽","text":"为什么要把{{user}}弄哭呢？明明可以让{{user}}笑着高潮的呀。温言老师太坏了。"}, {"user":"顾麟","text":"...如果是我，我会把{{user}}养得很好。"}, {"user":"霸总文学爱好者","text":"啊啊啊我死了！温言老师解领带的样子太他妈性感了！斯文败类yyds！"}, {"user":"金钱的味道","text":"贫穷限制了我的想象力，原来有钱人都是这么玩的吗？在私人飞机上做，还是对着落地窗，外面都是云，太刺激了！"}, {"user":"水漫金山","text":"老婆被操到失禁那段我反复观看，那种羞耻又控制不住的样子，太涩了！温言还用手指蘸着{{user}}的尿去喂{{user}}，我的妈！"}, {"user":"评论区都是人才","text":"只有我好奇这个剧场列表的秘密到底是啥吗？是被操到怀孕吗？"}, {"user":"小穴爱好者","text":"安然的小穴肯定被开发得很好，从一开始的青涩到后面主动张开腿迎接，甚至学会了自己摇屁股，成长线好评！"}, {"user":"Daddy_Issues","text":"温言那种“我弄疼你但我也爱你”的眼神，谁懂啊！我愿意被他锁起来！"}, {"user":"精尽人亡","text":"游艇上那段，被海风吹着，下面被大肉棒干着，这得多爽啊。"}, {"user":"颜文字大法","text":"(⁄ ⁄•⁄ω⁄•⁄ ⁄)老婆哭起来梨花带雨的，好想抱在怀里狠狠欺负。"}, {"user":"拒绝黄赌毒","text":"我来这里是为了批判性地学习，绝对不是为了色色。嗯。"}, {"user":"我为老婆花花花","text":"已三刷，每次看温言掐着老婆的腰，从后面狠狠顶进去，我都忍不住跟着一起动。"}, {"user":"隔壁老王","text":"这个剧场列表值得深入研究，我已经准备好了我的“研究工具”。"}, {"user":"键盘侠","text":"就这？演技太假了，一看就是演的。有本事来真的啊。（已保存到本地）"}, {"user":"一个好人","text":"施主，苦海无涯，回头是岸。网址发我，我帮你批判一下。"}, {"user":"细节控","text":"温言的手真好看，骨节分明，抓在老婆雪白的屁股上，红印子都出来了，色疯了。"}]'>
         <div class="item-title">《总裁的契约情人：探索剧场列表的秘密》</div>
         <div class="item-meta"><span>❤️ 250.3w</span><span>⭐ 180.9w</span><span>▶️ 890.2w</span><span class="item-price">💰 ¥1599</span></div>
-    </div>
-    <div class="list-item"
+      </div>
+      <div class="list-item"
         data-id="th_default_3"
         data-type="theater"
         data-title="《深渊（下）：双子堕落》"
@@ -156,10 +154,10 @@ window.YuseTheaterDefaultData = {
         data-views="998.6w"
         data-price="¥2588"
         data-reviews='[{"user":"霍","text":"虽然是多人场景，但{{user}}的光芒没有被任何人掩盖。这部作品将{{user}}的魅力推向了新的高峰。"},{"user":"X","text":"终于来了点刺激的。三人行才是王道。{{user}}被前后夹击，小穴和后庭同时被填满的样子，值得反复观看。"},{"user":"难言","text":"……太激烈了……{{user}}的身体……会坏掉的吧……"},{"user":"朝刃","text":"两个小白脸加起来都不够我一个人打的。不过，看在{{user}}被操得很爽的份上，勉强及格。"},{"user":"顾麟","text":"我……我也想加入……"},{"user":"疯了","text":"我宣布，这是2025年度最佳影片！双子恶魔x祭品，这是什么神仙设定！我直接原地螺旋升天爆炸！"},{"user":"细节控","text":"哥哥喜欢从后面干，弟弟喜欢在前面口，{{user}}被夹在中间，前面是天堂后面是地狱，爽到翻白眼，淫水喷得到处都是，太顶了！"},{"user":"温言","text":"能和白羽、{{user}}一起完成这部作品，是一次非常愉快的经历。"},{"user":"白羽","text":"最喜欢哥哥把{{user}}抱起来，我在下面舔的那个场景了~我们配合得天衣无缝呢~"},{"user":"选择困难症患者","text":"哥哥的霸道和弟弟的引诱，我到底该选谁！啊啊啊！算了，我选择当那张床！"},{"user":"理智已失","text":"什么理智！看到{{user}}被操得哭着求饶，一边被哥哥内射，一边被弟弟逼着吞精，我只想说：搞快点！加大力度！"},{"user":"钱包已空","text":"2588也值了！这特效，这剧情，这肉戏！业界标杆！"},{"user":"数据帝","text":"统计：双龙入洞时长15分钟，三人69时长10分钟，{{user}}高潮次数无法统计（因为一直在高潮），精液量目测超过500ml。"},{"user":"史官","text":"此片一出，欲色再无三人行。已封神。"},{"user":"匿名用户","text":"我已经循环播放了三天三夜，感觉身体被掏空。"},{"user":"求续集","text":"强烈要求出续集！我想看双子带着{{user}}去地狱开银趴！"},{"user":"正道的光","text":"三观震碎……但我喜欢。"},{"user":"纯爱党退散","text":"这才是情色的终极奥义！抛弃所有道德，只剩下最原始的欲望！"},{"user":"打分","text":"120分！多20分不怕你骄傲！"},{"user":"我的硬盘","text":"我的10T硬盘就是为这一刻准备的！"}]'>
-  <div class="item-title">《深渊（下）：双子堕落》</div>
+      <div class="item-title">《深渊（下）：双子堕落》</div>
         <div class="item-meta"><span>❤️ 310.7w</span><span>⭐ 250.1w</span><span>▶️ 998.6w</span><span class="item-price">💰 ¥2588</span></div>
-    </div>
-    <div class="list-item"
+      </div>
+      <div class="list-item"
         data-id="th_default_4"
         data-type="theater"
         data-title="《竹马弄青梅》"
@@ -170,7 +168,7 @@ window.YuseTheaterDefaultData = {
         data-views="280.3w"
         data-price="¥1388"
         data-reviews='[{"user":"朝刃","text":"小白脸一个，就会耍些见不得人的手段。有种别在房间里，出来打一架。"},{"user":"白羽","text":"呵呵，有些人是嫉妒我能和前辈演这种纯爱剧吧？不像某些人，只会演些打打杀杀的粗俗东西。"},{"user":"妈妈粉","text":"我的天，白羽弟弟这张脸太犯规了！穿着白衬衫解开两颗扣子，凑到江月耳边说“月月，你好香”的时候，我直接人没了！"},{"user":"技术宅","text":"有一说一，白羽的腰真好，在书桌上把江月翻过来后入的时候，那个速度和频率，啧啧，江月被顶得话都说不出来，只能抓着书桌边缘，太刺激了。"},{"user":"X","text":"无趣。唯一看点是33:14，{{user}}被内射后，苏念抱着{{user}}去浴室清理，在镜子前又来了一次。"},{"user":"霍","text":"青春期的懵懂与冲动，演绎得不错。{{user}}把那种情窦初开的羞涩和半推半就的渴望表现得非常到位。"},{"user":"一个大写的服","text":"白羽不愧是绿茶祖师爷，一边说着“月月，我们会不会被发现啊”，一边把江月的腿分得更开，顶得更深，太会了。"},{"user":"小透明","text":"这部片真的好棒，让我又相信爱情了（在h片里找爱情的我）。"},{"user":"数据帝","text":"全片吻戏时长累计15分钟，性爱时长25分钟，包含多种姿势，性价比很高。"},{"user":"舔狗日记","text":"如果我是苏念，我愿意为江月做任何事！"},{"user":"清醒一点","text":"楼上的，你只是想操江月吧。"},{"user":"匿名用户","text":"白羽最后那个舔掉{{user}}眼泪，然后低头吻上去的镜头，封神了。"}]'>
-  <div class="item-title">《竹马弄青梅》</div>
+      <div class="item-title">《竹马弄青梅》</div>
         <div class="item-meta"><span>❤️ 99.8w</span><span>⭐ 65.4w</span><span>▶️ 280.3w</span><span class="item-price">💰 ¥1388</span></div>
     </div>
     <div class="list-item"
