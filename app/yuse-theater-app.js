@@ -220,16 +220,16 @@ if (typeof window.YuseTheaterApp === 'undefined') {
     // 更新应用内容
     updateAppContent() {
       const content = this.getAppContent();
-      const appElement = document.getElementById('app-content');
+      const appElement = document.getElementById('content-area');
       if (appElement) {
         appElement.innerHTML = content;
         // 绑定页面事件（延迟确保DOM加载）
-        setTimeout(() => this.bindPageEvents(), 200);
+        setTimeout(() => this.bindPageEvents(), 100);
       }
     }
     // 绑定页面事件（刷新、导航、列表项交互）
     bindPageEvents() {
-      const appContainer = document.getElementById('app-content');
+      const appContainer = document.getElementById('content-area');
       if (!appContainer) return;
       // 刷新按钮事件
       appContainer.querySelectorAll('.refresh-btn').forEach(btn => {
@@ -246,46 +246,42 @@ if (typeof window.YuseTheaterApp === 'undefined') {
         });
       });
       // 列表项交互（拒绝/接取按钮、详情查看）
-
-    appContainer.addEventListener('click', (e) => {
-      const listItem = e.target.closest('.list-item');
-      if (!listItem) return; // 不是列表项点击，直接返回
-
-    // 跳过按钮点击（避免与“接取/拒绝”按钮冲突）
-      if (e.target.closest('.action-button')) return;
-
-    // 拒绝按钮逻辑
-      const rejectBtn = e.target.closest('.reject-btn');
-      if (rejectBtn) {
-       listItem.style.opacity = '0';
-       listItem.style.transform = 'translateY(-10px)';
-       setTimeout(() => listItem.remove(), 300);
-       return;
-      }
-
-    // 接取按钮逻辑
-      const acceptBtn = e.target.closest('.accept-btn');
-      if (acceptBtn) {
-        const itemData = listItem.dataset;
-        let acceptMsg = '';
-        if (itemData.type === 'customization') {
-          acceptMsg = `[接取定制|${itemData.id}|${itemData.fanId}|${itemData.typeName}]`;
-        } else if (itemData.type === 'announcement') {
-          acceptMsg = `[接取通告|${itemData.id}|${itemData.title}|${itemData.actor}]`;
+      appContainer.querySelectorAll('.list-item').forEach(item => {
+        // 拒绝按钮：删除项
+        const rejectBtn = item.querySelector('.reject-btn');
+        if (rejectBtn) {
+          rejectBtn.addEventListener('click', () => {
+            item.style.opacity = '0';
+            item.style.transform = 'translateY(-10px)';
+            setTimeout(() => item.remove(), 300);
+          });
         }
-        if (acceptMsg) {
-          this.sendToSillyTavern(acceptMsg);
-          this.showToast(`已接取${itemData.type === 'customization' ? '定制' : '通告'}`);
-          listItem.style.opacity = '0';
-          setTimeout(() => listItem.remove(), 300);
+        // 接取按钮：发送接取指令
+        const acceptBtn = item.querySelector('.accept-btn');
+        if (acceptBtn) {
+          acceptBtn.addEventListener('click', () => {
+            const itemData = item.dataset;
+            let acceptMsg = '';
+            if (itemData.type === 'customization') {
+              acceptMsg = `[接取定制|${itemData.id}|${itemData.fanId}|${itemData.typeName}]`;
+            } else if (itemData.type === 'announcement') {
+              acceptMsg = `[接取通告|${itemData.id}|${itemData.title}|${itemData.actor}]`;
+            }
+            if (acceptMsg) {
+              this.sendToSillyTavern(acceptMsg);
+              this.showToast(`已接取${itemData.type === 'customization' ? '定制' : '通告'}`);
+              // 隐藏接取项
+              item.style.opacity = '0';
+              setTimeout(() => item.remove(), 300);
+            }
+          });
         }
-        return;
-      }
-
-    // 点击列表项查看详情（核心逻辑）
-      const itemData = listItem.dataset;
-      this.showItemDetail(itemData);
-    });
+        // 点击列表项查看详情
+        item.addEventListener('click', (e) => {
+          if (e.target.closest('.action-button')) return; // 跳过按钮事件
+          const itemData = item.dataset;
+          this.showItemDetail(itemData);
+        });
       });
       // 剧场筛选按钮事件（保留原版功能）
       appContainer.querySelectorAll('.filter-btn').forEach(btn => {
