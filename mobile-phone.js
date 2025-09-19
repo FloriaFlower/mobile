@@ -5867,7 +5867,7 @@ async loadYuseTheaterApp() {
   // 标记正在加载
   window._yuseTheaterAppLoading = new Promise((resolve, reject) => {
     let loadedCount = 0;
-    const totalFiles = 3; // 新增 yuse-theater-data.js，对应 3 个文件（css + app.js + data.js）
+    const totalFiles = 2; // 对应 2 个文件（css + app.js）
     const checkComplete = () => {
       loadedCount++;
       if (loadedCount === totalFiles) {
@@ -5906,16 +5906,8 @@ async loadYuseTheaterApp() {
     };
     cssLink.onerror = () => handleError('yuse-theater.css');
     document.head.appendChild(cssLink);
-    // 2. 加载数据文件（yuse-theater-data.js，需先加载数据再加载应用逻辑）
-    const dataScript = document.createElement('script');
-    dataScript.src = '/scripts/extensions/third-party/mobile/app/yuse-theater-data.js';
-    dataScript.onload = () => {
-      console.log('[Mobile Phone] yuse-theater-data.js 加载完成');
-      checkComplete();
-    };
-    dataScript.onerror = () => handleError('yuse-theater-data.js');
-    document.head.appendChild(dataScript);
-    // 3. 加载应用逻辑文件（yuse-theater-app.js）
+
+    // 2. 加载应用逻辑文件（yuse-theater-app.js）
     const appScript = document.createElement('script');
     appScript.src = '/scripts/extensions/third-party/mobile/app/yuse-theater-app.js';
     appScript.onload = () => {
