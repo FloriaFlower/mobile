@@ -1,14 +1,10 @@
 if (typeof window.YuseTheaterApp === 'undefined') {
    window.YuseTheaterRegex = {
      fullMatch: /<yuse_data>.*?<announcements>(.*?)<\/announcements>.*?<customizations>(.*?)<\/customizations>.*?<theater>(.*?)<\/theater>.*?<theater_hot>(.*?)<\/theater_hot>.*?<theater_new>(.*?)<\/theater_new>.*?<theater_recommended>(.*?)<\/theater_recommended>.*?<theater_paid>(.*?)<\/theater_paid>.*?<shop>(.*?)<\/shop>.*?<\/yuse_data>/s,
-     // 1. 匹配通告：announcement|id|标题|演员|地点|报酬|描述
-     announcement: /announcement\|([^\|]+)\|([^\|]+)\|([^\|]+)\|([^\|]+)\|([^\|]+)\|([^\|]+)/g,
-     // 2. 匹配定制：customization|id|粉丝ID|类型|截止时间|报酬|需求|备注
-     customization: /customization\|([^\|]+)\|([^\|]+)\|([^\|]+)\|([^\|]+)\|([^\|]+)\|([^\|]+)\|([^\|]+)/g,
-     // 3. 匹配剧场：theater|id|标题|封面|描述|热度|收藏|观看|价格|评论
-     theater: /theater\|([^\|]+)\|([^\|]+)\|([^\|]+)\|([^\|]+)\|([^\|]+)\|([^\|]+)\|([^\|]+)\|([^\|]+)\|([^\|]+)/g,
-     // 4. 匹配商品：shop|id|名称|描述|基础价|最高价|评论
-     shop: /shop\|([^\|]+)\|([^\|]+)\|([^\|]+)\|([^\|]+)\|([^\|]+)\|([^\|]+)/g
+     announcement: /\[通告\|([^\|]+)\|([^\|]+)\|([^\|]+)\|([^\|]+)\|([^\|]+)\|([^\]]+)\]/g,
+     customization: /\[定制\|([^\|]+)\|([^\|]+)\|([^\|]+)\|([^\|]+)\|([^\|]+)\|([^\]]+)\]/g,
+     theater: /\[剧场\|([^\|]+)\|([^\|]+)\|([^\|]+)\|([^\|]+)\|([^\|]+)\|([^\|]+)\|([^\|]+)\|([^\]]+)\]/g,
+     shop: /\[商品\|([^\|]+)\|([^\|]+)\|([^\|]+)\|([^\|]+)\|([^\]]+)\]/g
    };
    window.YuseTheaterPages = {
      announcements: {
@@ -98,154 +94,31 @@ if (typeof window.YuseTheaterApp === 'undefined') {
       window.addEventListener('contextUpdate', () => this.parseNewData());
       window.addEventListener('messageUpdate', () => this.parseNewData());
     }
-    
     // 解析对话中的新数据
-parseNewData() {
-  if (!this.isAutoRender) return;
-  const currentTime = Date.now();
-  if (currentTime - this.lastRenderTime < this.renderCooldown) return;
-  try {
-    const chatData = this.getChatContent();
-    const fullMatch = chatData.match(window.YuseTheaterRegex.fullMatch);
-    if (fullMatch) {
-      const [, announcementsStr, customizationsStr, theaterStr, , , , , shopStr] = fullMatch;
-
-      // ========== 1. 解析“通告”：简化字符串→HTML列表项 ==========
-      const parseAnnouncements = (str) => {
-        if (!str) return '<div class="empty-state">暂无通告</div>';
-        let html = '';
-        // 用新正则匹配每一行通告
-        str.replace(window.YuseTheaterRegex.announcement, (match, id, title, actor, location, payment, description) => {
-          // 生成带data-*属性的列表项（弹窗所需属性由JS生成）
-          html += `
-            <div class="list-item" 
-                 data-type="announcement" 
-                 data-id="${id || '-'}" 
-                 data-title="${title || '-'}" 
-                 data-actor="${actor || '-'}" 
-                 data-location="${location || '-'}" 
-                 data-payment="${payment || '-'}" 
-                 data-description="${description || '-'}"
-            >
-              <div class="item-title">${title || '无标题'}</div>
-              <div class="item-meta">
-                <span>演员：${actor || '无'}</span>
-                <span>报酬：${payment || '无'}</span>
-              </div>
-              <div class="item-actions">
-                <button class="action-button accept-btn">接取</button>
-                <button class="action-button reject-btn">拒绝</button>
-              </div>
-            </div>
-          `;
-        });
-        return html;
-      };
-
-      // ========== 2. 解析“粉丝定制”：简化字符串→HTML列表项 ==========
-      const parseCustomizations = (str) => {
-        if (!str) return '<div class="empty-state">暂无定制</div>';
-        let html = '';
-        str.replace(window.YuseTheaterRegex.customization, (match, id, fanId, typeName, deadline, payment, request, notes) => {
-          html += `
-            <div class="list-item" 
-                 data-type="customization" 
-                 data-id="${id || '-'}" 
-                 data-fanId="${fanId || '-'}" 
-                 data-typeName="${typeName || '-'}" 
-                 data-deadline="${deadline || '-'}" 
-                 data-payment="${payment || '-'}" 
-                 data-request="${request || '-'}" 
-                 data-notes="${notes || '-'}"
-            >
-              <div class="item-title">${fanId || '匿名粉丝'} 的 ${typeName || '定制'}</div>
-              <div class="item-meta">
-                <span>截止：${deadline || '无'}</span>
-                <span>报酬：${payment || '无'}</span>
-              </div>
-              <div class="item-actions">
-                <button class="action-button accept-btn">接取</button>
-                <button class="action-button reject-btn">拒绝</button>
-              </div>
-            </div>
-          `;
-        });
-        return html;
-      };
-
-      // ========== 3. 解析“剧场”：简化字符串→HTML列表项 ==========
-      const parseTheater = (str) => {
-        if (!str) return '<div class="empty-state">暂无剧场</div>';
-        let html = '';
-        str.replace(window.YuseTheaterRegex.theater, (match, id, title, cover, description, popularity, favorites, views, price, reviews) => {
-          html += `
-            <div class="list-item" 
-                 data-type="theater" 
-                 data-id="${id || '-'}" 
-                 data-title="${title || '-'}" 
-                 data-cover="${cover || 'https://picsum.photos/400/200?random=200'}" 
-                 data-description="${description || '-'}" 
-                 data-popularity="${popularity || '-'}" 
-                 data-favorites="${favorites || '-'}" 
-                 data-views="${views || '-'}" 
-                 data-price="${price || '-'}" 
-                 data-reviews="${reviews || '[]'}"
-            >
-              <div class="item-title">${title || '无标题'}</div>
-              <div class="item-meta">
-                <span>热度：${popularity || '0'}</span>
-                <span>价格：${price || '0'}</span>
-              </div>
-            </div>
-          `;
-        });
-        return html;
-      };
-
-      // ========== 4. 解析“商品”：简化字符串→HTML列表项 ==========
-      const parseShop = (str) => {
-        if (!str) return '<div class="empty-state">暂无商品</div>';
-        let html = '';
-        str.replace(window.YuseTheaterRegex.shop, (match, id, name, description, price, highestBid, comments) => {
-          html += `
-            <div class="list-item" 
-                 data-type="shop" 
-                 data-id="${id || '-'}" 
-                 data-name="${name || '-'}" 
-                 data-description="${description || '-'}" 
-                 data-price="${price || '-'}" 
-                 data-highestBid="${highestBid || '-'}" 
-                 data-comments="${comments || '[]'}"
-            >
-              <div class="item-title">${name || '无名称'}</div>
-              <div class="item-meta">
-                <span>基础价：${price || '0'}</span>
-                <span>最高价：${highestBid || '0'}</span>
-              </div>
-            </div>
-          `;
-        });
-        return html;
-      };
-
-      // ========== 5. 赋值解析后的HTML，渲染页面 ==========
-      this.savedData.announcements = parseAnnouncements(announcementsStr);
-      this.savedData.customizations = parseCustomizations(customizationsStr);
-      this.savedData.theater = parseTheater(theaterStr);
-      this.savedData.shop = parseShop(shopStr);
-
-      this.updateAppContent();
+    parseNewData() {
+      if (!this.isAutoRender) return;
+      const currentTime = Date.now();
+      if (currentTime - this.lastRenderTime < this.renderCooldown) return;
+      try {
+        // 获取对话内容
+        const chatData = this.getChatContent();
+        const fullMatch = chatData.match(window.YuseTheaterRegex.fullMatch);
+        if (fullMatch) {
+          // 提取各页面数据（对应原版正则分组）
+          const [, announcements, customizations, theater, , , , , shop] = fullMatch;
+          // 更新保存对应页面数据
+          if (announcements) this.savedData.announcements = announcements;
+          if (customizations) this.savedData.customizations = customizations;
+          if (theater) this.savedData.theater = theater;
+          if (shop) this.savedData.shop = shop;
+          // 重新渲染当前页面
+          this.updateAppContent();
+        }
+      } catch (error) {
+        console.error('[YuseTheater] 解析数据失败:', error);
+      }
+      this.lastRenderTime = currentTime;
     }
-  } catch (error) {
-    console.error('[YuseTheater] 解析AI数据失败（可检查AI输出格式）:', error);
-    // 显示错误提示，方便排查AI输出问题
-    this.savedData.announcements = `<div class="error-state">通告解析失败：${error.message}</div>`;
-    this.updateAppContent();
-  }
-  this.lastRenderTime = currentTime;
-}
-
-
     // 获取对话内容
     getChatContent() {
       try {
@@ -413,11 +286,6 @@ parseNewData() {
     const listItem = e.target.closest('.list-item');
     if (listItem) {
       const itemData = listItem.dataset;
-      console.log('[YuseTheater] 点击列表项，itemData:', itemData);
-      if (!itemData.type) {
-       console.warn('[YuseTheater] 列表项缺少 data-type 属性，无法弹出详情');
-       return;
-      }
       this.showItemDetail(itemData);
     }
 
