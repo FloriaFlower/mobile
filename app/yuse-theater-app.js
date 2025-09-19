@@ -106,7 +106,22 @@ parseNewData() {
   if (currentTime - this.lastRenderTime < this.renderCooldown) return;
   try {
     const chatData = this.getChatContent();
+    console.log('[YuseTheater] 获取到的对话内容:', chatData); // 关键日志
+    if (!chatData) {
+       console.error('[YuseTheater] 错误：getChatContent 返回空，无法解析数据');
+       this.savedData.announcements = '<div class="error-state">无法获取对话数据，请检查全局变量</div>';
+       this.updateAppContent();
+       return;
+    }
     const fullMatch = chatData.match(window.YuseTheaterRegex.fullMatch);
+    console.log('[YuseTheater] fullMatch 匹配结果:', fullMatch); // 关键日志
+    if (!fullMatch) {
+       console.error('[YuseTheater] 错误：未匹配到 <yuse_data> 结构，请检查测试样板格式');
+       this.savedData.announcements = '<div class="error-state">未找到数据（需在对话中添加 <yuse_data> 样板）</div>';
+       this.updateAppContent();
+       return;
+    }
+    
     if (fullMatch) {
       const [, announcementsStr, customizationsStr, theaterStr, , , , , shopStr] = fullMatch;
 
@@ -237,9 +252,8 @@ parseNewData() {
       this.updateAppContent();
     }
   } catch (error) {
-    console.error('[YuseTheater] 解析AI数据失败（可检查AI输出格式）:', error);
-    // 显示错误提示，方便排查AI输出问题
-    this.savedData.announcements = `<div class="error-state">通告解析失败：${error.message}</div>`;
+    console.error('[YuseTheater] 解析数据失败（完整错误）:', error.stack);
+    this.savedData.announcements = `<div class="error-state">解析失败：${error.message}</div>`;
     this.updateAppContent();
   }
   this.lastRenderTime = currentTime;
