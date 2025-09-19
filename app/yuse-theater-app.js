@@ -505,16 +505,12 @@ if (typeof window.YuseTheaterApp === 'undefined') {
       console.log('[YuseTheater] 销毁欲色剧场 App');
     }
   }
-  // 全局类挂载
+    // 全局类挂载
   window.YuseTheaterApp = YuseTheaterApp;
-
   // 初始化示例逻辑
-     console.log('[YuseTheater] 初始化 app 实例（依赖已内置）');
-     window.yuseTheaterApp = new YuseTheaterApp();
-   };
-   initAppWhenReady();
- }
-
+  console.log('[YuseTheater] 初始化 app 实例（依赖已内置）');
+  window.yuseTheaterApp = new YuseTheaterApp();
+}; 
 // 全局调用接口
 window.getYuseTheaterAppContent = function () {
   if (window.yuseTheaterApp) {
@@ -535,3 +531,4 @@ window.refreshYuseTheaterPage = function (pageKey) {
   }
 };
 console.log('[YuseTheater] 欲色剧场 App 脚本加载完成（等待依赖初始化）');
+
