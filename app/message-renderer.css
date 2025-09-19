@@ -122,7 +122,7 @@
   margin: 4px 0 !important; /* 强制设置上下边距为4px */
   padding: 0;
   border-radius: 15px;
-  max-width: 80%;
+  max-width: 88%;
   position: relative;
   animation: messageSlideIn 0.3s ease-out;
 }
