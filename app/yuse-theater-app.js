@@ -1,10 +1,14 @@
 if (typeof window.YuseTheaterApp === 'undefined') {
-  window.YuseTheaterRegex = {
+   window.YuseTheaterRegex = {
      fullMatch: /<yuse_data>.*?<announcements>(.*?)<\/announcements>.*?<customizations>(.*?)<\/customizations>.*?<theater>(.*?)<\/theater>.*?<theater_hot>(.*?)<\/theater_hot>.*?<theater_new>(.*?)<\/theater_new>.*?<theater_recommended>(.*?)<\/theater_recommended>.*?<theater_paid>(.*?)<\/theater_paid>.*?<shop>(.*?)<\/shop>.*?<\/yuse_data>/s,
-     announcement: /\[通告\|([^\|]+)\|([^\|]+)\|([^\|]+)\|([^\|]+)\|([^\|]+)\|([^\]]+)\]/g,
-     customization: /\[定制\|([^\|]+)\|([^\|]+)\|([^\|]+)\|([^\|]+)\|([^\|]+)\|([^\]]+)\]/g,
-     theater: /\[剧场\|([^\|]+)\|([^\|]+)\|([^\|]+)\|([^\|]+)\|([^\|]+)\|([^\|]+)\|([^\|]+)\|([^\]]+)\]/g,
-     shop: /\[商品\|([^\|]+)\|([^\|]+)\|([^\|]+)\|([^\|]+)\|([^\]]+)\]/g
+     // 1. 匹配通告：announcement|id|标题|演员|地点|报酬|描述
+     announcement: /announcement\|([^\|]+)\|([^\|]+)\|([^\|]+)\|([^\|]+)\|([^\|]+)\|([^\|]+)/g,
+     // 2. 匹配定制：customization|id|粉丝ID|类型|截止时间|报酬|需求|备注
+     customization: /customization\|([^\|]+)\|([^\|]+)\|([^\|]+)\|([^\|]+)\|([^\|]+)\|([^\|]+)\|([^\|]+)/g,
+     // 3. 匹配剧场：theater|id|标题|封面|描述|热度|收藏|观看|价格|评论
+     theater: /theater\|([^\|]+)\|([^\|]+)\|([^\|]+)\|([^\|]+)\|([^\|]+)\|([^\|]+)\|([^\|]+)\|([^\|]+)\|([^\|]+)/g,
+     // 4. 匹配商品：shop|id|名称|描述|基础价|最高价|评论
+     shop: /shop\|([^\|]+)\|([^\|]+)\|([^\|]+)\|([^\|]+)\|([^\|]+)\|([^\|]+)/g
    };
    window.YuseTheaterPages = {
      announcements: {
@@ -104,27 +108,29 @@ parseNewData() {
     const chatData = this.getChatContent();
     const fullMatch = chatData.match(window.YuseTheaterRegex.fullMatch);
     if (fullMatch) {
-      const [, announcements, customizations, theater, , , , , shop] = fullMatch;
+      const [, announcementsStr, customizationsStr, theaterStr, , , , , shopStr] = fullMatch;
 
-      // ========== 新增：格式化数据，为列表项添加 data-* 属性 ==========
-      // 1. 格式化通告数据（announcement）
-      const formatAnnouncements = (data) => {
-        if (!data) return '';
-        // 匹配原版通告格式 [通告|id|标题|演员|地点|报酬|描述]
-        return data.replace(window.YuseTheaterRegex.announcement, (match, id, title, actor, location, payment, description) => {
-          return `
+      // ========== 1. 解析“通告”：简化字符串→HTML列表项 ==========
+      const parseAnnouncements = (str) => {
+        if (!str) return '<div class="empty-state">暂无通告</div>';
+        let html = '';
+        // 用新正则匹配每一行通告
+        str.replace(window.YuseTheaterRegex.announcement, (match, id, title, actor, location, payment, description) => {
+          // 生成带data-*属性的列表项（弹窗所需属性由JS生成）
+          html += `
             <div class="list-item" 
                  data-type="announcement" 
-                 data-id="${id}" 
-                 data-title="${title}" 
-                 data-actor="${actor}" 
-                 data-location="${location}" 
-                 data-payment="${payment}" 
-                 data-description="${description}">
-              <div class="item-title">${title}</div>
+                 data-id="${id || '-'}" 
+                 data-title="${title || '-'}" 
+                 data-actor="${actor || '-'}" 
+                 data-location="${location || '-'}" 
+                 data-payment="${payment || '-'}" 
+                 data-description="${description || '-'}"
+            >
+              <div class="item-title">${title || '无标题'}</div>
               <div class="item-meta">
-                <span>演员：${actor}</span>
-                <span>报酬：${payment}</span>
+                <span>演员：${actor || '无'}</span>
+                <span>报酬：${payment || '无'}</span>
               </div>
               <div class="item-actions">
                 <button class="action-button accept-btn">接取</button>
@@ -133,27 +139,29 @@ parseNewData() {
             </div>
           `;
         });
+        return html;
       };
 
-      // 2. 格式化粉丝定制数据（customization）
-      const formatCustomizations = (data) => {
-        if (!data) return '';
-        // 匹配原版定制格式 [定制|id|粉丝ID|类型|截止时间|报酬|需求|备注]
-        return data.replace(window.YuseTheaterRegex.customization, (match, id, fanId, typeName, deadline, payment, request, notes) => {
-          return `
+      // ========== 2. 解析“粉丝定制”：简化字符串→HTML列表项 ==========
+      const parseCustomizations = (str) => {
+        if (!str) return '<div class="empty-state">暂无定制</div>';
+        let html = '';
+        str.replace(window.YuseTheaterRegex.customization, (match, id, fanId, typeName, deadline, payment, request, notes) => {
+          html += `
             <div class="list-item" 
                  data-type="customization" 
-                 data-id="${id}" 
-                 data-fanId="${fanId}" 
-                 data-typeName="${typeName}" 
-                 data-deadline="${deadline}" 
-                 data-payment="${payment}" 
-                 data-request="${request}" 
-                 data-notes="${notes}">
-              <div class="item-title">${fanId} 的 ${typeName}</div>
+                 data-id="${id || '-'}" 
+                 data-fanId="${fanId || '-'}" 
+                 data-typeName="${typeName || '-'}" 
+                 data-deadline="${deadline || '-'}" 
+                 data-payment="${payment || '-'}" 
+                 data-request="${request || '-'}" 
+                 data-notes="${notes || '-'}"
+            >
+              <div class="item-title">${fanId || '匿名粉丝'} 的 ${typeName || '定制'}</div>
               <div class="item-meta">
-                <span>截止：${deadline}</span>
-                <span>报酬：${payment}</span>
+                <span>截止：${deadline || '无'}</span>
+                <span>报酬：${payment || '无'}</span>
               </div>
               <div class="item-actions">
                 <button class="action-button accept-btn">接取</button>
@@ -162,72 +170,81 @@ parseNewData() {
             </div>
           `;
         });
+        return html;
       };
 
-      // 3. 格式化剧场数据（theater）
-      const formatTheater = (data) => {
-        if (!data) return '';
-        // 匹配原版剧场格式 [剧场|id|标题|封面|描述|热度|收藏|观看|价格|评论]
-        return data.replace(window.YuseTheaterRegex.theater, (match, id, title, cover, description, popularity, favorites, views, price, reviews) => {
-          return `
+      // ========== 3. 解析“剧场”：简化字符串→HTML列表项 ==========
+      const parseTheater = (str) => {
+        if (!str) return '<div class="empty-state">暂无剧场</div>';
+        let html = '';
+        str.replace(window.YuseTheaterRegex.theater, (match, id, title, cover, description, popularity, favorites, views, price, reviews) => {
+          html += `
             <div class="list-item" 
                  data-type="theater" 
-                 data-id="${id}" 
-                 data-title="${title}" 
-                 data-cover="${cover}" 
-                 data-description="${description}" 
-                 data-popularity="${popularity}" 
-                 data-favorites="${favorites}" 
-                 data-views="${views}" 
-                 data-price="${price}" 
-                 data-reviews="${reviews}">
-              <div class="item-title">${title}</div>
+                 data-id="${id || '-'}" 
+                 data-title="${title || '-'}" 
+                 data-cover="${cover || 'https://picsum.photos/400/200?random=200'}" 
+                 data-description="${description || '-'}" 
+                 data-popularity="${popularity || '-'}" 
+                 data-favorites="${favorites || '-'}" 
+                 data-views="${views || '-'}" 
+                 data-price="${price || '-'}" 
+                 data-reviews="${reviews || '[]'}"
+            >
+              <div class="item-title">${title || '无标题'}</div>
               <div class="item-meta">
-                <span>热度：${popularity}</span>
-                <span>价格：${price}</span>
+                <span>热度：${popularity || '0'}</span>
+                <span>价格：${price || '0'}</span>
               </div>
             </div>
           `;
         });
+        return html;
       };
 
-      // 4. 格式化商品数据（shop）
-      const formatShop = (data) => {
-        if (!data) return '';
-        // 匹配原版商品格式 [商品|id|名称|描述|价格|最高价|评论]
-        return data.replace(window.YuseTheaterRegex.shop, (match, id, name, description, price, highestBid, comments) => {
-          return `
+      // ========== 4. 解析“商品”：简化字符串→HTML列表项 ==========
+      const parseShop = (str) => {
+        if (!str) return '<div class="empty-state">暂无商品</div>';
+        let html = '';
+        str.replace(window.YuseTheaterRegex.shop, (match, id, name, description, price, highestBid, comments) => {
+          html += `
             <div class="list-item" 
                  data-type="shop" 
-                 data-id="${id}" 
-                 data-name="${name}" 
-                 data-description="${description}" 
-                 data-price="${price}" 
-                 data-highestBid="${highestBid}" 
-                 data-comments="${comments}">
-              <div class="item-title">${name}</div>
+                 data-id="${id || '-'}" 
+                 data-name="${name || '-'}" 
+                 data-description="${description || '-'}" 
+                 data-price="${price || '-'}" 
+                 data-highestBid="${highestBid || '-'}" 
+                 data-comments="${comments || '[]'}"
+            >
+              <div class="item-title">${name || '无名称'}</div>
               <div class="item-meta">
-                <span>基础价：${price}</span>
-                <span>最高价：${highestBid}</span>
+                <span>基础价：${price || '0'}</span>
+                <span>最高价：${highestBid || '0'}</span>
               </div>
             </div>
           `;
         });
+        return html;
       };
 
-      // ========== 替换原始数据为格式化后的数据 ==========
-      this.savedData.announcements = formatAnnouncements(announcements);
-      this.savedData.customizations = formatCustomizations(customizations);
-      this.savedData.theater = formatTheater(theater);
-      this.savedData.shop = formatShop(shop);
+      // ========== 5. 赋值解析后的HTML，渲染页面 ==========
+      this.savedData.announcements = parseAnnouncements(announcementsStr);
+      this.savedData.customizations = parseCustomizations(customizationsStr);
+      this.savedData.theater = parseTheater(theaterStr);
+      this.savedData.shop = parseShop(shopStr);
 
       this.updateAppContent();
     }
   } catch (error) {
-    console.error('[YuseTheater] 解析数据失败:', error);
+    console.error('[YuseTheater] 解析AI数据失败（可检查AI输出格式）:', error);
+    // 显示错误提示，方便排查AI输出问题
+    this.savedData.announcements = `<div class="error-state">通告解析失败：${error.message}</div>`;
+    this.updateAppContent();
   }
   this.lastRenderTime = currentTime;
 }
+
 
     // 获取对话内容
     getChatContent() {
