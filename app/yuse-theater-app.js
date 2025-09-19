@@ -1,6 +1,6 @@
 if (typeof window.YuseTheaterApp === 'undefined') {
    window.YuseTheaterRegex = {
-     fullMatch: /<yuse_data>.*?<announcements>(.*?)<\/announcements>.*?<customizations>(.*?)<\/customizations>.*?<theater>(.*?)<\/theater>.*?<theater_hot>(.*?)<\/theater_hot>.*?<theater_new>(.*?)<\/theater_new>.*?<theater_recommended>(.*?)<\/theater_recommended>.*?<theater_paid>(.*?)<\/theater_paid>.*?<shop>(.*?)<\/shop>.*?<\/yuse_data>/s,
+     fullMatch: /<yuse_data>[\s\S]*?<announcements>([\s\S]*?)<\/announcements>[\s\S]*?<customizations>([\s\S]*?)<\/customizations>[\s\S]*?<theater>([\s\S]*?)<\/theater>[\s\S]*?<theater_hot>([\s\S]*?)<\/theater_hot>[\s\S]*?<theater_new>([\s\S]*?)<\/theater_new>[\s\S]*?<theater_recommended>([\s\S]*?)<\/theater_recommended>[\s\S]*?<theater_paid>([\s\S]*?)<\/theater_paid>[\s\S]*?<shop>([\s\S]*?)<\/shop>[\s\S]*?<\/yuse_data>/,
      // 1. 匹配通告：announcement|id|标题|演员|地点|报酬|描述
      announcement: /announcement\|([^\|]+)\|([^\|]+)\|([^\|]+)\|([^\|]+)\|([^\|]+)\|([^\|]+)/g,
      // 2. 匹配定制：customization|id|粉丝ID|类型|截止时间|报酬|需求|备注
@@ -246,27 +246,45 @@ parseNewData() {
 }
 
 
-    // 获取对话内容
-    getChatContent() {
-      try {
-        // 优先从插件上下文获取
-        const mobileContext = window.mobileContextEditor;
-        if (mobileContext) {
-          const chatData = mobileContext.getCurrentChatData();
-          if (chatData?.messages) {
-            return chatData.messages.map(msg => msg.mes || '').join('\n');
-          }
+  getChatContent() {
+    try {
+      // 1. 优先从插件上下文获取（原逻辑保留）
+      const mobileContext = window.mobileContextEditor;
+      if (mobileContext) {
+        const chatData = mobileContext.getCurrentChatData();
+        if (chatData?.messages) {
+          const content = chatData.messages.map(msg => msg.mes || '').join('\n');
+          console.log('[YuseTheater] 从 mobileContextEditor 获取数据:', content);
+          return content;
         }
-        // 备用方式：从全局聊天变量获取
-        const globalChat = window.chat || window.SillyTavern?.chat;
-        if (globalChat && Array.isArray(globalChat)) {
-          return globalChat.map(msg => msg.mes || '').join('\n');
-        }
-      } catch (error) {
-        console.warn('[YuseTheater] 获取对话内容失败:', error);
       }
-      return '';
+
+      // 2. 备用：从全局聊天变量获取（原逻辑保留）
+      const globalChat = window.chat || window.SillyTavern?.chat;
+      if (globalChat && Array.isArray(globalChat)) {
+        const content = globalChat.map(msg => msg.mes || '').join('\n');
+        console.log('[YuseTheater] 从全局变量获取数据:', content);
+        return content;
+      }
+
+      // 3. 新增：直接从聊天DOM提取（最通用，适配多数环境）
+      const chatElements = document.querySelectorAll('.mes, .message, .chat-message');
+      if (chatElements.length > 0) {
+        const content = Array.from(chatElements)
+          .map(el => el.textContent || el.innerText || '')
+          .join('\n');
+        console.log('[YuseTheater] 从DOM提取数据:', content);
+        return content;
+      }
+
+      // 4. 所有方式失败，提示用户
+      console.warn('[YuseTheater] 所有获取聊天数据的方式均失败，请检查环境');
+    } catch (error) {
+      console.warn('[YuseTheater] 获取对话内容失败:', error);
     }
+    return '';
+  }
+
     // 发送刷新请求（指定页面）
     sendRefreshRequest(pageKey) {
       const pageConfig = window.YuseTheaterPages[pageKey];
