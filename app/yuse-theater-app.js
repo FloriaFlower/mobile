@@ -1,4 +1,33 @@
 if (typeof window.YuseTheaterApp === 'undefined') {
+  window.YuseTheaterRegex = {
+     fullMatch: /<yuse_data>.*?<announcements>(.*?)<\/announcements>.*?<customizations>(.*?)<\/customizations>.*?<theater>(.*?)<\/theater>.*?<theater_hot>(.*?)<\/theater_hot>.*?<theater_new>(.*?)<\/theater_new>.*?<theater_recommended>(.*?)<\/theater_recommended>.*?<theater_paid>(.*?)<\/theater_paid>.*?<shop>(.*?)<\/shop>.*?<\/yuse_data>/s,
+     announcement: /\[通告\|([^\|]+)\|([^\|]+)\|([^\|]+)\|([^\|]+)\|([^\|]+)\|([^\]]+)\]/g,
+     customization: /\[定制\|([^\|]+)\|([^\|]+)\|([^\|]+)\|([^\|]+)\|([^\|]+)\|([^\]]+)\]/g,
+     theater: /\[剧场\|([^\|]+)\|([^\|]+)\|([^\|]+)\|([^\|]+)\|([^\|]+)\|([^\|]+)\|([^\|]+)\|([^\]]+)\]/g,
+     shop: /\[商品\|([^\|]+)\|([^\|]+)\|([^\|]+)\|([^\|]+)\|([^\]]+)\]/g
+   };
+   window.YuseTheaterPages = {
+     announcements: {
+       name: "通告拍摄",
+       apiKeyword: "announcements",
+       refreshMsg: "[刷新通告拍摄|请求新通告列表]"
+     },
+     customizations: {
+       name: "粉丝定制",
+       apiKeyword: "customizations",
+       refreshMsg: "[刷新粉丝定制|请求新定制列表]"
+     },
+     theater: {
+       name: "剧场列表",
+       apiKeyword: "theater",
+       refreshMsg: "[刷新剧场列表|请求新剧场内容]"
+     },
+     shop: {
+       name: "欲色商城",
+       apiKeyword: "shop",
+       refreshMsg: "[刷新欲色商城|请求新商品列表]"
+     }
+   };
   class YuseTheaterApp {
     constructor() {
       // 状态管理
@@ -24,12 +53,11 @@ if (typeof window.YuseTheaterApp === 'undefined') {
     }
     // 加载初始默认数据
     loadDefaultData() {
-      const defaultData = window.YuseTheaterDefaultData;
-      // 初始化保存数据（无保存数据时用默认值）
-      for (const page in window.YuseTheaterPages) {
-        if (!this.savedData[page]) {
-          this.savedData[page] = defaultData[page] || '';
-        }
+       // 初始化保存数据（无默认数据，直接设为空，等待对话解析）
+       for (const page in window.YuseTheaterPages) {
+         if (!this.savedData[page]) {
+           this.savedData[page] = '<div class="empty-state">等待加载数据...</div>';
+         }
       }
     }
     // 设置DOM观察器（监听对话更新）
@@ -220,7 +248,7 @@ if (typeof window.YuseTheaterApp === 'undefined') {
     // 更新应用内容
     updateAppContent() {
       const content = this.getAppContent();
-      const appElement = document.getElementById('content-area');
+      const appElement = document.getElementById('app-content');
       if (appElement) {
         appElement.innerHTML = content;
         // 绑定页面事件（延迟确保DOM加载）
@@ -229,68 +257,77 @@ if (typeof window.YuseTheaterApp === 'undefined') {
     }
     // 绑定页面事件（刷新、导航、列表项交互）
     bindPageEvents() {
-      const appContainer = document.getElementById('content-area');
-      if (!appContainer) return;
-      // 刷新按钮事件
-      appContainer.querySelectorAll('.refresh-btn').forEach(btn => {
-        btn.addEventListener('click', (e) => {
-          const pageKey = e.target.dataset.page;
-          this.sendRefreshRequest(pageKey);
-        });
-      });
-      // 导航按钮事件
-      appContainer.querySelectorAll('.yuse-nav-btn').forEach(btn => {
-        btn.addEventListener('click', (e) => {
-          const pageKey = e.target.dataset.page;
-          this.switchView(pageKey);
-        });
-      });
-      // 列表项交互（拒绝/接取按钮、详情查看）
-      appContainer.querySelectorAll('.list-item').forEach(item => {
-        // 拒绝按钮：删除项
-        const rejectBtn = item.querySelector('.reject-btn');
-        if (rejectBtn) {
-          rejectBtn.addEventListener('click', () => {
-            item.style.opacity = '0';
-            item.style.transform = 'translateY(-10px)';
-            setTimeout(() => item.remove(), 300);
-          });
-        }
-        // 接取按钮：发送接取指令
-        const acceptBtn = item.querySelector('.accept-btn');
-        if (acceptBtn) {
-          acceptBtn.addEventListener('click', () => {
-            const itemData = item.dataset;
-            let acceptMsg = '';
-            if (itemData.type === 'customization') {
-              acceptMsg = `[接取定制|${itemData.id}|${itemData.fanId}|${itemData.typeName}]`;
-            } else if (itemData.type === 'announcement') {
-              acceptMsg = `[接取通告|${itemData.id}|${itemData.title}|${itemData.actor}]`;
-            }
-            if (acceptMsg) {
-              this.sendToSillyTavern(acceptMsg);
-              this.showToast(`已接取${itemData.type === 'customization' ? '定制' : '通告'}`);
-              // 隐藏接取项
-              item.style.opacity = '0';
-              setTimeout(() => item.remove(), 300);
-            }
-          });
-        }
-        // 点击列表项查看详情
-        item.addEventListener('click', (e) => {
-          if (e.target.closest('.action-button')) return; // 跳过按钮事件
-          const itemData = item.dataset;
-          this.showItemDetail(itemData);
-        });
-      });
-      // 剧场筛选按钮事件（保留原版功能）
-      appContainer.querySelectorAll('.filter-btn').forEach(btn => {
-        btn.addEventListener('click', (e) => {
-          const filterType = e.target.dataset.filter;
-          this.filterTheaterList(filterType);
-        });
-      });
+  const appContainer = document.getElementById('app-content');
+  if (!appContainer) return;
+
+  // 1. 刷新按钮事件（保留原逻辑）
+  appContainer.querySelectorAll('.refresh-btn').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      const pageKey = e.target.dataset.page;
+      this.sendRefreshRequest(pageKey);
+    });
+  });
+
+  // 2. 导航按钮事件【重构：事件委托】
+  appContainer.addEventListener('click', (e) => {
+    const navBtn = e.target.closest('.yuse-nav-btn');
+    if (navBtn) {
+      const pageKey = navBtn.dataset.page;
+      this.switchView(pageKey);
     }
+  });
+
+  // 3. 列表项交互事件【重构：事件委托，解决详情不弹出问题（问题②）】
+  appContainer.addEventListener('click', (e) => {
+    // 跳过按钮事件（拒绝/接取）
+    if (e.target.closest('.action-button')) return;
+
+    // 处理列表项点击（弹详情）
+    const listItem = e.target.closest('.list-item');
+    if (listItem) {
+      const itemData = listItem.dataset;
+      this.showItemDetail(itemData);
+    }
+
+    // 处理拒绝按钮
+    const rejectBtn = e.target.closest('.reject-btn');
+    if (rejectBtn) {
+      const listItem = rejectBtn.closest('.list-item');
+      listItem.style.opacity = '0';
+      listItem.style.transform = 'translateY(-10px)';
+      setTimeout(() => listItem.remove(), 300);
+    }
+
+    // 处理接取按钮
+    const acceptBtn = e.target.closest('.accept-btn');
+    if (acceptBtn) {
+      const listItem = acceptBtn.closest('.list-item');
+      const itemData = listItem.dataset;
+      let acceptMsg = '';
+      if (itemData.type === 'customization') {
+        acceptMsg = `[接取定制|${itemData.id}|${itemData.fanId}|${itemData.typeName}]`;
+      } else if (itemData.type === 'announcement') {
+        acceptMsg = `[接取通告|${itemData.id}|${itemData.title}|${itemData.actor}]`;
+      }
+      if (acceptMsg) {
+        this.sendToSillyTavern(acceptMsg);
+        this.showToast(`已接取${itemData.type === 'customization' ? '定制' : '通告'}`);
+        listItem.style.opacity = '0';
+        setTimeout(() => listItem.remove(), 300);
+      }
+    }
+  });
+
+  // 4. 剧场筛选按钮事件（保留原逻辑）
+  appContainer.addEventListener('click', (e) => {
+    const filterBtn = e.target.closest('.filter-btn');
+    if (filterBtn) {
+      const filterType = filterBtn.dataset.filter;
+      this.filterTheaterList(filterType);
+    }
+  });
+}
+
     // 剧场列表筛选（保留原版功能）
     filterTheaterList(filterType) {
       const theaterList = document.querySelector('.yuse-theater-list');
@@ -468,47 +505,17 @@ if (typeof window.YuseTheaterApp === 'undefined') {
       console.log('[YuseTheater] 销毁欲色剧场 App');
     }
   }
-  // 全局类挂载（保留原逻辑）
+  // 全局类挂载
   window.YuseTheaterApp = YuseTheaterApp;
 
-  // 关键修改：等待 YuseTheaterDefaultData（data.js）加载完成后再创建实例
-  const initAppWhenReady = () => {
-  if (typeof window.YuseTheaterDefaultData === 'object') {
-    console.log('[YuseTheater] 检测到 YuseTheaterDefaultData，初始化 app 实例');
-    window.yuseTheaterApp = new YuseTheaterApp();
-    return;
-  }
+  // 初始化示例逻辑
+     console.log('[YuseTheater] 初始化 app 实例（依赖已内置）');
+     window.yuseTheaterApp = new YuseTheaterApp();
+   };
+   initAppWhenReady();
+ }
 
-  const dataScript = document.querySelector('script[src*="yuse-theater-data"]') || 
-                     document.querySelector('script[src*="yuse-theater-data"]');
-  
-  if (dataScript) {
-
-    console.log('[YuseTheater] 数据脚本已加载，等待生成数据对象...');
-    setTimeout(initAppWhenReady, 2000);
-  } else {
-
-    console.log('[YuseTheater] 未找到数据脚本，尝试动态加载...');
-    const script = document.createElement('script');
-
-    script.src = 'yuse-theater-data .js'; 
-    script.type = 'text/javascript';
-    
-    script.onload = () => {
-      console.log('[YuseTheater] 动态加载数据脚本成功，开始检查数据对象');
-      setTimeout(initAppWhenReady, 1000); 
-    };
-    
-    script.onerror = () => {
-      console.error('[YuseTheater] 动态加载数据脚本失败！请检查脚本路径是否正确');
-    };
-
-    document.head.appendChild(script);
-  }
-};
-
-
-// 全局调用接口（已确保函数名与 mobile-phone.js 匹配，无需修改）
+// 全局调用接口
 window.getYuseTheaterAppContent = function () {
   if (window.yuseTheaterApp) {
     return window.yuseTheaterApp.getAppContent();
