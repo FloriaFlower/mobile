@@ -771,7 +771,8 @@ if (typeof window.MessageRenderer === 'undefined') {
         }
 
         const messagesHtml = this.renderMessagesBatch(latestMessages);
-
+        this._lastRenderedMessageKeys = latestMessages.map(m => this.getMessageKey(m));
+        this._lastRenderedMessageHashes = latestMessages.map(m => this.getMessageRenderHash(m));
         return `
                 <div class="message-detail-app">
                     <div class="message-detail-content" id="message-detail-content" data-background-id="${friendId}">
@@ -918,7 +919,7 @@ if (typeof window.MessageRenderer === 'undefined') {
           isOldest: i === 0,
         })),
       );
-
+      
       return olderMessages;
     }
 
@@ -926,70 +927,171 @@ if (typeof window.MessageRenderer === 'undefined') {
      * 批量渲染消息 - 优化DOM操作
      */
     renderMessagesBatch(messages) {
-      // 使用缓存检查
+      // 使用缓存
       const cacheKey = this.generateCacheKey(messages);
       if (this.renderCache.has(cacheKey)) {
-        console.log('[Message Renderer] 使用渲染缓存');
         return this.renderCache.get(cacheKey);
       }
 
-      // 🔥 修复：保持消息的原始时间顺序（最早→最新）
-      // 消息提取时已经按时间顺序排序，我们应该保持这个顺序
-      // 这样最新楼层（最新消息）会显示在底部，符合正常的聊天界面逻辑
-      const sortedMessages = [...messages];
-
-      // 不再反转消息顺序，保持原始的时间顺序
-      // 这样：
-      // 1. 最早的消息在顶部
-      // 2. 最新的消息在底部
-      // 3. 符合正常的聊天界面逻辑
-      if (window.DEBUG_MESSAGE_RENDERER) {
-        console.log('[Message Renderer] 保持消息原始时间顺序：最早→最新');
-
-        console.log(
-          '[Message Renderer] 最终渲染消息顺序:',
-          sortedMessages.map((msg, i) => ({
-            index: i,
-            content: msg.content?.substring(0, 20) + '...',
-            globalIndex: msg.globalIndex,
-            messageIndex: msg.messageIndex,
-            isLatest: i === sortedMessages.length - 1,
-          })),
-        );
-      }
-
-      // 批量生成HTML
+      // 保持原有顺序（messages 已经按时间排序）
       const htmlArray = [];
-      for (let i = 0; i < sortedMessages.length; i++) {
-        htmlArray.push(this.renderSingleMessage(sortedMessages[i]));
+      for (let i = 0; i < messages.length; i++) {
+        htmlArray.push(this.renderSingleMessage(messages[i]));
       }
-
       const result = htmlArray.join('');
 
-      // 缓存结果
+      // 写入缓存并限制缓存大小
       this.renderCache.set(cacheKey, result);
-
-      // 限制缓存大小
       if (this.renderCache.size > 50) {
         const firstKey = this.renderCache.keys().next().value;
         this.renderCache.delete(firstKey);
       }
-
       return result;
     }
 
-    /**
-     * 生成缓存键
-     */
-    generateCacheKey(messages) {
-      if (messages.length === 0) return 'empty';
-
-      // 使用消息数量、第一条和最后一条消息的内容生成简单的缓存键
-      const first = messages[0];
-      const last = messages[messages.length - 1];
-      return `${messages.length}_${first.messageIndex || 0}_${last.messageIndex || 0}`;
+      // 生成用于比对的消息唯一key（尽量稳定）
+    getMessageKey(message) {
+      if (!message) return 'null';
+      if (message.id !== undefined && message.id !== null) return `id:${message.id}`;
+      if (message.messageIndex !== undefined && message.messageIndex !== null) return `mi:${message.messageIndex}`;
+      if (message.globalIndex !== undefined && message.globalIndex !== null) return `gi:${message.globalIndex}`;
+      if (message.textPosition !== undefined && message.textPosition !== null) return `tp:${message.textPosition}`;
+      if (message.contextOrder !== undefined && message.contextOrder !== null) return `co:${message.contextOrder}`;
+      if (message.fullMatch) return `fm:${this.simpleHash(String(message.fullMatch))}`;
+      const raw = [message.messageType || '', message.sender || '', message.number || '', message.msgType || ''].join('|');
+      return `h:${this.simpleHash(raw)}`;
     }
 
+    // 生成用于检测同一条消息内容是否变化的渲染签名（hash）
+    getMessageRenderHash(message) {
+      try {
+        const raw = [
+          message.messageType || '',
+          message.sender || '',
+          message.number || '',
+          message.msgType || '',
+          message.content || '',
+          message.detailedContent || '',
+          message.extra ? JSON.stringify(message.extra) : ''
+        ].join('|');
+        return String(this.simpleHash(raw));
+      } catch (e) {
+        return String(Date.now());
+      }
+    }
+
+    // 基于前缀/后缀相同的增量更新（常见仅尾部变化）
+    incrementalUpdateMessages(container, newMessages) {
+      if (!container) return;
+      const oldLen = Array.isArray(this._lastRenderedMessageKeys) ? this._lastRenderedMessageKeys.length : 0;
+      const newKeys = (newMessages || []).map(m => this.getMessageKey(m));
+      const newHashes = (newMessages || []).map(m => this.getMessageRenderHash(m));
+
+      // 如果容器现有子节点数量与上次记录不一致（例如老版本渲染或加载过历史消息），直接整页重绘
+      const childrenLen = container.children ? container.children.length : 0;
+      if (oldLen !== childrenLen) {
+        container.innerHTML = this.renderMessagesBatch(newMessages);
+        this._lastRenderedMessageKeys = newKeys;
+        this._lastRenderedMessageHashes = newHashes;
+        this.initLazyLoadingForNewMessages();
+        return;
+      }
+
+      // 最长公共前缀（键+内容不变）
+      let prefix = 0;
+      const minLen = Math.min(oldLen, newKeys.length);
+      while (
+        prefix < minLen &&
+        this._lastRenderedMessageKeys[prefix] === newKeys[prefix] &&
+        this._lastRenderedMessageHashes[prefix] === newHashes[prefix]
+      ) {
+        prefix++;
+      }
+
+      // 完全一致，无需更新
+      if (prefix === oldLen && prefix === newKeys.length) return;
+
+      // 同样计算公共后缀
+      let suffix = 0;
+      while (
+        suffix < (oldLen - prefix) &&
+        suffix < (newKeys.length - prefix) &&
+        this._lastRenderedMessageKeys[oldLen - 1 - suffix] === newKeys[newKeys.length - 1 - suffix] &&
+        this._lastRenderedMessageHashes[oldLen - 1 - suffix] === newHashes[newHashes.length - 1 - suffix]
+      ) {
+        suffix++;
+      }
+
+      const mustRemove = oldLen - prefix - suffix; // 需要替换的旧节点数量
+      const mustInsert = newKeys.length - prefix - suffix; // 需要插入的新节点数量
+      // 删除中间需要替换的旧节点（从 prefix 到 oldLen - suffix - 1）
+1034
+      for (let r = 0; r < mustRemove; r++) {
+1035
+        const nodeToRemove = container.children[prefix];
+1036
+        if (nodeToRemove) container.removeChild(nodeToRemove);
+1037
+      }
+1038
+
+1039
+      // 插入新节点：在后缀首节点之前插入（如果存在），否则追加到末尾
+1040
+      const anchorNode = suffix > 0 ? container.children[prefix] : null;
+1041
+      if (mustInsert > 0) {
+1042
+        const fragment = document.createDocumentFragment();
+1043
+        const tempDiv = document.createElement('div');
+1044
+        tempDiv.innerHTML = this.renderMessagesBatch(newMessages.slice(prefix, prefix + mustInsert));
+1045
+        while (tempDiv.firstChild) fragment.appendChild(tempDiv.firstChild);
+1046
+        if (anchorNode) {
+1047
+          container.insertBefore(fragment, anchorNode);
+1048
+        } else {
+1049
+          container.appendChild(fragment);
+1050
+        }
+1051
+      }
+1052
+
+1053
+      // 更新缓存并补挂懒加载
+1054
+      this._lastRenderedMessageKeys = newKeys;
+1055
+      this._lastRenderedMessageHashes = newHashes;
+1056
+      this.initLazyLoadingForNewMessages();
+1057
+
+1058
+    // 生成用于比对的消息唯一key（尽量稳定）
+1059
+    }
+1060
+        generateCacheKey(messages) {
+      if (!messages || messages.length === 0) return 'empty';
+      const first = messages[0] || {};
+      const last = messages[messages.length - 1] || {};
+      const idPart = `${messages.length}_${first.messageIndex || 0}_${last.messageIndex || 0}`;
+      // 加入内容指纹，避免同长度/同索引但内容变化时命中旧缓存
+      const sig = this.simpleHash(
+        messages
+          .map(m => `${this.getMessageKey(m)}:${this.getMessageRenderHash(m)}`)
+          .join('|')
+      );
+      return `${idPart}_${sig}`;
+    }
+      
     /**
      * 渲染加载更多按钮（向下加载新消息）
      */
