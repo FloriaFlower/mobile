@@ -94,31 +94,141 @@ if (typeof window.YuseTheaterApp === 'undefined') {
       window.addEventListener('contextUpdate', () => this.parseNewData());
       window.addEventListener('messageUpdate', () => this.parseNewData());
     }
+    
     // 解析对话中的新数据
-    parseNewData() {
-      if (!this.isAutoRender) return;
-      const currentTime = Date.now();
-      if (currentTime - this.lastRenderTime < this.renderCooldown) return;
-      try {
-        // 获取对话内容
-        const chatData = this.getChatContent();
-        const fullMatch = chatData.match(window.YuseTheaterRegex.fullMatch);
-        if (fullMatch) {
-          // 提取各页面数据（对应原版正则分组）
-          const [, announcements, customizations, theater, , , , , shop] = fullMatch;
-          // 更新保存对应页面数据
-          if (announcements) this.savedData.announcements = announcements;
-          if (customizations) this.savedData.customizations = customizations;
-          if (theater) this.savedData.theater = theater;
-          if (shop) this.savedData.shop = shop;
-          // 重新渲染当前页面
-          this.updateAppContent();
-        }
-      } catch (error) {
-        console.error('[YuseTheater] 解析数据失败:', error);
-      }
-      this.lastRenderTime = currentTime;
+parseNewData() {
+  if (!this.isAutoRender) return;
+  const currentTime = Date.now();
+  if (currentTime - this.lastRenderTime < this.renderCooldown) return;
+  try {
+    const chatData = this.getChatContent();
+    const fullMatch = chatData.match(window.YuseTheaterRegex.fullMatch);
+    if (fullMatch) {
+      const [, announcements, customizations, theater, , , , , shop] = fullMatch;
+
+      // ========== 新增：格式化数据，为列表项添加 data-* 属性 ==========
+      // 1. 格式化通告数据（announcement）
+      const formatAnnouncements = (data) => {
+        if (!data) return '';
+        // 匹配原版通告格式 [通告|id|标题|演员|地点|报酬|描述]
+        return data.replace(window.YuseTheaterRegex.announcement, (match, id, title, actor, location, payment, description) => {
+          return `
+            <div class="list-item" 
+                 data-type="announcement" 
+                 data-id="${id}" 
+                 data-title="${title}" 
+                 data-actor="${actor}" 
+                 data-location="${location}" 
+                 data-payment="${payment}" 
+                 data-description="${description}">
+              <div class="item-title">${title}</div>
+              <div class="item-meta">
+                <span>演员：${actor}</span>
+                <span>报酬：${payment}</span>
+              </div>
+              <div class="item-actions">
+                <button class="action-button accept-btn">接取</button>
+                <button class="action-button reject-btn">拒绝</button>
+              </div>
+            </div>
+          `;
+        });
+      };
+
+      // 2. 格式化粉丝定制数据（customization）
+      const formatCustomizations = (data) => {
+        if (!data) return '';
+        // 匹配原版定制格式 [定制|id|粉丝ID|类型|截止时间|报酬|需求|备注]
+        return data.replace(window.YuseTheaterRegex.customization, (match, id, fanId, typeName, deadline, payment, request, notes) => {
+          return `
+            <div class="list-item" 
+                 data-type="customization" 
+                 data-id="${id}" 
+                 data-fanId="${fanId}" 
+                 data-typeName="${typeName}" 
+                 data-deadline="${deadline}" 
+                 data-payment="${payment}" 
+                 data-request="${request}" 
+                 data-notes="${notes}">
+              <div class="item-title">${fanId} 的 ${typeName}</div>
+              <div class="item-meta">
+                <span>截止：${deadline}</span>
+                <span>报酬：${payment}</span>
+              </div>
+              <div class="item-actions">
+                <button class="action-button accept-btn">接取</button>
+                <button class="action-button reject-btn">拒绝</button>
+              </div>
+            </div>
+          `;
+        });
+      };
+
+      // 3. 格式化剧场数据（theater）
+      const formatTheater = (data) => {
+        if (!data) return '';
+        // 匹配原版剧场格式 [剧场|id|标题|封面|描述|热度|收藏|观看|价格|评论]
+        return data.replace(window.YuseTheaterRegex.theater, (match, id, title, cover, description, popularity, favorites, views, price, reviews) => {
+          return `
+            <div class="list-item" 
+                 data-type="theater" 
+                 data-id="${id}" 
+                 data-title="${title}" 
+                 data-cover="${cover}" 
+                 data-description="${description}" 
+                 data-popularity="${popularity}" 
+                 data-favorites="${favorites}" 
+                 data-views="${views}" 
+                 data-price="${price}" 
+                 data-reviews="${reviews}">
+              <div class="item-title">${title}</div>
+              <div class="item-meta">
+                <span>热度：${popularity}</span>
+                <span>价格：${price}</span>
+              </div>
+            </div>
+          `;
+        });
+      };
+
+      // 4. 格式化商品数据（shop）
+      const formatShop = (data) => {
+        if (!data) return '';
+        // 匹配原版商品格式 [商品|id|名称|描述|价格|最高价|评论]
+        return data.replace(window.YuseTheaterRegex.shop, (match, id, name, description, price, highestBid, comments) => {
+          return `
+            <div class="list-item" 
+                 data-type="shop" 
+                 data-id="${id}" 
+                 data-name="${name}" 
+                 data-description="${description}" 
+                 data-price="${price}" 
+                 data-highestBid="${highestBid}" 
+                 data-comments="${comments}">
+              <div class="item-title">${name}</div>
+              <div class="item-meta">
+                <span>基础价：${price}</span>
+                <span>最高价：${highestBid}</span>
+              </div>
+            </div>
+          `;
+        });
+      };
+
+      // ========== 替换原始数据为格式化后的数据 ==========
+      this.savedData.announcements = formatAnnouncements(announcements);
+      this.savedData.customizations = formatCustomizations(customizations);
+      this.savedData.theater = formatTheater(theater);
+      this.savedData.shop = formatShop(shop);
+
+      this.updateAppContent();
     }
+  } catch (error) {
+    console.error('[YuseTheater] 解析数据失败:', error);
+  }
+  this.lastRenderTime = currentTime;
+}
+
     // 获取对话内容
     getChatContent() {
       try {
@@ -286,6 +396,11 @@ if (typeof window.YuseTheaterApp === 'undefined') {
     const listItem = e.target.closest('.list-item');
     if (listItem) {
       const itemData = listItem.dataset;
+      console.log('[YuseTheater] 点击列表项，itemData:', itemData);
+      if (!itemData.type) {
+       console.warn('[YuseTheater] 列表项缺少 data-type 属性，无法弹出详情');
+       return;
+      }
       this.showItemDetail(itemData);
     }
 
