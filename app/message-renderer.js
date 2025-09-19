@@ -1025,59 +1025,32 @@ if (typeof window.MessageRenderer === 'undefined') {
       const mustRemove = oldLen - prefix - suffix; // 需要替换的旧节点数量
       const mustInsert = newKeys.length - prefix - suffix; // 需要插入的新节点数量
       // 删除中间需要替换的旧节点（从 prefix 到 oldLen - suffix - 1）
-1034
       for (let r = 0; r < mustRemove; r++) {
-1035
         const nodeToRemove = container.children[prefix];
-1036
         if (nodeToRemove) container.removeChild(nodeToRemove);
-1037
       }
-1038
 
-1039
       // 插入新节点：在后缀首节点之前插入（如果存在），否则追加到末尾
-1040
       const anchorNode = suffix > 0 ? container.children[prefix] : null;
-1041
       if (mustInsert > 0) {
-1042
         const fragment = document.createDocumentFragment();
-1043
         const tempDiv = document.createElement('div');
-1044
         tempDiv.innerHTML = this.renderMessagesBatch(newMessages.slice(prefix, prefix + mustInsert));
-1045
         while (tempDiv.firstChild) fragment.appendChild(tempDiv.firstChild);
-1046
         if (anchorNode) {
-1047
           container.insertBefore(fragment, anchorNode);
-1048
         } else {
-1049
           container.appendChild(fragment);
-1050
         }
-1051
       }
-1052
 
-1053
       // 更新缓存并补挂懒加载
-1054
       this._lastRenderedMessageKeys = newKeys;
-1055
       this._lastRenderedMessageHashes = newHashes;
-1056
       this.initLazyLoadingForNewMessages();
-1057
 
-1058
     // 生成用于比对的消息唯一key（尽量稳定）
-1059
     }
-1060
         generateCacheKey(messages) {
       if (!messages || messages.length === 0) return 'empty';
       const first = messages[0] || {};
@@ -3738,9 +3711,7 @@ if (typeof window.MessageRenderer === 'undefined') {
         if (messagesContainer && messageData.allMessages.length > 0) {
           // 获取最新的消息（反向分页模式）
           const latestMessages = this.getLatestMessages();
-          const messagesHtml = this.renderMessagesBatch(latestMessages);
-          messagesContainer.innerHTML = messagesHtml;
-
+          this.incrementalUpdateMessages(messagesContainer, latestMessages);
           // 更新加载历史消息按钮
           const loadOlderContainer = appContent.querySelector('.load-older-container');
           if (loadOlderContainer) {
