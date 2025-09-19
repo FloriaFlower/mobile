@@ -52,6 +52,10 @@ if (typeof window.YuseTheaterApp === 'undefined') {
       this.setupDOMObserver();
       // 初始化事件监听
       this.setupEventListeners();
+      setTimeout(() => {
+        console.log('[YuseTheater] 初始化主动触发数据解析');
+        this.parseNewData();
+      }, 1000); 
       // 初始化页面渲染
       this.updateAppContent();
     }
@@ -67,16 +71,23 @@ if (typeof window.YuseTheaterApp === 'undefined') {
     // 设置DOM观察器（监听对话更新）
     setupDOMObserver() {
       try {
-        const chatContainer = document.querySelector('#chat') || document.querySelector('.mes');
+        // 修复：扩大聊天容器选择范围，适配更多DOM结构
+        const chatContainer = document.querySelector('#chat-container') || 
+                                document.querySelector('.chat-box') || 
+                                document.querySelector('#chat') || 
+                                document.querySelector('.mes');
+        // 新增：打印选择结果，确认是否找到容器
+        console.log('[YuseTheater] DOM观察器 - 找到的聊天容器:', chatContainer);
         if (chatContainer) {
           const observer = new MutationObserver(mutations => {
             let hasNewMsg = false;
             mutations.forEach(mutation => {
               if (mutation.type === 'childList' && mutation.addedNodes.length > 0) {
                 mutation.addedNodes.forEach(node => {
-                  if (node.nodeType === Node.ELEMENT_NODE && 
-                      (node.classList.contains('mes') || node.classList.contains('message'))) {
+                  // 修复：放宽消息节点判断，只要是新增元素就视为可能的消息
+                  if (node.nodeType === Node.ELEMENT_NODE) {
                     hasNewMsg = true;
+                    console.log('[YuseTheater] DOM观察器 - 检测到新消息节点:', node);
                   }
                 });
               }
