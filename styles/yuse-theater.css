@@ -203,8 +203,8 @@
   left: 0;
   width: 100%;
   height: 100%;
-  z-index: 1000; /* 保持与原版一致的层级，高于页面其他元素 */
-  overflow: hidden; /* 新增：防止弹窗内容溢出视口 */
+  z-index: 9999; 
+  overflow: hidden; 
 }
 .modal-overlay {
   position: absolute;
