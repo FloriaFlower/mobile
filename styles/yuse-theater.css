@@ -203,75 +203,89 @@
   left: 0;
   width: 100%;
   height: 100%;
-  z-index: 1000;
+  z-index: 1000; /* 保持与原版一致的层级，高于页面其他元素 */
+  overflow: hidden; /* 新增：防止弹窗内容溢出视口 */
 }
-
 .modal-overlay {
   position: absolute;
   top: 0;
   left: 0;
   width: 100%;
   height: 100%;
-  background: rgba(0, 0, 0, 0.5);
+  background: rgba(0, 0, 0, 0.5); /* 原版半透明黑色背景 */
   display: flex;
   justify-content: center;
   align-items: center;
   opacity: 0;
   visibility: hidden;
-  transition: all 0.3s ease;
+  transition: opacity 0.3s ease, visibility 0.3s ease; /* 原版过渡效果 */
 }
-
 .modal-overlay.visible {
   opacity: 1;
-  visibility: visible;
+  visibility: visible; /* 确保显示时可见性生效 */
 }
-
 .modal-content {
   background: #fff;
-  width: 90%;
-  max-height: 80%;
-  border-radius: 12px;
+  width: 95%; /* 原版95%宽度，适配手机屏幕 */
+  max-height: 90%; /* 原版最大高度，避免超出屏幕 */
+  border-radius: 20px; /* 原版大圆角，更美观 */
   display: flex;
   flex-direction: column;
   overflow: hidden;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+  animation: popIn 0.3s ease-out; /* 原版弹出动画，增强视觉效果 */
 }
-
+/* 新增：弹窗弹出动画（仿照原版） */
+@keyframes popIn {
+  from { opacity: 0; transform: scale(0.9); }
+  to { opacity: 1; transform: scale(1); }
+}
 .modal-header {
-  padding: 12px 16px;
+  padding: 15px; /* 原版内边距 */
   border-bottom: 1px solid #eee;
   display: flex;
   justify-content: space-between;
   align-items: center;
+  font-size: 1.1em; /* 原版标题字体大小 */
+  font-weight: bold; /* 原版标题加粗 */
 }
-
 .modal-header h3 {
   margin: 0;
   font-size: 16px;
-  color: #d63384;
+  color: #d63384; /* 保持与应用主色调一致 */
 }
-
 .close-btn {
   background: none;
   border: none;
   font-size: 18px;
   color: #666;
   cursor: pointer;
+  transition: color 0.2s ease; /* 新增：hover变色效果 */
 }
-
+.close-btn:hover {
+  color: #d63384; /*  hover时变主色调 */
+}
 .modal-body {
   flex: 1;
   overflow-y: auto;
-  padding: 16px;
+  padding: 15px; /* 原版内边距 */
+  line-height: 1.6; /* 原版行高，提升可读性 */
 }
-
+/* 新增：弹窗滚动条美化（仿照原版） */
+.modal-body::-webkit-scrollbar {
+  width: 4px;
+}
+.modal-body::-webkit-scrollbar-thumb {
+  background: #d63384; /* 主色调滚动条 */
+  border-radius: 2px;
+}
 .modal-footer {
-  padding: 12px 16px;
+  padding: 15px; /* 原版内边距 */
   border-top: 1px solid #eee;
   display: flex;
   justify-content: flex-end;
+  gap: 10px; /* 原版按钮间距 */
 }
-
 .close-modal-btn {
   background: #d63384;
   color: #fff;
@@ -280,44 +294,44 @@
   padding: 6px 16px;
   font-size: 14px;
   cursor: pointer;
+  transition: background 0.2s ease; /* 新增：hover效果 */
+}
+.close-modal-btn:hover {
+  background: #b92c73; /* 加深主色调，hover反馈 */
 }
 
-/* 详情页组件 */
+/* 详情页组件（补充原版样式） */
 .detail-section {
-  margin-bottom: 16px;
+  margin-bottom: 15px; /* 原版间距 */
 }
-
 .detail-section h4 {
   margin: 0 0 8px 0;
-  font-size: 14px;
-  color: #333;
+  font-size: 0.9em; /* 原版标题字体大小 */
+  color: #333; /* 原版标题颜色 */
+  font-weight: 600;
 }
-
 .detail-section p {
   margin: 0;
   font-size: 13px;
   color: #666;
-  line-height: 1.5;
+  line-height: 1.6; /* 原版行高 */
 }
-
 .cover-image {
   width: 100%;
-  height: 160px;
-  border-radius: 8px;
-  background: #ffe6f2;
+  height: 150px; /* 原版封面高度 */
+  border-radius: 10px; /* 原版封面圆角 */
+  background: #ffe6f2; /* 主色调背景 fallback */
   background-size: cover;
   background-position: center;
-  margin-bottom: 16px;
+  margin-bottom: 15px;
 }
-
 .comment {
-  background: #f8f8f8;
-  padding: 8px 12px;
-  border-radius: 8px;
+  background: #fafafa; /* 原版评论区背景 */
+  padding: 8px 12px; /* 原版内边距 */
+  border-radius: 8px; /* 原版评论圆角 */
   margin-bottom: 8px;
-  font-size: 12px;
+  font-size: 12px; /* 原版评论字体大小 */
 }
-
 .comment-user {
   color: #d63384;
   font-weight: 600;
