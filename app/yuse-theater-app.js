@@ -448,35 +448,45 @@ if (typeof window.YuseTheaterApp === 'undefined') {
           }
           break;
       }
-      // 创建详情弹窗
+        // ========== 修复1：创建弹窗并立即添加到页面，确保DOM挂载 ==========
       const modal = document.createElement('div');
       modal.className = 'yuse-modal';
       modal.innerHTML = `
         <div class="modal-overlay">
           <div class="modal-content">
             <div class="modal-header">
-              <h3>${title}</h3>
+              <h3>${title || '详情'}</h3>
               <button class="close-btn">×</button>
             </div>
-            <div class="modal-body">${detailHtml}</div>
+            <div class="modal-body">${detailHtml || '暂无详情数据'}</div>
             <div class="modal-footer">
               <button class="close-modal-btn">关闭</button>
             </div>
           </div>
         </div>
       `;
+      // 立即添加到body，确保DOM已存在
       document.body.appendChild(modal);
-      // 绑定弹窗事件
-      setTimeout(() => {
-        modal.querySelector('.modal-overlay').classList.add('visible');
-        modal.querySelectorAll('.close-btn, .close-modal-btn').forEach(btn => {
-          btn.addEventListener('click', () => {
-            modal.querySelector('.modal-overlay').classList.remove('visible');
-            setTimeout(() => modal.remove(), 300);
-          });
+
+      // ========== 修复2：移除不必要的setTimeout，直接操作DOM ==========
+      // 无需延迟，直接获取overlay并添加visible类（此时modal已在DOM树中）
+      const modalOverlay = modal.querySelector('.modal-overlay');
+      if (modalOverlay) {
+        modalOverlay.classList.add('visible'); // 立即显示弹窗
+        console.log('[YuseTheater] 弹窗已生成并显示'); // 调试日志
+      } else {
+    console.error('[YuseTheater] 弹窗overlay元素未找到，无法显示'); // 错误日志
+  }
+
+      // ========== 修复3：直接绑定关闭事件，确保事件生效 ==========
+      modal.querySelectorAll('.close-btn, .close-modal-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          if (modalOverlay) modalOverlay.classList.remove('visible');
+          setTimeout(() => modal.remove(), 300); // 移除弹窗DOM
         });
-      }, 100);
-    }
+      });
+  }
+
     // 更新头部标题
     updateHeader() {
       if (window.mobilePhone && window.mobilePhone.updateAppHeader) {
