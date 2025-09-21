@@ -41,7 +41,7 @@ if (typeof window.YuseTheaterApp === 'undefined') {
     }
 
     init() {
-      console.log('[YuseTheater] 初始化欲色剧场 App');
+      console.log('[YuseTheater] 初始化欲色剧场 App（对齐原版）');
       this.loadDefaultData();
       this.setupDOMObserver();
       this.setupEventListeners();
@@ -96,10 +96,15 @@ if (typeof window.YuseTheaterApp === 'undefined') {
         const chatData = this.getChatContent();
         const fullMatch = chatData.match(window.YuseTheaterRegex.fullMatch);
         if (fullMatch) {
-          const [, announcements, customizations, theater, , , , , shop] = fullMatch;
+          const [, announcements, customizations, theater, theaterHot, theaterNew, theaterRecommended, theaterPaid, shop] = fullMatch;
+          // 保存所有页面数据（含筛选数据）
           if (announcements) this.savedData.announcements = announcements;
           if (customizations) this.savedData.customizations = customizations;
           if (theater) this.savedData.theater = theater;
+          if (theaterHot) this.savedData.theaterHot = theaterHot;
+          if (theaterNew) this.savedData.theaterNew = theaterNew;
+          if (theaterRecommended) this.savedData.theaterRecommended = theaterRecommended;
+          if (theaterPaid) this.savedData.theaterPaid = theaterPaid;
           if (shop) this.savedData.shop = shop;
           this.updateAppContent();
         }
@@ -176,6 +181,7 @@ if (typeof window.YuseTheaterApp === 'undefined') {
         </div>
       `;
       let content = '';
+      // 按原版结构渲染各页面（含剧场筛选栏）
       switch (this.currentView) {
         case 'announcements':
           content = `<div class="yuse-announcement-list">${pageData}</div>`;
@@ -191,13 +197,14 @@ if (typeof window.YuseTheaterApp === 'undefined') {
               <button class="filter-btn" data-filter="recommended">❤️ 推荐</button>
               <button class="filter-btn" data-filter="paid">💸 高价定制</button>
             </div>
-            <div class="yuse-theater-list">${pageData}</div>
+            <div class="yuse-theater-list" id="theater-list">${pageData}</div>
           `;
           break;
         case 'shop':
           content = `<div class="yuse-shop-list">${pageData}</div>`;
           break;
       }
+      // 导航栏（加固定定位样式，对齐原版）
       const nav = Object.keys(window.YuseTheaterPages).map(pageKey => {
         const navConfig = window.YuseTheaterPages[pageKey];
         return `
@@ -210,7 +217,10 @@ if (typeof window.YuseTheaterApp === 'undefined') {
         <div class="yuse-theater-app">
           ${header}
           <div class="yuse-content-area">${content}</div>
-          <div class="yuse-nav-bar">${nav}</div>
+          <!-- 导航栏固定底部，不随滚动变化 -->
+          <div class="yuse-nav-bar" style="position: fixed; bottom: 0; left: 0; width: 100%; box-sizing: border-box;">
+            ${nav}
+          </div>
         </div>
       `;
     }
@@ -230,21 +240,28 @@ if (typeof window.YuseTheaterApp === 'undefined') {
       const appElement = document.getElementById('app-content');
       if (appElement) {
         appElement.innerHTML = content;
+        // 给内容区加底部内边距，避免被导航栏遮挡
+        const contentArea = appElement.querySelector('.yuse-content-area');
+        if (contentArea) {
+          contentArea.style.paddingBottom = '60px'; // 适配导航栏高度
+          contentArea.style.overflowY = 'auto'; // 只保留内容区滚动，删除重复滚动
+          contentArea.style.height = 'calc(100vh - 120px)'; // 固定内容区高度，避免双重滚动
+        }
         setTimeout(() => this.bindPageEvents(), 100);
-        console.log('[YuseTheater] 页面内容更新完成，等待绑定事件');
+        console.log('[YuseTheater] 页面内容更新完成（对齐原版）');
       } else {
         console.error('[YuseTheater] 未找到app-content容器，无法更新内容');
       }
     }
 
-    // 绑定页面事件（核心：列表项点击触发弹窗）
+    // 绑定页面事件（对齐原版逻辑）
     bindPageEvents() {
       const appContainer = document.getElementById('app-content');
       if (!appContainer) {
         console.error('[YuseTheater] bindPageEvents：未找到app-content容器');
         return;
       }
-      console.log('[YuseTheater] ✅ 进入bindPageEvents，所有事件开始绑定');
+      console.log('[YuseTheater] ✅ 进入bindPageEvents（对齐原版）');
 
       // 1. 刷新按钮事件
       appContainer.querySelectorAll('.refresh-btn').forEach(btn => {
@@ -265,173 +282,315 @@ if (typeof window.YuseTheaterApp === 'undefined') {
         }
       });
 
-      // 3. 列表项交互事件（点击列表项触发弹窗）
+      // 3. 列表项交互事件（完全对齐原版：拒绝/接取/弹窗逻辑）
       appContainer.addEventListener('click', (e) => {
-        // 处理拒绝按钮
+        // 处理拒绝按钮（原版动画）
         const rejectBtn = e.target.closest('.reject-btn');
         if (rejectBtn) {
           const listItem = rejectBtn.closest('.list-item');
           if (listItem) {
+            listItem.style.transition = 'all 0.3s ease-out, margin-bottom 0.3s ease-out, padding 0.3s ease-out, max-height 0.3s ease-out';
             listItem.style.opacity = '0';
-            listItem.style.transform = 'translateY(-10px)';
+            listItem.style.transform = 'translateY(-20px) scale(0.95)';
+            listItem.style.maxHeight = '0px';
+            listItem.style.padding = '0';
+            listItem.style.marginBottom = '0px';
             setTimeout(() => listItem.remove(), 300);
           }
           e.stopPropagation();
           return;
         }
 
-        // 处理接取按钮
+        // 处理接取按钮（仅定制列表，原版逻辑）
         const acceptBtn = e.target.closest('.accept-btn');
-        if (acceptBtn) {
+        if (acceptBtn && acceptBtn.closest('.list-item') && acceptBtn.closest('.list-item').dataset.type === 'customization') {
           const listItem = acceptBtn.closest('.list-item');
           const itemData = listItem.dataset;
-          let acceptMsg = '';
-          if (itemData.type === 'customization') {
-            acceptMsg = `[接取定制|${itemData.id}|${itemData.fanId}|${itemData.typeName}]`;
-          } else if (itemData.type === 'announcement') {
-            acceptMsg = `[接取通告|${itemData.id}|${itemData.title}|${itemData.actor}]`;
-          }
-          if (acceptMsg) {
-            this.sendToSillyTavern(acceptMsg);
-            this.showToast(`已接取${itemData.type === 'customization' ? '定制' : '通告'}`);
-            listItem.style.opacity = '0';
-            setTimeout(() => listItem.remove(), 300);
-          }
+          // 发送接取指令（对齐原版）
+          this.sendToSillyTavern(`[接取定制|${itemData.id}|${itemData.fanId}|${itemData.typeName}]`);
+          this.showToast(`已接取${itemData.typeName}`);
+          // 原版删除动画
+          listItem.style.transition = 'all 0.3s ease-out';
+          listItem.style.opacity = '0';
+          listItem.style.transform = 'translateY(-10px)';
+          setTimeout(() => listItem.remove(), 300);
           e.stopPropagation();
           return;
         }
 
-        // 处理列表项点击（核心：触发弹窗）
+        // 处理列表项点击（触发原版弹窗）
         const listItem = e.target.closest('.list-item');
         if (listItem) {
           const itemData = listItem.dataset;
-          // 检查列表项是否有data属性（提醒用户）
           if (!itemData.type) {
-            console.warn('[YuseTheater] 列表项缺少data-type属性，无法显示弹窗，请刷新数据');
+            console.warn('[YuseTheater] 列表项缺少data-type属性');
             this.showToast('列表项数据异常，请刷新重试');
             return;
           }
-          console.log('[YuseTheater] 🔍 点击列表项，调用showItemDetail，itemData：', itemData);
-          this.showItemDetail(itemData);
+          console.log('[YuseTheater] 🔍 点击列表项，调用原版弹窗逻辑', itemData.type);
+          // 按类型显示对应弹窗（完全对齐原版字段）
+          switch (itemData.type) {
+            case 'announcement':
+              this.showAnnouncementDetail(itemData);
+              break;
+            case 'customization':
+              this.showCustomizationDetail(itemData);
+              break;
+            case 'theater':
+              this.showTheaterDetail(itemData);
+              break;
+            case 'shop':
+              this.showShopDetail(itemData);
+              break;
+          }
         }
-      });
 
-      // 4. 剧场筛选按钮事件
-      appContainer.addEventListener('click', (e) => {
+        // 4. 剧场筛选按钮（对齐原版筛选逻辑）
         const filterBtn = e.target.closest('.filter-btn');
         if (filterBtn) {
           const filterType = filterBtn.dataset.filter;
-          console.log('[YuseTheater] 点击筛选按钮，类型：', filterType);
-          this.filterTheaterList(filterType);
+          const theaterList = appContainer.querySelector('#theater-list');
+          if (theaterList) {
+            theaterList.innerHTML = '<div class="loading">加载筛选结果...</div>';
+            // 按筛选类型加载对应数据（原版逻辑）
+            setTimeout(() => {
+              let filteredData = '';
+              switch (filterType) {
+                case 'hot':
+                  filteredData = this.savedData.theaterHot || '<div class="empty-state">暂无最热剧场内容</div>';
+                  break;
+                case 'new':
+                  filteredData = this.savedData.theaterNew || '<div class="empty-state">暂无最新剧场内容</div>';
+                  break;
+                case 'recommended':
+                  filteredData = this.savedData.theaterRecommended || '<div class="empty-state">暂无推荐剧场内容</div>';
+                  break;
+                case 'paid':
+                  filteredData = this.savedData.theaterPaid || '<div class="empty-state">暂无高价定制剧场内容</div>';
+                  break;
+                default:
+                  filteredData = this.savedData.theater || '<div class="empty-state">暂无剧场内容</div>';
+              }
+              theaterList.innerHTML = filteredData;
+            }, 300);
+          }
         }
       });
     }
 
-    filterTheaterList(filterType) {
-      const theaterList = document.querySelector('.yuse-theater-list');
-      if (!theaterList) return;
-      theaterList.innerHTML = '<div class="loading">加载筛选结果...</div>';
-      setTimeout(() => {
-        const regexMap = {
-          hot: /<theater_hot>(.*?)<\/theater_hot>/s,
-          new: /<theater_new>(.*?)<\/theater_new>/s,
-          recommended: /<theater_recommended>(.*?)<\/theater_recommended>/s,
-          paid: /<theater_paid>(.*?)<\/theater_paid>/s
-        };
-        const chatData = this.getChatContent();
-        const match = chatData.match(regexMap[filterType]);
-        theaterList.innerHTML = match ? match[1] : '<div class="empty-state">暂无对应剧场内容</div>';
-      }, 500);
+    // 1. 通告详情弹窗（完全对齐原版：显示所有字段+开始拍摄按钮）
+    showAnnouncementDetail(itemData) {
+      console.log('[YuseTheater] 显示原版通告弹窗', itemData);
+      // 解析所有原版字段（修正desc→description，匹配data-description）
+      const detailHtml = `
+        <div class="detail-section">
+          <h4>剧情简介</h4>
+          <p>${itemData.description || '无'}</p>
+        </div>
+        <div class="detail-section">
+          <h4>拍摄信息</h4>
+          <p><strong>拍摄地点：</strong>${itemData.location || '无'}</p>
+          <p><strong>合作演员：</strong>${itemData.actor || '无'}</p>
+          <p><strong>片酬待遇：</strong>${itemData.payment || '无'}</p>
+        </div>
+      `;
+      // 原版底部按钮（返回+开始拍摄）
+      const footerHtml = `
+        <button class="action-button reject-btn" onclick="document.querySelector('.yuse-modal').style.opacity='0';setTimeout(()=>document.querySelector('.yuse-modal').remove(),300)">返回</button>
+        <button class="action-button accept-btn" id="start-shooting-btn">开始拍摄</button>
+      `;
+      // 创建原版弹窗
+      this.createOriginalModal(itemData.title, detailHtml, footerHtml);
+      // 绑定开始拍摄按钮事件（对齐原版指令）
+      const startBtn = document.getElementById('start-shooting-btn');
+      if (startBtn) {
+        startBtn.addEventListener('click', () => {
+          this.sendToSillyTavern(`[接取通告|${itemData.id}|${itemData.title}|${itemData.actor}]`);
+          this.showToast(`已接取《${itemData.title}》`);
+          document.querySelector('.yuse-modal').style.opacity = '0';
+          setTimeout(() => document.querySelector('.yuse-modal').remove(), 300);
+        });
+      }
     }
 
-    // 显示详情弹窗（强制显示，带样式）
-    showItemDetail(itemData) {
-      console.log('[YuseTheater] 🚪 进入showItemDetail方法，开始创建弹窗');
-      if (!itemData || typeof itemData !== 'object') {
-        console.error('[YuseTheater] 弹窗数据异常：', itemData);
-        this.showToast('数据错误，无法显示详情');
-        return;
+    // 2. 定制详情弹窗（完全对齐原版：显示request/notes+接取按钮）
+    showCustomizationDetail(itemData) {
+      console.log('[YuseTheater] 显示原版定制弹窗', itemData);
+      const detailHtml = `
+        <div class="detail-section">
+          <h4>定制类型</h4>
+          <p>${itemData.typeName || '无'}</p>
+        </div>
+        <div class="detail-section">
+          <h4>内容要求</h4>
+          <p>${itemData.request || '无'}</p>
+        </div>
+        <div class="detail-section">
+          <h4>时间要求</h4>
+          <p>${itemData.deadline || '无'}</p>
+        </div>
+        <div class="detail-section">
+          <h4>报酬待遇</h4>
+          <p>${itemData.payment || '无'}</p>
+        </div>
+        <div class="detail-section">
+          <h4>备注信息</h4>
+          <p>${itemData.notes || '无'}</p>
+        </div>
+      `;
+      const footerHtml = `
+        <button class="action-button reject-btn" onclick="document.querySelector('.yuse-modal').style.opacity='0';setTimeout(()=>document.querySelector('.yuse-modal').remove(),300)">返回</button>
+        <button class="action-button accept-btn" id="accept-custom-btn">接取</button>
+      `;
+      this.createOriginalModal(`${itemData.fanId} 的定制`, detailHtml, footerHtml);
+      // 绑定接取按钮事件
+      const acceptBtn = document.getElementById('accept-custom-btn');
+      if (acceptBtn) {
+        acceptBtn.addEventListener('click', () => {
+          this.sendToSillyTavern(`[接取定制|${itemData.id}|${itemData.fanId}|${itemData.typeName}]`);
+          this.showToast(`已接取${itemData.fanId}的定制`);
+          document.querySelector('.yuse-modal').style.opacity = '0';
+          setTimeout(() => document.querySelector('.yuse-modal').remove(), 300);
+        });
       }
+    }
 
-      let detailHtml = '';
-      let title = '';
-      switch (itemData.type) {
-        case 'customization':
-          title = '定制详情';
-          detailHtml = `
-            <p><strong>ID：</strong>${itemData.id || '无'}</p>
-            <p><strong>粉丝ID：</strong>${itemData.fanId || '无'}</p>
-            <p><strong>定制类型：</strong>${itemData.typeName || '无'}</p>
-            <p><strong>内容：</strong>${itemData.content || '无'}</p>
-          `;
-          break;
-        case 'announcement':
-          title = '通告详情';
-          detailHtml = `
-            <p><strong>ID：</strong>${itemData.id || '无'}</p>
-            <p><strong>标题：</strong>${itemData.title || '无'}</p>
-            <p><strong>演员：</strong>${itemData.actor || '无'}</p>
-            <p><strong>描述：</strong>${itemData.desc || '无'}</p>
-          `;
-          break;
-        default:
-          title = '详情';
-          detailHtml = '<p>暂无该类型的详情数据</p>';
-          break;
-      }
+    // 3. 剧场详情弹窗（完全对齐原版：封面图+评论区）
+    showTheaterDetail(itemData) {
+      console.log('[YuseTheater] 显示原版剧场弹窗', itemData);
+      // 解析评论（对齐原版JSON格式）
+      const renderComments = (reviewsStr) => {
+        try {
+          const reviews = JSON.parse(reviewsStr.replace(/'/g, '"'));
+          return reviews.map(rev => `
+            <div class="comment">
+              <span class="comment-user">${rev.user}:</span> ${rev.text}
+            </div>
+          `).join('');
+        } catch (e) {
+          console.error('[YuseTheater] 解析评论失败:', e);
+          return '<div class="comment">评论加载失败</div>';
+        }
+      };
+      const detailHtml = `
+        <!-- 原版封面图 -->
+        <div class="cover-image" style="background-image: url('${itemData.cover || 'https://picsum.photos/400/200?random=1'}')"></div>
+        <div class="detail-section">
+          <h4>作品简介</h4>
+          <p>${itemData.description || '无'}</p>
+        </div>
+        <div class="detail-section">
+          <h4>作品数据</h4>
+          <p><strong>人气：</strong>${itemData.popularity || '无'}</p>
+          <p><strong>收藏：</strong>${itemData.favorites || '无'}</p>
+          <p><strong>播放：</strong>${itemData.views || '无'}</p>
+          <p><strong>价格：</strong>${itemData.price || '无'}</p>
+        </div>
+        <div class="detail-section">
+          <h4>粉丝热评</h4>
+          ${itemData.reviews ? renderComments(itemData.reviews) : '<div class="comment">暂无评论</div>'}
+        </div>
+      `;
+      const footerHtml = `
+        <button class="action-button accept-btn" onclick="document.querySelector('.yuse-modal').style.opacity='0';setTimeout(()=>document.querySelector('.yuse-modal').remove(),300)">返回</button>
+      `;
+      this.createOriginalModal(itemData.title, detailHtml, footerHtml);
+    }
 
-      // 强制创建弹窗（自带内联样式，不依赖外部CSS）
+    // 4. 商城详情弹窗（完全对齐原版：最高价+评论区）
+    showShopDetail(itemData) {
+      console.log('[YuseTheater] 显示原版商城弹窗', itemData);
+      const renderComments = (commentsStr) => {
+        try {
+          const comments = JSON.parse(commentsStr.replace(/'/g, '"'));
+          return comments.map(comm => `
+            <div class="comment">
+              <span class="comment-user">${comm.user}:</span> ${comm.text}
+            </div>
+          `).join('');
+        } catch (e) {
+          console.error('[YuseTheater] 解析商品评论失败:', e);
+          return '<div class="comment">评论加载失败</div>';
+        }
+      };
+      const detailHtml = `
+        <div class="detail-section">
+          <h4>商品卖点</h4>
+          <p>${itemData.description || '无'}</p>
+        </div>
+        <div class="detail-section">
+          <h4>价格信息</h4>
+          <p><strong>基础价格：</strong>${itemData.price || '无'}</p>
+          <p><strong>当前最高价：</strong>${itemData.highestBid || '无'}</p>
+        </div>
+        <div class="detail-section">
+          <h4>评论区</h4>
+          ${itemData.comments ? renderComments(itemData.comments) : '<div class="comment">暂无评论</div>'}
+        </div>
+      `;
+      const footerHtml = `
+        <button class="action-button accept-btn" onclick="document.querySelector('.yuse-modal').style.opacity='0';setTimeout(()=>document.querySelector('.yuse-modal').remove(),300)">返回</button>
+      `;
+      this.createOriginalModal(itemData.name, detailHtml, footerHtml);
+    }
+
+    // 创建原版样式弹窗（统一对齐regex样式）
+    createOriginalModal(header, body, footer) {
+      // 移除旧弹窗
+      const existingModal = document.querySelector('.yuse-modal');
+      if (existingModal) existingModal.remove();
+      // 原版弹窗结构+样式（完全复制regex）
       const modal = document.createElement('div');
       modal.className = 'yuse-modal';
-      // 强制弹窗在最上层，不会被遮挡
       modal.style.cssText = `
         position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
         z-index: 9999; display: flex; align-items: center; justify-content: center;
+        background: rgba(0,0,0,0.5); opacity: 0; transition: opacity 0.3s ease;
       `;
       modal.innerHTML = `
-        <div class="modal-overlay" style="
-          position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-          background: rgba(0,0,0,0.5); z-index: 1;
-        "></div>
         <div class="modal-content" style="
-          background: white; padding: 24px; border-radius: 12px;
-          width: 80%; max-width: 500px; z-index: 2; box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+          background: #fff; width: 95%; max-height: 90%; border-radius: 20px;
+          display: flex; flex-direction: column; animation: popIn 0.3s ease-out;
+          box-shadow: 0 4px 20px rgba(0,0,0,0.2);
         ">
-          <div class="modal-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
-            <h3 style="margin: 0; font-size: 18px; color: #333;">${title}</h3>
+          <div class="modal-header" style="
+            padding: 15px; border-bottom: 1px solid #eee;
+            display: flex; justify-content: space-between; align-items: center;
+            font-size: 1.1em; font-weight: bold; color: #d63384;
+          ">
+            ${header}
             <button class="close-btn" style="
-              border: none; background: transparent; font-size: 24px; cursor: pointer;
-              color: #999; padding: 4px; line-height: 1;
+              background: none; border: none; font-size: 18px; cursor: pointer;
+              color: #666; transition: color 0.2s ease;
             ">×</button>
           </div>
-          <div class="modal-body" style="margin-bottom: 20px; font-size: 14px; color: #666; line-height: 1.6;">
-            ${detailHtml}
+          <div class="modal-body" style="
+            flex: 1; overflow-y: auto; padding: 15px; line-height: 1.6;
+          ">
+            ${body}
           </div>
-          <div class="modal-footer" style="text-align: right;">
-            <button class="close-modal-btn" style="
-              padding: 8px 16px; border: none; border-radius: 6px;
-              background: #f5f5f5; color: #333; cursor: pointer;
-              font-size: 14px;
-            ">关闭</button>
+          <div class="modal-footer" style="
+            padding: 15px; border-top: 1px solid #eee;
+            display: flex; justify-content: flex-end; gap: 10px;
+          ">
+            ${footer}
           </div>
         </div>
       `;
-
-      // 移除旧弹窗，添加新弹窗
-      const existingModal = document.querySelector('.yuse-modal');
-      if (existingModal) existingModal.remove();
       document.body.appendChild(modal);
-      console.log('[YuseTheater] 📌 弹窗已添加到页面，强制显示');
-
-      // 绑定关闭事件
-      modal.querySelectorAll('.close-btn, .close-modal-btn').forEach(btn => {
-        btn.addEventListener('click', () => {
+      // 显示弹窗（原版过渡动画）
+      setTimeout(() => modal.style.opacity = '1', 10);
+      // 绑定关闭按钮事件
+      const closeBtn = modal.querySelector('.close-btn');
+      if (closeBtn) {
+        closeBtn.addEventListener('click', () => {
           modal.style.opacity = '0';
           setTimeout(() => modal.remove(), 300);
         });
-      });
-      modal.querySelector('.modal-overlay').addEventListener('click', (e) => {
-        if (e.target === modal.querySelector('.modal-overlay')) {
+      }
+      // 点击遮罩关闭
+      modal.addEventListener('click', (e) => {
+        if (e.target === modal) {
           modal.style.opacity = '0';
           setTimeout(() => modal.remove(), 300);
         }
@@ -452,10 +611,10 @@ if (typeof window.YuseTheaterApp === 'undefined') {
       const toast = document.createElement('div');
       toast.className = 'yuse-toast';
       toast.style.cssText = `
-        position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%);
-        background: rgba(0,0,0,0.7); color: white; padding: 12px 20px;
-        border-radius: 8px; z-index: 9999; font-size: 14px;
-        opacity: 0; transition: opacity 0.3s ease;
+        position: fixed; bottom: 70px; left: 50%; transform: translateX(-50%);
+        background: rgba(0,0,0,0.8); color: #fff; padding: 8px 16px;
+        border-radius: 4px; font-size: 13px; z-index: 1001;
+        opacity: 0; transition: all 0.3s ease;
       `;
       toast.textContent = message;
       document.body.appendChild(toast);
@@ -475,31 +634,27 @@ if (typeof window.YuseTheaterApp === 'undefined') {
   // 全局类挂载
   window.YuseTheaterApp = YuseTheaterApp;
   window.yuseTheaterApp = new YuseTheaterApp();
-  console.log('[YuseTheater] app 实例初始化完成');
+  console.log('[YuseTheater] app 实例初始化完成（对齐原版）');
 }
 
 // ###########################################################################
-// 关键修复：同时暴露两个函数名（解决mobile-phone.js调用冲突）
+// 兼容mobile-phone.js的两个函数名（确保不报错）
 // ###########################################################################
 window.getYuseTheaterAppContent = function () {
   if (window.yuseTheaterApp) {
-    console.log('[YuseTheater] 调用getYuseTheaterAppContent，返回页面内容');
     return window.yuseTheaterApp.getAppContent();
   }
   return '<div class="error-state">欲色剧场 app 实例未初始化</div>';
 };
 
-// 1. 暴露不带App的函数名（解决“缺少bindYuseTheaterEvents”报错）
 window.bindYuseTheaterEvents = function () {
   if (window.yuseTheaterApp) {
-    console.log('[YuseTheater] 调用bindYuseTheaterEvents，开始绑定事件');
     setTimeout(() => window.yuseTheaterApp.bindPageEvents(), 100);
   } else {
     console.warn('[YuseTheater] bindYuseTheaterEvents：app 实例未找到');
   }
 };
 
-// 2. 同时暴露带App的函数名（兼容mobile-phone.js的另一个调用）
 window.bindYuseTheaterAppEvents = window.bindYuseTheaterEvents;
 
 window.refreshYuseTheaterPage = function (pageKey) {
@@ -508,4 +663,4 @@ window.refreshYuseTheaterPage = function (pageKey) {
   }
 };
 
-console.log('[YuseTheater] 欲色剧场 App 脚本加载完成，所有函数已暴露');
+console.log('[YuseTheater] 欲色剧场 App 脚本加载完成（完全对齐原版）');
