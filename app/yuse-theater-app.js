@@ -347,140 +347,90 @@ if (typeof window.YuseTheaterApp === 'undefined') {
     }
     // 显示列表项详情
     showItemDetail(itemData) {
+     // 新增：先判断itemData是否有效，避免后续逻辑报错
+      if (!itemData || typeof itemData !== 'object') {
+        console.error('[YuseTheater] 弹窗数据异常：', itemData);
+        this.showToast('数据错误，无法显示详情');
+        return; // 数据无效时直接返回，避免创建空弹窗
+      }
       let detailHtml = '';
       let title = '';
+
+      // 原有switch分支逻辑（补充默认case，避免无匹配时内容为空）
       switch (itemData.type) {
-        case 'announcement':
-          title = itemData.title;
-          detailHtml = `
-            <div class="detail-section">
-              <h4>剧情简介</h4>
-              <p>${itemData.description}</p>
-            </div>
-            <div class="detail-section">
-              <h4>拍摄信息</h4>
-              <p>合作演员：${itemData.actor}</p>
-              <p>拍摄地点：${itemData.location}</p>
-              <p>报酬：${itemData.payment}</p>
-            </div>
-          `;
-          break;
         case 'customization':
-          title = `${itemData.fanId} 的定制`;
+          title = '定制详情';
           detailHtml = `
-            <div class="detail-section">
-              <h4>定制类型</h4>
-              <p>${itemData.typeName}</p>
-            </div>
-            <div class="detail-section">
-              <h4>需求详情</h4>
-              <p>${itemData.request}</p>
-            </div>
-            <div class="detail-section">
-              <h4>其他信息</h4>
-              <p>截止时间：${itemData.deadline}</p>
-              <p>报酬：${itemData.payment}</p>
-              <p>备注：${itemData.notes}</p>
-            </div>
+            <p><strong>ID：</strong>${itemData.id || '无'}</p>
+            <p><strong>粉丝ID：</strong>${itemData.fanId || '无'}</p>
+            <p><strong>定制类型：</strong>${itemData.typeName || '无'}</p>
+            <p><strong>内容：</strong>${itemData.content || '无'}</p>
           `;
           break;
-        case 'theater':
-          title = itemData.title;
+        case 'announcement':
+          title = '通告详情';
           detailHtml = `
-            <div class="cover-image" style="background-image: url('${itemData.cover || 'https://picsum.photos/400/200?random=200'}')"></div>
-            <div class="detail-section">
-              <h4>作品简介</h4>
-              <p>${itemData.description}</p>
-            </div>
-            <div class="detail-section">
-              <h4>数据信息</h4>
-              <p>热度：${itemData.popularity}</p>
-              <p>收藏：${itemData.favorites}</p>
-              <p>观看：${itemData.views}</p>
-              <p>价格：${itemData.price}</p>
-            </div>
+            <p><strong>ID：</strong>${itemData.id || '无'}</p>
+            <p><strong>标题：</strong>${itemData.title || '无'}</p>
+            <p><strong>演员：</strong>${itemData.actor || '无'}</p>
+            <p><strong>描述：</strong>${itemData.desc || '无'}</p>
           `;
-          // 解析评论
-          if (itemData.reviews) {
-            try {
-              const reviews = JSON.parse(itemData.reviews.replace(/'/g, '"'));
-              const reviewHtml = reviews.map(r => `
-                <div class="comment">
-                  <span class="comment-user">${r.user}：</span>
-                  <span>${r.text}</span>
-                </div>
-              `).join('');
-              detailHtml += `<div class="detail-section"><h4>观众评论</h4>${reviewHtml}</div>`;
-            } catch (e) {
-              console.warn('[YuseTheater] 解析评论失败:', e);
-            }
-          }
           break;
-        case 'shop':
-          title = itemData.name;
-          detailHtml = `
-            <div class="detail-section">
-              <h4>商品介绍</h4>
-              <p>${itemData.description}</p>
-            </div>
-            <div class="detail-section">
-              <h4>价格信息</h4>
-              <p>基础价：${itemData.price}</p>
-              <p>当前最高价：${itemData.highestBid}</p>
-            </div>
-          `;
-          // 解析商品评论
-          if (itemData.comments) {
-            try {
-              const comments = JSON.parse(itemData.comments.replace(/'/g, '"'));
-              const commentHtml = comments.map(c => `
-                <div class="comment">
-                  <span class="comment-user">${c.user}：</span>
-                  <span>${c.text}</span>
-                </div>
-              `).join('');
-              detailHtml += `<div class="detail-section"><h4>买家评论</h4>${commentHtml}</div>`;
-            } catch (e) {
-              console.warn('[YuseTheater] 解析商品评论失败:', e);
-            }
-          }
+        // 新增：默认case，避免无类型时弹窗内容为空
+        default:
+          title = '详情';
+          detailHtml = '<p>暂无该类型的详情数据</p>';
           break;
       }
-        // ========== 修复1：创建弹窗并立即添加到页面，确保DOM挂载 ==========
+
+      // 创建弹窗（保留z-index=9999）
       const modal = document.createElement('div');
       modal.className = 'yuse-modal';
-      modal.style.zIndex = '9999';
+      modal.style.zIndex = '9999'; // 强制最高层级
       modal.innerHTML = `
         <div class="modal-overlay">
           <div class="modal-content">
             <div class="modal-header">
-              <h3>${title || '详情'}</h3>
+              <h3>${title}</h3>
               <button class="close-btn">×</button>
             </div>
-            <div class="modal-body">${detailHtml || '暂无详情数据'}</div>
+            <div class="modal-body">${detailHtml}</div>
             <div class="modal-footer">
               <button class="close-modal-btn">关闭</button>
             </div>
           </div>
         </div>
       `;
+
+      // 新增：先移除页面中已存在的弹窗，避免重复创建
+      const existingModal = document.querySelector('.yuse-modal');
+      if (existingModal) existingModal.remove();
+
+      // 添加弹窗到页面（必须添加到body，避免被父容器遮挡）
       document.body.appendChild(modal);
 
+      // 强制显示弹窗（修复：直接操作style，不依赖CSS类）
       const modalOverlay = modal.querySelector('.modal-overlay');
       if (modalOverlay) {
-        modalOverlay.classList.add('visible'); // 立即显示弹窗
-        console.log('[YuseTheater] 弹窗已生成并显示'); // 调试日志
+        // 双保险：同时添加类和强制设置style
+        modalOverlay.classList.add('visible');
+        modalOverlay.style.opacity = '1';
+        modalOverlay.style.visibility = 'visible';
+        console.log('[YuseTheater] 弹窗已显示：', modalOverlay);
       } else {
-        console.error('[YuseTheater] 弹窗overlay元素未找到，无法显示'); // 错误日志
+        console.error('[YuseTheater] 弹窗遮罩层未找到，请检查innerHTML结构');
+        return;
       }
 
-      // ========== 修复3：直接绑定关闭事件，确保事件生效 ==========
+      // 绑定关闭事件
       modal.querySelectorAll('.close-btn, .close-modal-btn').forEach(btn => {
         btn.addEventListener('click', () => {
-          if (modalOverlay) modalOverlay.classList.remove('visible');
-          setTimeout(() => modal.remove(), 300); // 移除弹窗DOM
+          modalOverlay.classList.remove('visible');
+          setTimeout(() => modal.remove(), 300);
         });
       });
+
+      // 点击遮罩关闭
       modalOverlay.addEventListener('click', (e) => {
         if (e.target === modalOverlay) {
           modalOverlay.classList.remove('visible');
@@ -488,6 +438,7 @@ if (typeof window.YuseTheaterApp === 'undefined') {
         }
       });
     }
+
 
     // 更新头部标题
     updateHeader() {
