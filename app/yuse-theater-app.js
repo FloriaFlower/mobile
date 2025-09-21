@@ -237,14 +237,14 @@ if (typeof window.YuseTheaterApp === 'undefined') {
       }
     }
 
-    // 绑定页面事件（加详细日志，确认是否进入）
+    // 绑定页面事件（核心：列表项点击触发弹窗）
     bindPageEvents() {
       const appContainer = document.getElementById('app-content');
       if (!appContainer) {
-        console.error('[YuseTheater] bindPageEvents：未找到app-content容器，无法绑定事件');
+        console.error('[YuseTheater] bindPageEvents：未找到app-content容器');
         return;
       }
-      console.log('[YuseTheater] ✅ 进入bindPageEvents，开始绑定所有事件');
+      console.log('[YuseTheater] ✅ 进入bindPageEvents，所有事件开始绑定');
 
       // 1. 刷新按钮事件
       appContainer.querySelectorAll('.refresh-btn').forEach(btn => {
@@ -265,7 +265,7 @@ if (typeof window.YuseTheaterApp === 'undefined') {
         }
       });
 
-      // 3. 列表项交互事件（核心：列表项点击触发弹窗）
+      // 3. 列表项交互事件（点击列表项触发弹窗）
       appContainer.addEventListener('click', (e) => {
         // 处理拒绝按钮
         const rejectBtn = e.target.closest('.reject-btn');
@@ -301,11 +301,17 @@ if (typeof window.YuseTheaterApp === 'undefined') {
           return;
         }
 
-        // 处理列表项点击（按钮之外区域，触发弹窗）
+        // 处理列表项点击（核心：触发弹窗）
         const listItem = e.target.closest('.list-item');
         if (listItem) {
           const itemData = listItem.dataset;
-          console.log('[YuseTheater] 🔍 点击列表项，准备调用showItemDetail，itemData：', itemData);
+          // 检查列表项是否有data属性（提醒用户）
+          if (!itemData.type) {
+            console.warn('[YuseTheater] 列表项缺少data-type属性，无法显示弹窗，请刷新数据');
+            this.showToast('列表项数据异常，请刷新重试');
+            return;
+          }
+          console.log('[YuseTheater] 🔍 点击列表项，调用showItemDetail，itemData：', itemData);
           this.showItemDetail(itemData);
         }
       });
@@ -338,9 +344,9 @@ if (typeof window.YuseTheaterApp === 'undefined') {
       }, 500);
     }
 
-    // 显示详情弹窗（加日志确认是否进入）
+    // 显示详情弹窗（强制显示，带样式）
     showItemDetail(itemData) {
-      console.log('[YuseTheater] 🚪 进入showItemDetail方法，itemData：', itemData);
+      console.log('[YuseTheater] 🚪 进入showItemDetail方法，开始创建弹窗');
       if (!itemData || typeof itemData !== 'object') {
         console.error('[YuseTheater] 弹窗数据异常：', itemData);
         this.showToast('数据错误，无法显示详情');
@@ -374,26 +380,39 @@ if (typeof window.YuseTheaterApp === 'undefined') {
           break;
       }
 
-      // 强制创建弹窗并显示
+      // 强制创建弹窗（自带内联样式，不依赖外部CSS）
       const modal = document.createElement('div');
       modal.className = 'yuse-modal';
-      modal.style.zIndex = '9999'; // 确保弹窗在最上层
-      modal.style.position = 'fixed';
-      modal.style.top = '0';
-      modal.style.left = '0';
-      modal.style.width = '100%';
-      modal.style.height = '100%';
+      // 强制弹窗在最上层，不会被遮挡
+      modal.style.cssText = `
+        position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+        z-index: 9999; display: flex; align-items: center; justify-content: center;
+      `;
       modal.innerHTML = `
-        <div class="modal-overlay" style="position: fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); display:flex; align-items:center; justify-content:center; z-index:9999;">
-          <div class="modal-content" style="background:white; padding:20px; border-radius:10px; width:80%; max-width:400px; z-index:10000;">
-            <div class="modal-header" style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
-              <h3 style="margin:0;">${title}</h3>
-              <button class="close-btn" style="border:none; background:transparent; font-size:20px; cursor:pointer;">×</button>
-            </div>
-            <div class="modal-body" style="margin-bottom:15px;">${detailHtml}</div>
-            <div class="modal-footer" style="text-align:right;">
-              <button class="close-modal-btn" style="padding:8px 16px; border:none; background:#eee; border-radius:5px; cursor:pointer;">关闭</button>
-            </div>
+        <div class="modal-overlay" style="
+          position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+          background: rgba(0,0,0,0.5); z-index: 1;
+        "></div>
+        <div class="modal-content" style="
+          background: white; padding: 24px; border-radius: 12px;
+          width: 80%; max-width: 500px; z-index: 2; box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+        ">
+          <div class="modal-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+            <h3 style="margin: 0; font-size: 18px; color: #333;">${title}</h3>
+            <button class="close-btn" style="
+              border: none; background: transparent; font-size: 24px; cursor: pointer;
+              color: #999; padding: 4px; line-height: 1;
+            ">×</button>
+          </div>
+          <div class="modal-body" style="margin-bottom: 20px; font-size: 14px; color: #666; line-height: 1.6;">
+            ${detailHtml}
+          </div>
+          <div class="modal-footer" style="text-align: right;">
+            <button class="close-modal-btn" style="
+              padding: 8px 16px; border: none; border-radius: 6px;
+              background: #f5f5f5; color: #333; cursor: pointer;
+              font-size: 14px;
+            ">关闭</button>
           </div>
         </div>
       `;
@@ -402,7 +421,7 @@ if (typeof window.YuseTheaterApp === 'undefined') {
       const existingModal = document.querySelector('.yuse-modal');
       if (existingModal) existingModal.remove();
       document.body.appendChild(modal);
-      console.log('[YuseTheater] 📌 弹窗已添加到页面');
+      console.log('[YuseTheater] 📌 弹窗已添加到页面，强制显示');
 
       // 绑定关闭事件
       modal.querySelectorAll('.close-btn, .close-modal-btn').forEach(btn => {
@@ -432,15 +451,12 @@ if (typeof window.YuseTheaterApp === 'undefined') {
     showToast(message) {
       const toast = document.createElement('div');
       toast.className = 'yuse-toast';
-      toast.style.position = 'fixed';
-      toast.style.bottom = '20px';
-      toast.style.left = '50%';
-      toast.style.transform = 'translateX(-50%)';
-      toast.style.background = 'rgba(0,0,0,0.7)';
-      toast.style.color = 'white';
-      toast.style.padding = '10px 20px';
-      toast.style.borderRadius = '5px';
-      toast.style.zIndex = '9999';
+      toast.style.cssText = `
+        position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%);
+        background: rgba(0,0,0,0.7); color: white; padding: 12px 20px;
+        border-radius: 8px; z-index: 9999; font-size: 14px;
+        opacity: 0; transition: opacity 0.3s ease;
+      `;
       toast.textContent = message;
       document.body.appendChild(toast);
       setTimeout(() => toast.style.opacity = '1', 100);
@@ -462,6 +478,9 @@ if (typeof window.YuseTheaterApp === 'undefined') {
   console.log('[YuseTheater] app 实例初始化完成');
 }
 
+// ###########################################################################
+// 关键修复：同时暴露两个函数名（解决mobile-phone.js调用冲突）
+// ###########################################################################
 window.getYuseTheaterAppContent = function () {
   if (window.yuseTheaterApp) {
     console.log('[YuseTheater] 调用getYuseTheaterAppContent，返回页面内容');
@@ -470,15 +489,18 @@ window.getYuseTheaterAppContent = function () {
   return '<div class="error-state">欲色剧场 app 实例未初始化</div>';
 };
 
-// 函数名从bindYuseTheaterEvents → bindYuseTheaterAppEvents
-window.bindYuseTheaterAppEvents = function () {
+// 1. 暴露不带App的函数名（解决“缺少bindYuseTheaterEvents”报错）
+window.bindYuseTheaterEvents = function () {
   if (window.yuseTheaterApp) {
-    console.log('[YuseTheater] 调用bindYuseTheaterAppEvents，开始绑定事件');
+    console.log('[YuseTheater] 调用bindYuseTheaterEvents，开始绑定事件');
     setTimeout(() => window.yuseTheaterApp.bindPageEvents(), 100);
   } else {
-    console.warn('[YuseTheater] bindYuseTheaterAppEvents：app 实例未找到');
+    console.warn('[YuseTheater] bindYuseTheaterEvents：app 实例未找到');
   }
 };
+
+// 2. 同时暴露带App的函数名（兼容mobile-phone.js的另一个调用）
+window.bindYuseTheaterAppEvents = window.bindYuseTheaterEvents;
 
 window.refreshYuseTheaterPage = function (pageKey) {
   if (window.yuseTheaterApp) {
@@ -486,4 +508,4 @@ window.refreshYuseTheaterPage = function (pageKey) {
   }
 };
 
-console.log('[YuseTheater] 欲色剧场 App 脚本加载完成');
+console.log('[YuseTheater] 欲色剧场 App 脚本加载完成，所有函数已暴露');
