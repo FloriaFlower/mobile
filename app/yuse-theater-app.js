@@ -265,10 +265,10 @@ if (typeof window.YuseTheaterApp === 'undefined') {
          btn.addEventListener('click', (e) => {
          const pageKey = e.target.dataset.page;
          this.sendRefreshRequest(pageKey);
+         });
       });
-    });
 
-  // 2. 导航按钮事件【重构：事件委托】
+     // 2. 导航按钮事件
       appContainer.addEventListener('click', (e) => {
         const navBtn = e.target.closest('.yuse-nav-btn');
         if (navBtn) {
@@ -277,28 +277,20 @@ if (typeof window.YuseTheaterApp === 'undefined') {
         }
       });
 
-      // 3. 列表项交互事件【重构：事件委托，解决详情不弹出问题（问题②）】
+      // 3. 列表项交互事件
       appContainer.addEventListener('click', (e) => {
-        // 跳过按钮事件（拒绝/接取）
-        if (e.target.closest('.action-button')) return;
-
-        // 处理列表项点击（弹详情）
-        const listItem = e.target.closest('.list-item');
-        if (listItem) {
-          const itemData = listItem.dataset;
-          this.showItemDetail(itemData);
-        }
-
-        // 处理拒绝按钮
+       // 处理拒绝按钮
         const rejectBtn = e.target.closest('.reject-btn');
         if (rejectBtn) {
           const listItem = rejectBtn.closest('.list-item');
-          listItem.style.opacity = '0';
-          listItem.style.transform = 'translateY(-10px)';
-          setTimeout(() => listItem.remove(), 300);
+          if (listItem) {
+            listItem.style.opacity = '0';
+            listItem.style.transform = 'translateY(-10px)';
+            setTimeout(() => listItem.remove(), 300);
+          }
+          return; // 阻止事件冒泡
         }
-
-        // 处理接取按钮
+     // 处理接取按钮（修复：提前判断，避免与列表项点击冲突）
         const acceptBtn = e.target.closest('.accept-btn');
         if (acceptBtn) {
           const listItem = acceptBtn.closest('.list-item');
@@ -308,25 +300,31 @@ if (typeof window.YuseTheaterApp === 'undefined') {
             acceptMsg = `[接取定制|${itemData.id}|${itemData.fanId}|${itemData.typeName}]`;
           } else if (itemData.type === 'announcement') {
             acceptMsg = `[接取通告|${itemData.id}|${itemData.title}|${itemData.actor}]`;
+          }
+          if (acceptMsg) {
+            this.sendToSillyTavern(acceptMsg);
+            this.showToast(`已接取${itemData.type === 'customization' ? '定制' : '通告'}`);
+            listItem.style.opacity = '0';
+            setTimeout(() => listItem.remove(), 300);
+          }
+          return; // 阻止事件冒泡
         }
-        if (acceptMsg) {
-          this.sendToSillyTavern(acceptMsg);
-          this.showToast(`已接取${itemData.type === 'customization' ? '定制' : '通告'}`);
-          listItem.style.opacity = '0';
-          setTimeout(() => listItem.remove(), 300);
+        // 处理列表项点击（弹详情：确保在按钮之后判断，避免冲突）
+        const listItem = e.target.closest('.list-item');
+        if (listItem) {
+          const itemData = listItem.dataset;
+          this.showItemDetail(itemData);
         }
-      }
-    });
-
-    // 4. 剧场筛选按钮事件（保留原逻辑）
-    appContainer.addEventListener('click', (e) => {
-      const filterBtn = e.target.closest('.filter-btn');
-      if (filterBtn) {
-        const filterType = filterBtn.dataset.filter;
-        this.filterTheaterList(filterType);
-      }
-    });
-  }
+      }); 
+      // 4. 剧场筛选按钮事件（修复：确保在正确作用域内）
+      appContainer.addEventListener('click', (e) => {
+        const filterBtn = e.target.closest('.filter-btn');
+        if (filterBtn) {
+          const filterType = filterBtn.dataset.filter;
+          this.filterTheaterList(filterType);
+        }
+      });
+    }
 
     // 剧场列表筛选（保留原版功能）
     filterTheaterList(filterType) {
@@ -451,6 +449,7 @@ if (typeof window.YuseTheaterApp === 'undefined') {
         // ========== 修复1：创建弹窗并立即添加到页面，确保DOM挂载 ==========
       const modal = document.createElement('div');
       modal.className = 'yuse-modal';
+      modal.style.zIndex = '9999';
       modal.innerHTML = `
         <div class="modal-overlay">
           <div class="modal-content">
@@ -465,18 +464,15 @@ if (typeof window.YuseTheaterApp === 'undefined') {
           </div>
         </div>
       `;
-      // 立即添加到body，确保DOM已存在
       document.body.appendChild(modal);
 
-      // ========== 修复2：移除不必要的setTimeout，直接操作DOM ==========
-      // 无需延迟，直接获取overlay并添加visible类（此时modal已在DOM树中）
       const modalOverlay = modal.querySelector('.modal-overlay');
       if (modalOverlay) {
         modalOverlay.classList.add('visible'); // 立即显示弹窗
         console.log('[YuseTheater] 弹窗已生成并显示'); // 调试日志
       } else {
-    console.error('[YuseTheater] 弹窗overlay元素未找到，无法显示'); // 错误日志
-  }
+        console.error('[YuseTheater] 弹窗overlay元素未找到，无法显示'); // 错误日志
+      }
 
       // ========== 修复3：直接绑定关闭事件，确保事件生效 ==========
       modal.querySelectorAll('.close-btn, .close-modal-btn').forEach(btn => {
@@ -485,7 +481,13 @@ if (typeof window.YuseTheaterApp === 'undefined') {
           setTimeout(() => modal.remove(), 300); // 移除弹窗DOM
         });
       });
-  }
+      modalOverlay.addEventListener('click', (e) => {
+        if (e.target === modalOverlay) {
+          modalOverlay.classList.remove('visible');
+          setTimeout(() => modal.remove(), 300);
+        }
+      });
+    }
 
     // 更新头部标题
     updateHeader() {
