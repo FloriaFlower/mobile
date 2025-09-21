@@ -278,8 +278,8 @@ if (typeof window.YuseTheaterApp === 'undefined') {
       });
 
       // 3. 列表项交互事件
-      appContainer.addEventListener('click', (e) => {
-       // 处理拒绝按钮
+      appContainer.addEventListen()er('click', (e) => {
+      // 处理拒绝按钮
         const rejectBtn = e.target.closest('.reject-btn');
         if (rejectBtn) {
           const listItem = rejectBtn.closest('.list-item');
@@ -288,9 +288,11 @@ if (typeof window.YuseTheaterApp === 'undefined') {
             listItem.style.transform = 'translateY(-10px)';
             setTimeout(() => listItem.remove(), 300);
           }
-          return; // 阻止事件冒泡
+          e.stopPropagation(); // 阻止事件冒泡到列表项
+          return;
         }
-     // 处理接取按钮（修复：提前判断，避免与列表项点击冲突）
+
+        // 处理接取按钮
         const acceptBtn = e.target.closest('.accept-btn');
         if (acceptBtn) {
           const listItem = acceptBtn.closest('.list-item');
@@ -307,15 +309,19 @@ if (typeof window.YuseTheaterApp === 'undefined') {
             listItem.style.opacity = '0';
             setTimeout(() => listItem.remove(), 300);
           }
-          return; // 阻止事件冒泡
+          e.stopPropagation(); // 阻止事件冒泡到列表项
+          return;
         }
-        // 处理列表项点击（弹详情：确保在按钮之后判断，避免冲突）
+
+         // 处理列表项点击（按钮之外的区域）
         const listItem = e.target.closest('.list-item');
         if (listItem) {
           const itemData = listItem.dataset;
+          console.log('[YuseTheater] 点击列表项，准备显示弹窗：', itemData); // 新增日志，验证是否进入
           this.showItemDetail(itemData);
         }
-      }); 
+      });
+
       // 4. 剧场筛选按钮事件（修复：确保在正确作用域内）
       appContainer.addEventListener('click', (e) => {
         const filterBtn = e.target.closest('.filter-btn');
@@ -347,7 +353,7 @@ if (typeof window.YuseTheaterApp === 'undefined') {
     }
     // 显示列表项详情
     showItemDetail(itemData) {
-     // 新增：先判断itemData是否有效，避免后续逻辑报错
+      console.log('[YuseTheater] 🚪进入showItemDetail方法，itemData：', itemData);
       if (!itemData || typeof itemData !== 'object') {
         console.error('[YuseTheater] 弹窗数据异常：', itemData);
         this.showToast('数据错误，无法显示详情');
