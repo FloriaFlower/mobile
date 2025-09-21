@@ -205,6 +205,10 @@
   height: 100%;
   z-index: 9999; 
   overflow: hidden; 
+  display: flex; 
+  justify-content: center; 
+  align-items: center; 
+  pointer-events: auto; 
 }
 .modal-overlay {
   position: absolute;
@@ -226,22 +230,24 @@
 }
 .modal-content {
   background: #fff;
-  width: 95%; /* 原版95%宽度，适配手机屏幕 */
-  max-height: 90%; /* 原版最大高度，避免超出屏幕 */
-  border-radius: 20px; /* 原版大圆角，更美观 */
+  width: 95%; 
+  max-height: 90%; 
+  border-radius: 20px; 
   display: flex;
   flex-direction: column;
   overflow: hidden;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
-  animation: popIn 0.3s ease-out; /* 原版弹出动画，增强视觉效果 */
+  animation: popIn 0.3s ease-out; 
+  position: relative; 
+  z-index: 10; 
 }
-/* 新增：弹窗弹出动画（仿照原版） */
+/* 弹窗弹出动画 */
 @keyframes popIn {
   from { opacity: 0; transform: scale(0.9); }
   to { opacity: 1; transform: scale(1); }
 }
 .modal-header {
-  padding: 15px; /* 原版内边距 */
+  padding: 15px; 
   border-bottom: 1px solid #eee;
   display: flex;
   justify-content: space-between;
@@ -300,7 +306,7 @@
   background: #b92c73; /* 加深主色调，hover反馈 */
 }
 
-/* 详情页组件（补充原版样式） */
+/* 详情页组件 */
 .detail-section {
   margin-bottom: 15px; /* 原版间距 */
 }
