@@ -36,7 +36,11 @@ if (typeof window.YuseTheaterApp === 'undefined') {
         announcements: '<div class="loading">加载中...</div>',
         customizations: '<div class="loading">加载中...</div>',
         theater: '<div class="loading">加载中...</div>',
-        shop: '<div class="loading">加载中...</div>'
+        shop: '<div class="loading">加载中...</div>',
+        theaterHot: '<div class="loading">加载中...</div>',
+        theaterNew: '<div class="loading">加载中...</div>',
+        theaterRecommended: '<div class="loading">加载中...</div>',
+        theaterPaid: '<div class="loading">加载中...</div>'
       };
       this.isAutoRender = true;
       this.lastRenderTime = 0;
@@ -109,33 +113,29 @@ if (typeof window.YuseTheaterApp === 'undefined') {
       const dataAttrs = { id, type: type };
       switch (type) {
         case 'announcement':
-          return `<div class="list-item" data-type="announcement" ${this.formatDataAttrs(dataAttrs)}>
+          return `<div class="list-item" data-type="announcement" data-title="${title}" data-description="${rest[0]}" data-actor="${rest[1]}" data-location="${rest[2]}" data-payment="${rest[3]}">
             <div class="item-title">${title}</div>
-            <div class="item-meta">片酬：${rest[4]} | 地点：${rest[3]}</div>
+            <div class="item-meta">片酬：${rest[3]} | 地点：${rest[2]}</div>
           </div>`;
         case 'customization':
-          return `<div class="list-item" data-type="customization" ${this.formatDataAttrs(dataAttrs)}>
+          return `<div class="list-item" data-type="customization" data-title="${title}" data-typeName="${rest[0]}" data-request="${rest[1]}" data-fanId="${rest[2]}" data-deadline="${rest[3]}" data-notes="${rest[4]}" data-payment="${rest[5]}">
             <div class="item-title">${title}</div>
-            <div class="item-meta">报酬：${rest[4]} | 截止：${rest[3]}</div>
+            <div class="item-meta">报酬：${rest[5]} | 截止：${rest[3]}</div>
             <div class="item-actions"><button class="accept-btn">接取</button></div>
           </div>`;
         case 'theater':
-          return `<div class="list-item" data-type="theater" ${this.formatDataAttrs(dataAttrs)}>
+          return `<div class="list-item" data-type="theater" data-title="${title}" data-cover="${rest[0]}" data-description="${rest[1]}" data-popularity="${rest[2]}" data-favorites="${rest[3]}" data-views="${rest[4]}" data-price="${rest[5]}" data-reviews="${rest[6]}">
             <div class="item-title">${title}</div>
-            <div class="item-meta">播放：${rest[5]} | 收藏：${rest[4]}</div>
+            <div class="item-meta">播放：${rest[4]} | 收藏：${rest[3]}</div>
           </div>`;
         case 'shop':
-          return `<div class="list-item" data-type="shop" ${this.formatDataAttrs(dataAttrs)}>
+          return `<div class="list-item" data-type="shop" data-title="${title}" data-description="${rest[0]}" data-price="${rest[1]}" data-highestBid="${rest[2]}" data-comments="${rest[3]}">
             <div class="item-title">${title}</div>
-            <div class="item-meta">价格：${rest[3]} | 竞价：${rest[4]}</div>
+            <div class="item-meta">价格：${rest[1]} | 竞价：${rest[2]}</div>
           </div>`;
         default:
           return '';
       }
-    }
-
-    formatDataAttrs(attrs) {
-      return Object.entries(attrs).map(([k, v]) => `data-${k}="${v}"`).join(' ');
     }
 
     getChatContent() {
@@ -186,7 +186,7 @@ if (typeof window.YuseTheaterApp === 'undefined') {
       return `
         <div class="yuse-nav-bar" style="position: fixed; bottom: 0; left: 0; width: 100%; background: #fff; border-top: 1px solid #f0f0f0; padding: 10px 0;">
           ${Object.entries(window.YuseTheaterPages).map(([key, cfg]) => `
-            <button class="yuse-nav-btn ${key === this.currentView ? 'active' : ''}" onclick="yuseTheaterApp.switchView('${key}')">
+            <button class="yuse-nav-btn ${key === this.currentView ? 'active' : ''}" data-page="${key}" onclick="yuseTheaterApp.switchView('${key}')">
               ${this.getNavIcon(key)} ${cfg.name}
             </button>
           `).join('')}
@@ -288,6 +288,53 @@ if (typeof window.YuseTheaterApp === 'undefined') {
               <div class="modal-footer"><button class="accept-btn">接取</button></div>
             </div>
           `;
+        case 'theater':
+          const renderReviews = (reviewsStr) => {
+            try {
+              const reviews = JSON.parse(reviewsStr.replace(/'/g, '"'));
+              return reviews.map(rev => `<div class="comment"><span class="comment-user">${rev.user}:</span> ${rev.text}</div>`).join('');
+            } catch (e) {
+              return '<div class="comment">评论加载失败</div>';
+            }
+          };
+          return `
+            <div class="modal-content">
+              <div class="modal-header">${data.title} <button class="close-btn">×</button></div>
+              <div class="modal-body">
+                <div class="cover-image" style="background-image: url('${data.cover || 'https://picsum.photos/400/200?random=1'}')"></div>
+                <p>简介：${data.description}</p>
+                <p>人气：${data.popularity}</p>
+                <p>收藏：${data.favorites}</p>
+                <p>播放：${data.views}</p>
+                <p>价格：${data.price}</p>
+                <h4>粉丝热评</h4>
+                ${renderReviews(data.reviews)}
+              </div>
+              <div class="modal-footer"><button class="action-button" onclick="document.querySelector('.yuse-modal').remove()">返回</button></div>
+            </div>
+          `;
+        case 'shop':
+          const renderComments = (commentsStr) => {
+            try {
+              const comments = JSON.parse(commentsStr.replace(/'/g, '"'));
+              return comments.map(comm => `<div class="comment"><span class="comment-user">${comm.user}:</span> ${comm.text}</div>`).join('');
+            } catch (e) {
+              return '<div class="comment">评论加载失败</div>';
+            }
+          };
+          return `
+            <div class="modal-content">
+              <div class="modal-header">${data.title} <button class="close-btn">×</button></div>
+              <div class="modal-body">
+                <p>卖点：${data.description}</p>
+                <p>基础价格：${data.price}</p>
+                <p>当前最高价：${data.highestBid}</p>
+                <h4>评论区</h4>
+                ${renderComments(data.comments)}
+              </div>
+              <div class="modal-footer"><button class="action-button" onclick="document.querySelector('.yuse-modal').remove()">返回</button></div>
+            </div>
+          `;
         default:
           return '<div class="modal-content">暂无详情</div>';
       }
@@ -320,3 +367,25 @@ if (typeof window.YuseTheaterApp === 'undefined') {
   window.yuseTheaterApp = new YuseTheaterApp();
   console.log('[YuseTheater] 最终修复版初始化完成');
 }
+
+// 恢复全局函数，确保手机模拟器插件兼容
+window.getYuseTheaterAppContent = function () {
+  if (window.yuseTheaterApp) {
+    return window.yuseTheaterApp.getAppContent();
+  }
+  return '<div class="error-state">欲色剧场 app 实例未初始化</div>';
+};
+
+window.bindYuseTheaterEvents = function () {
+  if (window.yuseTheaterApp) {
+    window.yuseTheaterApp.bindPageEvents();
+  }
+};
+
+window.refreshYuseTheaterPage = function (pageKey) {
+  if (window.yuseTheaterApp) {
+    window.yuseTheaterApp.parseNewData();
+  }
+};
+
+console.log('[YuseTheater] 全局函数已恢复，兼容手机模拟器插件');
