@@ -52,6 +52,7 @@ if (typeof window.YuseTheaterApp === 'undefined') {
       console.log('[YuseTheater] 初始化欲色剧场 App');
       this.setupDOMObserver();
       this.setupEventListeners();
+      this.createRefreshButton(); // 新增：创建刷新按钮
       this.parseNewData(); // 初始化时强制解析一次数据
     }
 
@@ -72,6 +73,22 @@ if (typeof window.YuseTheaterApp === 'undefined') {
 
     setupEventListeners() {
       window.addEventListener('messageUpdate', () => this.parseNewData());
+    }
+
+    // 新增：创建顶部刷新按钮
+    createRefreshButton() {
+      const header = document.querySelector('.app-header') || document.querySelector('.header');
+      if (!header) return;
+      const refreshBtn = document.createElement('button');
+      refreshBtn.id = 'yuse-global-refresh';
+      refreshBtn.style.cssText = `
+        background: var(--accent-color); color: #fff; border: none; border-radius: 6px;
+        padding: 4px 10px; font-size: 12px; cursor: pointer; display: flex; align-items: center; gap: 4px;
+        margin-left: auto;
+      `;
+      refreshBtn.innerHTML = '🔄 刷新';
+      refreshBtn.addEventListener('click', () => this.parseNewData());
+      header.appendChild(refreshBtn);
     }
 
     parseNewData() {
@@ -138,6 +155,7 @@ if (typeof window.YuseTheaterApp === 'undefined') {
       }
     }
 
+    // 确保读取对话开场白的所有内容
     getChatContent() {
       const chatElement = document.querySelector('#chat') || document.querySelector('.mes');
       return chatElement?.innerText || '';
