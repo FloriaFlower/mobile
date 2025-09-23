@@ -1,4 +1,4 @@
-/* 基础变量 */
+/* 基础变量（主色#D38C9D，渐变背景#EA889D→#C4DDC5→#E2DCBB） */
 :root {
   --primary-pink: #ffc0cb;
   --primary-blue: #add8e6;
@@ -8,7 +8,7 @@
   --text-light: #777;
   --border-color: #f0f0f0;
   --shadow-color: rgba(0, 0, 0, 0.1);
-  --accent-color: #D38C9D; 
+  --accent-color: #D38C9D; /* 主色替换为#D38C9D */
 }
 /* 弹窗弹出动画 */
 @keyframes popIn {
@@ -20,33 +20,22 @@
   from { opacity: 0; transform: translateY(10px); }
   to { opacity: 1; transform: translateY(0); }
 }
-/* 应用容器（核心修改4：背景改为#EA889D→#C4DDC5→#E2DCBB渐变） */
+/* 应用容器（渐变背景） */
 .yuse-theater-app {
   position: relative;
   height: 100%;
   overflow: hidden;
-  background: linear-gradient(120deg, #EA889D, #C4DDC5, #E2DCBB); /* 需求4：渐变背景 */
+  background: linear-gradient(120deg, #EA889D, #C4DDC5, #E2DCBB); /* 渐变背景 */
 }
-/* 全局统一页眉（需求2：仅保留一个，已在JS中创建） */
-#yuse-global-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 12px 16px;
-  background: #fff;
-  border-bottom: 1px solid var(--border-color);
-  box-shadow: 0 2px 4px var(--shadow-color);
-  z-index: 100;
-}
-/* 内容区域（适配全局页眉高度） */
+/* 内容区域（适配原生页眉高度） */
 .yuse-content-area {
   padding: 12px 16px !important;
   padding-bottom: 60px !important;
-  height: calc(100vh - 180px) !important; /* 减去全局页眉+导航栏高度 */
+  height: calc(100vh - 120px) !important; /* 减去原生页眉+导航栏高度 */
   overflow-y: auto !important;
   box-sizing: border-box;
 }
-/* 内容区滚动条（主色同步修改） */
+/* 内容区滚动条（主色同步） */
 .yuse-content-area::-webkit-scrollbar {
   width: 4px;
 }
@@ -67,7 +56,7 @@
   flex-direction: column;
   gap: 10px;
 }
-/* 列表项样式（主色同步修改） */
+/* 列表项样式（主色同步） */
 .list-item {
   background: #fff;
   padding: 15px;
@@ -107,9 +96,9 @@
 }
 .item-price {
   font-weight: bold;
-  color: var(--accent-color); /* 主色同步修改 */
+  color: var(--accent-color); /* 主色同步 */
 }
-/* 操作按钮（主色同步修改） */
+/* 操作按钮（主色同步） */
 .item-actions {
   margin-top: 12px;
   display: flex;
@@ -126,7 +115,7 @@
   transition: all 0.2s;
 }
 .accept-btn {
-  background-color: var(--accent-color); /* 主色同步修改 */
+  background-color: var(--accent-color); /* 主色同步 */
   border-color: var(--accent-color);
   color: white;
 }
@@ -142,7 +131,7 @@
 .reject-btn:hover {
   background-color: #f0f0f0;
 }
-/* 底部导航栏 */
+/* 底部导航栏（确保显示） */
 .yuse-nav-bar {
   position: absolute !important;
   bottom: 0;
@@ -156,17 +145,6 @@
   display: flex;
   justify-content: space-around;
   z-index: 99;
-}
-/* 页面页眉样式 */
-.yuse-page-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 12px 16px;
-  background: #fff;
-  border-bottom: 1px solid var(--border-color);
-  box-shadow: 0 2px 4px var(--shadow-color);
-  z-index: 100;
 }
 .yuse-nav-btn {
   display: flex;
@@ -184,10 +162,10 @@
 }
 .yuse-nav-btn:hover,
 .yuse-nav-btn.active {
-  color: var(--accent-color); /* 主色同步修改 */
+  color: var(--accent-color); /* 主色同步 */
   transform: translateY(-2px);
 }
-/* 剧场筛选栏（主色同步修改） */
+/* 剧场筛选栏（主色同步） */
 .theater-filters {
   display: flex;
   flex-wrap: wrap;
@@ -196,7 +174,7 @@
 }
 .filter-btn {
   background: var(--light-pink);
-  color: var(--accent-color); /* 主色同步修改 */
+  color: var(--accent-color); /* 主色同步 */
   border: none;
   border-radius: 15px;
   padding: 5px 12px;
@@ -205,10 +183,10 @@
   transition: all 0.2s ease;
 }
 .filter-btn:hover {
-  background: var(--accent-color); /* 主色同步修改 */
+  background: var(--accent-color); /* 主色同步 */
   color: #fff;
 }
-/* 弹窗样式（主色同步修改） */
+/* 弹窗样式（主色同步） */
 .yuse-modal {
   position: fixed;
   top: 0;
@@ -239,10 +217,10 @@
   align-items: center;
   font-size: 1.1em;
   font-weight: bold;
-  color: var(--accent-color); /* 主色同步修改 */
+  color: var(--accent-color); /* 主色同步 */
 }
 .close-btn:hover {
-  color: var(--accent-color); /* 主色同步修改 */
+  color: var(--accent-color); /* 主色同步 */
 }
 .modal-body {
   flex: 1;
@@ -256,7 +234,7 @@
   width: 4px;
 }
 .modal-body::-webkit-scrollbar-thumb {
-  background: var(--accent-color); /* 主色同步修改 */
+  background: var(--accent-color); /* 主色同步 */
   border-radius: 2px;
 }
 .modal-footer {
@@ -266,7 +244,7 @@
   justify-content: flex-end;
   gap: 10px;
 }
-/* 详情页组件（主色同步修改） */
+/* 详情页组件（主色同步） */
 .detail-section {
   margin-bottom: 15px;
 }
@@ -293,7 +271,7 @@
   font-size: 0.8em;
 }
 .comment-user {
-  color: var(--accent-color); /* 主色同步修改 */
+  color: var(--accent-color); /* 主色同步 */
   font-weight: 600;
 }
 /* 空状态与加载状态 */
@@ -320,9 +298,6 @@
 }
 /* 响应式适配 */
 @media (max-width: 375px) {
-  #yuse-global-header {
-    padding: 10px 12px;
-  }
   .yuse-content-area {
     padding: 8px 12px !important;
   }
