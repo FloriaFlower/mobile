@@ -281,6 +281,9 @@
   color: var(--text-light);
   font-size: 14px;
 }
+.loading {
+  animation: fadeIn 1s infinite alternate;
+}
 /* 提示框 */
 .yuse-toast {
   position: fixed;
@@ -295,6 +298,20 @@
   z-index: 1001;
   opacity: 0;
   transition: all 0.3s ease;
+}
+/* 顶部刷新按钮样式（与原生界面融合） */
+#yuse-global-refresh {
+  background: var(--accent-color) !important;
+  color: #fff !important;
+  border: none !important;
+  border-radius: 6px !important;
+  padding: 4px 10px !important;
+  font-size: 12px !important;
+  cursor: pointer !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 4px !important;
+  margin-left: auto !important;
 }
 /* 响应式适配 */
 @media (max-width: 375px) {
