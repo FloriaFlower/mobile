@@ -93,14 +93,15 @@ if (typeof window.YuseTheaterApp === 'undefined') {
         const fullMatch = chatData.match(window.YuseTheaterRegex.fullMatch);
         if (fullMatch) {
           const [, announcements, customizations, theater, theaterHot, theaterNew, theaterRecommended, theaterPaid, shop] = fullMatch;
-          if (announcements) this.savedData.announcements = announcements;
-          if (customizations) this.savedData.customizations = customizations;
-          if (theater) this.savedData.theater = theater;
-          if (theaterHot) this.savedData.theaterHot = theaterHot;
-          if (theaterNew) this.savedData.theaterNew = theaterNew;
-          if (theaterRecommended) this.savedData.theaterRecommended = theaterRecommended;
-          if (theaterPaid) this.savedData.theaterPaid = theaterPaid;
-          if (shop) this.savedData.shop = shop;
+          // 核心修改：仅当模块内容非空时才更新，避免空内容覆盖原有数据
+          if (announcements && announcements.trim() !== '') this.savedData.announcements = announcements;
+          if (customizations && customizations.trim() !== '') this.savedData.customizations = customizations;
+          if (theater && theater.trim() !== '') this.savedData.theater = theater;
+          if (theaterHot && theaterHot.trim() !== '') this.savedData.theaterHot = theaterHot;
+          if (theaterNew && theaterNew.trim() !== '') this.savedData.theaterNew = theaterNew;
+          if (theaterRecommended && theaterRecommended.trim() !== '') this.savedData.theaterRecommended = theaterRecommended;
+          if (theaterPaid && theaterPaid.trim() !== '') this.savedData.theaterPaid = theaterPaid;
+          if (shop && shop.trim() !== '') this.savedData.shop = shop;
           this.updateAppContent();
         }
       } catch (error) {
