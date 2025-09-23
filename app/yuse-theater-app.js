@@ -34,9 +34,10 @@ if (typeof window.YuseTheaterApp === 'undefined') {
       this.savedData = {};
       this.isAutoRender = true;
       this.lastRenderTime = 0;
-      this.renderCooldown = 500; // 核心优化：缩短渲染冷却时间（从1000→500ms）
-      // 事件处理函数绑定（避免重复绑定导致卡顿）
+      this.renderCooldown = 500;
       this.handlePageClick = this.handlePageClick.bind(this);
+      // 原生页眉选择器（根据实际场景调整，此处默认匹配常见原生页眉类名）
+      this.nativeHeaderSelector = '.app-header, #app-header, header';
       this.init();
     }
     init() {
@@ -45,7 +46,6 @@ if (typeof window.YuseTheaterApp === 'undefined') {
       this.setupDOMObserver();
       this.setupEventListeners();
       this.updateAppContent();
-      // 初始化时主动读取一次对话框已有数据
       this.parseNewData();
     }
     loadDefaultData() {
@@ -71,7 +71,6 @@ if (typeof window.YuseTheaterApp === 'undefined') {
               }
             });
             if (hasNewMsg) {
-              // 核心优化：缩短数据解析延迟（从500→300ms）
               setTimeout(() => this.parseNewData(), 300);
             }
           });
@@ -110,10 +109,8 @@ if (typeof window.YuseTheaterApp === 'undefined') {
       }
       this.lastRenderTime = currentTime;
     }
-    // 核心优化：新增DOM直接读取，支持预先放置的fullMatch文本
     getChatContent() {
       try {
-        // 1. 优先读取手机端上下文（原逻辑保留）
         const mobileContext = window.mobileContextEditor;
         if (mobileContext) {
           const chatData = mobileContext.getCurrentChatData();
@@ -121,15 +118,12 @@ if (typeof window.YuseTheaterApp === 'undefined') {
             return chatData.messages.map(msg => msg.mes || '').join('\n');
           }
         }
-        // 2. 读取全局聊天记录（原逻辑保留）
         const globalChat = window.chat || window.SillyTavern?.chat;
         if (globalChat && Array.isArray(globalChat)) {
           return globalChat.map(msg => msg.mes || '').join('\n');
         }
-        // 3. 核心新增：直接读取聊天容器DOM文本（支持预先放置的内容）
         const chatContainer = document.querySelector('#chat') || document.querySelector('.mes');
         if (chatContainer) {
-          // 替换换行符，确保正则匹配正常
           return chatContainer.textContent.replace(/\s+/g, '\n').trim();
         }
       } catch (error) {
@@ -141,25 +135,21 @@ if (typeof window.YuseTheaterApp === 'undefined') {
       const pageConfig = window.YuseTheaterPages[pageKey];
       if (!pageConfig) return;
       const refreshMsg = pageConfig.refreshMsg;
-      this.sendToSillyTavern(refreshMsg, true); // 刷新消息需要发送，传true
+      this.sendToSillyTavern(refreshMsg, true);
       this.showToast(`正在刷新${pageConfig.name}...`);
     }
-    // 核心修改1：拆分“仅赋值输入框”和“自动发送”逻辑
     sendToSillyTavern(message, isAutoSend = false) {
       try {
         const textarea = document.querySelector('#send_textarea');
         const sendBtn = document.querySelector('#send_but');
         if (textarea) {
-          // 隔行追加：已有内容则换行，无内容直接赋值
           textarea.value = textarea.value ? `${textarea.value}\n${message}` : message;
           textarea.dispatchEvent(new Event('input', { bubbles: true }));
-          // 仅刷新消息需要自动发送，接取消息不发送（isAutoSend控制）
           if (isAutoSend && sendBtn) {
             sendBtn.click();
           }
           return true;
         }
-        // 备用输入框处理（同逻辑）
         const backupTextarea = document.querySelector('textarea');
         if (backupTextarea) {
           backupTextarea.value = backupTextarea.value ? `${backupTextarea.value}\n${message}` : message;
@@ -175,21 +165,36 @@ if (typeof window.YuseTheaterApp === 'undefined') {
       return false;
     }
     switchView(pageKey) {
-      if (!window.YuseTheaterPages[pageKey] || this.currentView === pageKey) return; // 避免重复切换
+      if (!window.YuseTheaterPages[pageKey] || this.currentView === pageKey) return;
       this.currentView = pageKey;
       this.updateAppContent();
       this.updateHeader();
+      // 切换页面时更新原生页眉的刷新按钮
+      this.updateNativeHeaderRefreshBtn();
+    }
+    // 核心新增：更新原生页眉的刷新按钮（绑定当前页面的刷新事件）
+    updateNativeHeaderRefreshBtn() {
+      const nativeHeader = document.querySelector(this.nativeHeaderSelector);
+      if (!nativeHeader) return;
+      // 移除已有的刷新按钮，避免重复
+      const oldRefreshBtn = nativeHeader.querySelector('.yuse-refresh-btn');
+      if (oldRefreshBtn) oldRefreshBtn.remove();
+      // 创建新的刷新按钮
+      const refreshBtn = document.createElement('button');
+      refreshBtn.className = 'refresh-btn yuse-refresh-btn';
+      refreshBtn.dataset.page = this.currentView;
+      refreshBtn.innerHTML = '🔄 刷新';
+      // 插入到原生页眉右侧（确保页眉是flex布局）
+      nativeHeader.style.display = 'flex';
+      nativeHeader.style.justifyContent = 'space-between';
+      nativeHeader.style.alignItems = 'center';
+      nativeHeader.appendChild(refreshBtn);
     }
     getAppContent() {
       const pageConfig = window.YuseTheaterPages[this.currentView];
       const pageData = this.savedData[this.currentView] || '<div class="empty-state">暂无数据</div>';
-      const header = `
-        <div class="yuse-page-header">
-          <h3>${pageConfig.name}</h3>
-          <button class="refresh-btn" data-page="${this.currentView}">🔄 刷新</button>
-        </div>
-      `;
       let content = '';
+      // 移除原页面内部页眉，仅保留内容区
       switch (this.currentView) {
         case 'announcements':
           content = `<div class="yuse-announcement-list">${pageData}</div>`;
@@ -220,9 +225,9 @@ if (typeof window.YuseTheaterApp === 'undefined') {
           </button>
         `;
       }).join('');
+      // 应用容器添加背景渐变（JS内联确保优先级，也可在CSS中设置）
       return `
         <div class="yuse-theater-app" style="position: relative; height: 100%; overflow: hidden;">
-          ${header}
           <div class="yuse-content-area">${content}</div>
           <div class="yuse-nav-bar" style="position: absolute; bottom: 0; left: 0; width: 100%; box-sizing: border-box;">
             ${nav}
@@ -243,36 +248,34 @@ if (typeof window.YuseTheaterApp === 'undefined') {
       const content = this.getAppContent();
       const appElement = document.getElementById('app-content');
       if (appElement) {
-        // 核心优化：先移除旧事件再渲染，避免重复绑定
         appElement.removeEventListener('click', this.handlePageClick);
         appElement.innerHTML = content;
         
         const contentArea = appElement.querySelector('.yuse-content-area');
         if (contentArea) {
-          contentArea.style.paddingBottom = '60px';
+          // 调整内容区内边距：顶部避开原生页眉，底部避开导航栏
+          contentArea.style.padding = '16px 16px 60px';
           contentArea.style.overflowY = 'auto';
           contentArea.style.height = 'calc(100vh - 120px)';
         }
-        // 绑定新事件（仅绑定一次）
+        // 更新原生页眉的刷新按钮
+        this.updateNativeHeaderRefreshBtn();
         appElement.addEventListener('click', this.handlePageClick);
         console.log('[YuseTheater] 页面内容更新完成（对齐原版）');
       } else {
         console.error('[YuseTheater] 未找到app-content容器，无法更新内容');
       }
     }
-    // 核心优化：抽离点击事件处理函数，避免重复绑定
     handlePageClick(e) {
       const appContainer = document.getElementById('app-content');
       if (!appContainer) return;
-
-      // 1. 刷新按钮事件
+      // 1. 刷新按钮事件（匹配原生页眉的刷新按钮）
       const refreshBtn = e.target.closest('.refresh-btn');
       if (refreshBtn) {
         const pageKey = refreshBtn.dataset.page;
         this.sendRefreshRequest(pageKey);
         return;
       }
-
       // 2. 导航按钮事件
       const navBtn = e.target.closest('.yuse-nav-btn');
       if (navBtn) {
@@ -280,7 +283,6 @@ if (typeof window.YuseTheaterApp === 'undefined') {
         this.switchView(pageKey);
         return;
       }
-
       // 3. 拒绝按钮事件
       const rejectBtn = e.target.closest('.reject-btn');
       if (rejectBtn) {
@@ -297,16 +299,13 @@ if (typeof window.YuseTheaterApp === 'undefined') {
         e.stopPropagation();
         return;
       }
-
-      // 4. 定制列表直接接取（仅赋值输入框，不发送）
+      // 4. 定制列表直接接取
       const acceptBtn = e.target.closest('.accept-btn');
       if (acceptBtn && acceptBtn.closest('.list-item') && acceptBtn.closest('.list-item').dataset.type === 'customization') {
         const listItem = acceptBtn.closest('.list-item');
         const itemData = listItem.dataset;
-        // 粉丝定制格式：[定制|定制类型|内容要求|发布人|时间要求|备注信息|奖励]
         this.sendToSillyTavern(`[定制|${itemData.typeName}|${itemData.request}|${itemData.fanId}|${itemData.deadline}|${itemData.notes}|${itemData.payment}]`);
         this.showToast(`已添加${itemData.typeName}到输入框`);
-        // 列表项删除动画
         listItem.style.transition = 'all 0.3s ease-out';
         listItem.style.opacity = '0';
         listItem.style.transform = 'translateY(-10px)';
@@ -314,7 +313,6 @@ if (typeof window.YuseTheaterApp === 'undefined') {
         e.stopPropagation();
         return;
       }
-
       // 5. 列表项弹窗事件
       const listItem = e.target.closest('.list-item');
       if (listItem) {
@@ -339,7 +337,6 @@ if (typeof window.YuseTheaterApp === 'undefined') {
         }
         return;
       }
-
       // 6. 剧场筛选按钮事件
       const filterBtn = e.target.closest('.filter-btn');
       if (filterBtn) {
@@ -371,7 +368,6 @@ if (typeof window.YuseTheaterApp === 'undefined') {
         return;
       }
     }
-    // 通告弹窗：接取按钮仅赋值输入框
     showAnnouncementDetail(itemData) {
       console.log('[YuseTheater] 显示原版通告弹窗', itemData);
       const detailHtml = `
@@ -391,12 +387,9 @@ if (typeof window.YuseTheaterApp === 'undefined') {
         <button class="action-button accept-btn" id="accept-announcement-btn">接取</button>
       `;
       this.createOriginalModal(itemData.title, detailHtml, footerHtml);
-
-      // 接取逻辑：仅赋值输入框，不自动发送
       const acceptBtn = document.getElementById('accept-announcement-btn');
       if (acceptBtn) {
         acceptBtn.addEventListener('click', () => {
-          // 通告格式：[通告|片名|剧情简介|合作演员|拍摄地点|奖励]
           this.sendToSillyTavern(`[通告|${itemData.title}|${itemData.description}|${itemData.actor}|${itemData.location}|${itemData.payment}]`);
           this.showToast(`已添加《${itemData.title}》到输入框`);
           document.querySelector('.yuse-modal').style.opacity = '0';
@@ -404,7 +397,6 @@ if (typeof window.YuseTheaterApp === 'undefined') {
         });
       }
     }
-    // 定制弹窗：接取按钮仅赋值输入框
     showCustomizationDetail(itemData) {
       console.log('[YuseTheater] 显示原版定制弹窗', itemData);
       const detailHtml = `
@@ -434,12 +426,9 @@ if (typeof window.YuseTheaterApp === 'undefined') {
         <button class="action-button accept-btn" id="accept-custom-btn">接取</button>
       `;
       this.createOriginalModal(`${itemData.fanId} 的定制`, detailHtml, footerHtml);
-
-      // 接取逻辑：仅赋值输入框，不自动发送
       const acceptBtn = document.getElementById('accept-custom-btn');
       if (acceptBtn) {
         acceptBtn.addEventListener('click', () => {
-          // 定制格式：[定制|定制类型|内容要求|发布人|时间要求|备注信息|奖励]
           this.sendToSillyTavern(`[定制|${itemData.typeName}|${itemData.request}|${itemData.fanId}|${itemData.deadline}|${itemData.notes}|${itemData.payment}]`);
           this.showToast(`已添加${itemData.fanId}的定制到输入框`);
           document.querySelector('.yuse-modal').style.opacity = '0';
@@ -539,7 +528,7 @@ if (typeof window.YuseTheaterApp === 'undefined') {
           <div class="modal-header" style="
             padding: 15px; border-bottom: 1px solid #eee;
             display: flex; justify-content: space-between; align-items: center;
-            font-size: 1.1em; font-weight: bold; color: #d63384;
+            font-size: 1.1em; font-weight: bold; color: var(--accent-color);
           ">
             ${header}
             <button class="close-btn" style="
@@ -604,10 +593,15 @@ if (typeof window.YuseTheaterApp === 'undefined') {
     }
     destroy() {
       this.isAutoRender = false;
-      // 销毁时移除事件监听
       const appElement = document.getElementById('app-content');
       if (appElement) {
         appElement.removeEventListener('click', this.handlePageClick);
+      }
+      // 销毁时移除原生页眉的刷新按钮
+      const nativeHeader = document.querySelector(this.nativeHeaderSelector);
+      if (nativeHeader) {
+        const refreshBtn = nativeHeader.querySelector('.yuse-refresh-btn');
+        if (refreshBtn) refreshBtn.remove();
       }
       console.log('[YuseTheater] 销毁欲色剧场 App');
     }
