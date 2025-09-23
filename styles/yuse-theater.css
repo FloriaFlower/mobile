@@ -1,4 +1,4 @@
-/* 基础变量（对齐原版regex） */
+/* 基础变量（核心修改：主色改为#D38C9D，新增渐变背景） */
 :root {
   --primary-pink: #ffc0cb;
   --primary-blue: #add8e6;
@@ -8,96 +8,57 @@
   --text-light: #777;
   --border-color: #f0f0f0;
   --shadow-color: rgba(0, 0, 0, 0.1);
-  --accent-color: #d63384; /* 原版主色 */
+  --accent-color: #D38C9D; /* 需求5：替换主色为#D38C9D */
 }
-
-/* 弹窗弹出动画（原版popIn） */
+/* 弹窗弹出动画 */
 @keyframes popIn {
   from { opacity: 0; transform: scale(0.9); }
   to { opacity: 1; transform: scale(1); }
 }
-
-/* 列表项淡入动画（原版fadeIn） */
+/* 列表项淡入动画 */
 @keyframes fadeIn {
   from { opacity: 0; transform: translateY(10px); }
   to { opacity: 1; transform: translateY(0); }
 }
-
-/* 应用容器（全屏+渐变背景） */
+/* 应用容器（核心修改4：背景改为#EA889D→#C4DDC5→#E2DCBB渐变） */
 .yuse-theater-app {
   position: relative;
   height: 100%;
   overflow: hidden;
+  background: linear-gradient(120deg, #EA889D, #C4DDC5, #E2DCBB); /* 需求4：渐变背景 */
 }
-
-.yuse-nav-bar {
-   position: absolute !important; /* 强制覆盖JS内联样式（防止冲突） */
-   bottom: 0;
-   left: 0;
-   width: 100%;
-   box-sizing: border-box;
-   background: #fff; /* 增加背景色，避免透明穿透 */
-   box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.06); /* 底部阴影提升层次感 */
-   padding: 8px 0; /* 内边距优化，适配按钮大小 */
-}
-
-/* 页面头部（标题+刷新按钮，对齐原版） */
-.yuse-page-header {
+/* 全局统一页眉（需求2：仅保留一个，已在JS中创建） */
+#yuse-global-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
   padding: 12px 16px;
   background: #fff;
   border-bottom: 1px solid var(--border-color);
+  box-shadow: 0 2px 4px var(--shadow-color);
+  z-index: 100;
 }
-
-.yuse-page-header h3 {
-  margin: 0;
-  font-size: 16px;
-  color: var(--accent-color); /* 主色标题 */
-}
-
-.refresh-btn {
-  background: var(--accent-color);
-  color: #fff;
-  border: none;
-  border-radius: 6px;
-  padding: 4px 10px;
-  font-size: 12px;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  gap: 4px;
-}
-
-.refresh-btn:hover {
-  background: #b92c73; /* 主色加深 */
-}
-
-/* 内容区域（仅保留单滚动，删除重复） */
+/* 内容区域（适配全局页眉高度） */
 .yuse-content-area {
-   padding-bottom: 60px !important; /* 优先级确保不被覆盖，适配导航栏高度 */
-   height: calc(100vh - 120px) !important;
-   overflow-y: auto !important;
-   box-sizing: border-box;
+  padding: 12px 16px !important;
+  padding-bottom: 60px !important;
+  height: calc(100vh - 180px) !important; /* 减去全局页眉+导航栏高度 */
+  overflow-y: auto !important;
+  box-sizing: border-box;
 }
-
-/* 内容区滚动条（对齐原版） */
+/* 内容区滚动条（主色同步修改） */
 .yuse-content-area::-webkit-scrollbar {
   width: 4px;
 }
-
 .yuse-content-area::-webkit-scrollbar-thumb {
   background: var(--accent-color);
   border-radius: 2px;
 }
-
 .yuse-content-area::-webkit-scrollbar-track {
   background: #f8f8f8;
   border-radius: 2px;
 }
-
-/* 列表容器通用样式（对齐原版间距） */
+/* 列表容器通用样式 */
 .yuse-announcement-list,
 .yuse-customization-list,
 .yuse-theater-list,
@@ -106,8 +67,7 @@
   flex-direction: column;
   gap: 10px;
 }
-
-/* 列表项样式（完全对齐原版：动画+阴影+hover） */
+/* 列表项样式（主色同步修改） */
 .list-item {
   background: #fff;
   padding: 15px;
@@ -119,19 +79,16 @@
   animation: fadeIn 0.5s ease-out;
   overflow: hidden;
 }
-
 .list-item:hover {
   transform: translateY(-3px);
   box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
 }
-
 .item-title {
   font-weight: bold;
   font-size: 1em;
   margin-bottom: 8px;
   color: var(--text-dark);
 }
-
 .item-meta {
   font-size: 0.8em;
   color: var(--text-light);
@@ -140,7 +97,6 @@
   gap: 5px 15px;
   margin-bottom: 8px;
 }
-
 .item-tag {
   background-color: var(--light-blue);
   color: var(--primary-blue);
@@ -149,20 +105,17 @@
   font-weight: 500;
   font-size: 11px;
 }
-
 .item-price {
   font-weight: bold;
-  color: var(--accent-color);
+  color: var(--accent-color); /* 主色同步修改 */
 }
-
-/* 操作按钮（原版样式：圆角+hover切换） */
+/* 操作按钮（主色同步修改） */
 .item-actions {
   margin-top: 12px;
   display: flex;
   justify-content: flex-end;
   gap: 10px;
 }
-
 .action-button {
   padding: 6px 12px;
   border-radius: 20px;
@@ -172,39 +125,38 @@
   font-weight: bold;
   transition: all 0.2s;
 }
-
 .accept-btn {
-  background-color: var(--accent-color);
+  background-color: var(--accent-color); /* 主色同步修改 */
   border-color: var(--accent-color);
   color: white;
 }
-
 .accept-btn:hover {
-  background-color: #fff;
-  color: var(--accent-color);
+  background-color: #c07a8c; /* 主色加深色 */
+  color: #fff;
 }
-
 .reject-btn {
   background-color: #fff;
   border-color: #ccc;
   color: var(--text-light);
 }
-
 .reject-btn:hover {
   background-color: #f0f0f0;
 }
-
-/* 底部导航栏（固定定位+原版样式） */
+/* 底部导航栏 */
 .yuse-nav-bar {
-  display: flex;
-  justify-content: space-around;
-  padding: 10px 0;
+  position: absolute !important;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  box-sizing: border-box;
   background: #fff;
   border-top: 1px solid var(--border-color);
-  box-shadow: 0 -2px 10px var(--shadow-color);
-  z-index: 999;
+  box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.06);
+  padding: 8px 0;
+  display: flex;
+  justify-content: space-around;
+  z-index: 99;
 }
-
 .yuse-nav-btn {
   display: flex;
   flex-direction: column;
@@ -219,32 +171,21 @@
   flex: 1;
   transition: color 0.3s, transform 0.2s;
 }
-
-.yuse-nav-btn .icon {
-  font-size: 20px;
-}
-
-.yuse-nav-btn:hover {
-  color: var(--accent-color);
+.yuse-nav-btn:hover,
+.yuse-nav-btn.active {
+  color: var(--accent-color); /* 主色同步修改 */
   transform: translateY(-2px);
 }
-
-.yuse-nav-btn.active {
-  color: var(--accent-color);
-  font-weight: bold;
-}
-
-/* 剧场筛选栏（对齐原版粉色背景+圆角） */
+/* 剧场筛选栏（主色同步修改） */
 .theater-filters {
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
   margin-bottom: 15px;
 }
-
 .filter-btn {
   background: var(--light-pink);
-  color: var(--accent-color);
+  color: var(--accent-color); /* 主色同步修改 */
   border: none;
   border-radius: 15px;
   padding: 5px 12px;
@@ -252,13 +193,11 @@
   cursor: pointer;
   transition: all 0.2s ease;
 }
-
 .filter-btn:hover {
-  background: var(--accent-color);
+  background: var(--accent-color); /* 主色同步修改 */
   color: #fff;
 }
-
-/* 弹窗样式（完全对齐原版regex） */
+/* 弹窗样式（主色同步修改） */
 .yuse-modal {
   position: fixed;
   top: 0;
@@ -271,7 +210,6 @@
   align-items: center;
   z-index: 9999;
 }
-
 .modal-content {
   background: #fff;
   width: 95%;
@@ -282,7 +220,6 @@
   animation: popIn 0.3s ease-out;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
 }
-
 .modal-header {
   padding: 15px;
   border-bottom: 1px solid var(--border-color);
@@ -291,22 +228,11 @@
   align-items: center;
   font-size: 1.1em;
   font-weight: bold;
-  color: var(--accent-color);
+  color: var(--accent-color); /* 主色同步修改 */
 }
-
-.close-btn {
-  background: none;
-  border: none;
-  font-size: 18px;
-  color: #666;
-  cursor: pointer;
-  transition: color 0.2s ease;
-}
-
 .close-btn:hover {
-  color: var(--accent-color);
+  color: var(--accent-color); /* 主色同步修改 */
 }
-
 .modal-body {
   flex: 1;
   overflow-y: auto;
@@ -315,17 +241,13 @@
   color: var(--text-light);
   font-size: 0.9em;
 }
-
-/* 弹窗滚动条（对齐原版） */
 .modal-body::-webkit-scrollbar {
   width: 4px;
 }
-
 .modal-body::-webkit-scrollbar-thumb {
-  background: var(--accent-color);
+  background: var(--accent-color); /* 主色同步修改 */
   border-radius: 2px;
 }
-
 .modal-footer {
   padding: 15px;
   border-top: 1px solid var(--border-color);
@@ -333,19 +255,16 @@
   justify-content: flex-end;
   gap: 10px;
 }
-
-/* 详情页组件（对齐原版） */
+/* 详情页组件（主色同步修改） */
 .detail-section {
   margin-bottom: 15px;
 }
-
 .detail-section h4 {
   margin: 0 0 8px 0;
   font-size: 0.9em;
   color: var(--text-dark);
   font-weight: 600;
 }
-
 .cover-image {
   width: 100%;
   height: 150px;
@@ -355,7 +274,6 @@
   background-position: center;
   margin-bottom: 15px;
 }
-
 .comment {
   background: #fafafa;
   padding: 8px 12px;
@@ -363,31 +281,21 @@
   margin-bottom: 8px;
   font-size: 0.8em;
 }
-
 .comment-user {
-  color: var(--accent-color);
+  color: var(--accent-color); /* 主色同步修改 */
   font-weight: 600;
 }
-
-/* 空状态与加载状态（对齐原版） */
-.empty-state {
+/* 空状态与加载状态 */
+.empty-state, .loading {
   text-align: center;
   padding: 40px 20px;
   color: var(--text-light);
   font-size: 14px;
 }
-
-.loading {
-  text-align: center;
-  padding: 20px;
-  color: var(--text-light);
-  font-size: 14px;
-}
-
-/* 提示框（对齐原版位置+样式） */
+/* 提示框 */
 .yuse-toast {
   position: fixed;
-  bottom: 70px; /* 避开导航栏 */
+  bottom: 70px;
   left: 50%;
   transform: translateX(-50%);
   background: rgba(0, 0, 0, 0.8);
@@ -399,19 +307,13 @@
   opacity: 0;
   transition: all 0.3s ease;
 }
-
-.yuse-toast.show {
-  opacity: 1;
-  transform: translateX(-50%) translateY(0);
-}
-
-/* 响应式适配（对齐原版） */
+/* 响应式适配 */
 @media (max-width: 375px) {
-  .yuse-page-header {
+  #yuse-global-header {
     padding: 10px 12px;
   }
   .yuse-content-area {
-    padding: 8px 12px;
+    padding: 8px 12px !important;
   }
   .list-item {
     padding: 10px 12px;
