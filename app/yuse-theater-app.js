@@ -197,21 +197,6 @@ if (typeof window.YuseTheaterApp === 'undefined') {
       }).join('');
       return `
         <div class="yuse-theater-app" style="position: relative; height: 100%; overflow: hidden;">
-          <div class="yuse-page-header" style="
-            display: flex; justify-content: space-between; align-items: center;
-            padding: 12px 16px; background: #fff; border-bottom: 1px solid var(--border-color);
-            box-shadow: 0 2px 4px var(--shadow-color); z-index: 100;
-          ">
-            <h3 style="margin: 0; font-size: 16px; color: var(--accent-color);">
-              ${pageConfig.name}
-            </h3>
-            <button class="refresh-btn" data-page="${this.currentView}" style="
-              background: var(--accent-color); color: #fff; border: none; border-radius: 6px;
-              padding: 4px 10px; font-size: 12px; cursor: pointer; display: flex; align-items: center; gap: 4px;
-            ">
-              🔄 刷新
-            </button>
-          </div>
           <div class="yuse-content-area">${content}</div>
           <div class="yuse-nav-bar" style="position: absolute; bottom: 0; left: 0; width: 100%; box-sizing: border-box;">
             ${nav}
@@ -243,9 +228,9 @@ if (typeof window.YuseTheaterApp === 'undefined') {
         if (contentArea) {
           contentArea.style.paddingBottom = '60px';
           contentArea.style.overflowY = 'auto';
-          contentArea.style.height = 'calc(100vh - 180px)';
+          contentArea.style.height = 'calc(100vh - 120px)'; // 适配原生页眉高度
         }
-        setTimeout(() => this.bindPageEvents(), 30);
+        this.bindPageEvents(); // 立即绑定事件，解决空屏后无响应
         console.log('[YuseTheater] 页面内容更新完成');
       } else {
         console.error('[YuseTheater] 未找到app-content容器，无法更新内容');
@@ -350,10 +335,10 @@ if (typeof window.YuseTheaterApp === 'undefined') {
         e.stopPropagation();
         return;
       }
-      // 刷新按钮事件
+      // 刷新按钮事件（原生页眉的刷新按钮）
       const refreshBtn = target.closest('.refresh-btn');
       if (refreshBtn) {
-        const pageKey = refreshBtn.dataset.page;
+        const pageKey = this.currentView;
         this.sendRefreshRequest(pageKey);
         e.stopPropagation();
         return;
@@ -564,7 +549,7 @@ window.getYuseTheaterAppContent = function () {
 };
 window.bindYuseTheaterEvents = function () {
   if (window.yuseTheaterApp) {
-    setTimeout(() => window.yuseTheaterApp.bindPageEvents(), 30);
+    window.yuseTheaterApp.bindPageEvents();
   }
 };
 window.bindYuseTheaterAppEvents = window.bindYuseTheaterEvents;
