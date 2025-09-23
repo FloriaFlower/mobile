@@ -36,7 +36,11 @@ if (typeof window.YuseTheaterApp === 'undefined') {
         announcements: '<div class="loading">加载中...</div>',
         customizations: '<div class="loading">加载中...</div>',
         theater: '<div class="loading">加载中...</div>',
-        shop: '<div class="loading">加载中...</div>'
+        shop: '<div class="loading">加载中...</div>',
+        theaterHot: '',
+        theaterNew: '',
+        theaterRecommended: '',
+        theaterPaid: ''
       };
       this.isAutoRender = true;
       this.lastRenderTime = 0;
@@ -49,11 +53,10 @@ if (typeof window.YuseTheaterApp === 'undefined') {
       this.setupDOMObserver();
       this.setupEventListeners();
       this.createRefreshButton();
-      this.forceRenderAllPages(); // 初始化时强制渲染所有页面数据
+      this.forceRenderAllPages();
     }
 
     forceRenderAllPages() {
-      // 主动解析一次所有数据，确保切换时有预加载内容
       const chatData = this.getChatContent();
       const fullMatch = chatData.match(window.YuseTheaterRegex.fullMatch);
       if (fullMatch) {
@@ -63,7 +66,10 @@ if (typeof window.YuseTheaterApp === 'undefined') {
           customizations: customizations || '<div class="empty-state">暂无定制</div>',
           theater: theater || '<div class="empty-state">暂无剧场</div>',
           shop: shop || '<div class="empty-state">暂无商品</div>',
-          theaterHot, theaterNew, theaterRecommended, theaterPaid
+          theaterHot,
+          theaterNew,
+          theaterRecommended,
+          theaterPaid
         };
       }
       this.updateAppContent();
@@ -75,7 +81,7 @@ if (typeof window.YuseTheaterApp === 'undefined') {
         if (chatContainer) {
           const observer = new MutationObserver(mutations => {
             if (Date.now() - this.lastRenderTime > this.renderCooldown) {
-              this.parseNewData(true); // 强制更新标识
+              this.parseNewData(true);
             }
           });
           observer.observe(chatContainer, { childList: true, subtree: true });
@@ -115,13 +121,17 @@ if (typeof window.YuseTheaterApp === 'undefined') {
         if (fullMatch) {
           const [, announcements, customizations, theater, theaterHot, theaterNew, theaterRecommended, theaterPaid, shop] = fullMatch;
           this.savedData = {
+            ...this.savedData,
             announcements: announcements || this.savedData.announcements,
             customizations: customizations || this.savedData.customizations,
             theater: theater || this.savedData.theater,
             shop: shop || this.savedData.shop,
-            theaterHot, theaterNew, theaterRecommended, theaterPaid
+            theaterHot,
+            theaterNew,
+            theaterRecommended,
+            theaterPaid
           };
-          this.updateAppContent(); // 数据更新后立即渲染
+          this.updateAppContent();
         }
       } catch (error) {
         console.error('[YuseTheater] 解析数据失败:', error);
@@ -142,7 +152,6 @@ if (typeof window.YuseTheaterApp === 'undefined') {
       const pageConfig = window.YuseTheaterPages[pageKey];
       if (!pageConfig) return;
       
-      // 切换前显示加载状态
       this.savedData[pageKey] = '<div class="loading">刷新中...</div>';
       this.updateAppContent();
       
@@ -165,10 +174,9 @@ if (typeof window.YuseTheaterApp === 'undefined') {
     switchView(pageKey) {
       if (!window.YuseTheaterPages[pageKey] || this.currentView === pageKey) return;
       
-      // 切换时强制显示已保存的数据（核心修复）
       this.currentView = pageKey;
-      this.updateAppContent(); // 立即渲染已保存的数据
-      this.scrollToTop(); // 切换页面自动回顶
+      this.updateAppContent();
+      this.scrollToTop();
     }
 
     getAppContent() {
@@ -214,6 +222,16 @@ if (typeof window.YuseTheaterApp === 'undefined') {
       `).join('');
     }
 
+    getNavIcon(pageKey) {
+      const iconMap = {
+        announcements: '📢',
+        customizations: '💖',
+        theater: '🎬',
+        shop: '🛒'
+      };
+      return iconMap[pageKey] || '📄';
+    }
+
     renderFilterButtons() {
       return [
         { filter: 'hot', text: '🔥 最热' },
@@ -243,14 +261,12 @@ if (typeof window.YuseTheaterApp === 'undefined') {
       const fragment = document.createDocumentFragment();
       fragment.innerHTML = this.getAppContent();
       
-      // 保留滚动位置（优化体验）
       const oldContent = appElement.firstChild;
       const scrollTop = oldContent ? oldContent.scrollTop : 0;
       
       appElement.innerHTML = '';
       appElement.appendChild(fragment);
       
-      // 恢复滚动位置（非剧场页）
       if (this.currentView !== 'theater') {
         appElement.firstChild.scrollTop = scrollTop;
       }
@@ -263,13 +279,11 @@ if (typeof window.YuseTheaterApp === 'undefined') {
       if (!app) return;
 
       app.addEventListener('click', (e) => {
-        // 导航按钮
         if (e.target.matches('.yuse-nav-btn')) {
           this.switchView(e.target.dataset.page);
           return;
         }
 
-        // 筛选按钮
         if (e.target.matches('.filter-btn')) {
           this.currentFilter = e.target.dataset.filter;
           const theaterList = app.querySelector('#theater-list');
@@ -280,7 +294,6 @@ if (typeof window.YuseTheaterApp === 'undefined') {
           return;
         }
 
-        // 接取/拒绝按钮
         if (e.target.matches('.accept-btn, .reject-btn')) {
           const listItem = e.target.closest('.list-item');
           if (listItem) {
@@ -294,7 +307,6 @@ if (typeof window.YuseTheaterApp === 'undefined') {
           }
         }
 
-        // 列表项点击
         if (e.target.closest('.list-item')) {
           const item = e.target.closest('.list-item');
           this.showItemDetail(item.dataset);
@@ -432,7 +444,11 @@ if (typeof window.YuseTheaterApp === 'undefined') {
   window.YuseTheaterApp = YuseTheaterApp;
   window.yuseTheaterApp = new YuseTheaterApp();
 
-  // 兼容函数
-  window.getYuseTheaterAppContent = () => window.yuseTheaterApp.getAppContent();
-  window.bindYuseTheaterEvents = () => window.yuseTheaterApp.bindPageEvents();
+  // 恢复全局函数，确保外部模块可调用
+  window.getYuseTheaterAppContent = function () {
+    return window.yuseTheaterApp.getAppContent();
+  };
+  window.bindYuseTheaterEvents = function () {
+    window.yuseTheaterApp.bindPageEvents();
+  };
 }
