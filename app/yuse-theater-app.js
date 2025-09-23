@@ -1,238 +1,220 @@
 if (typeof window.YuseTheaterApp === 'undefined') {
   window.YuseTheaterRegex = {
-    // 1. 保留fullMatch：精准定位<yuse_data>区域（核心！）
-    fullMatch: /<yuse_data>([\s\S]*?)<\/yuse_data>/s,
-    // 2. 无需再用正则拆HTML，改用DOM解析
-    pageSelectors: {
-      announcements: '.list-item[data-type="announcement"]',
-      customizations: '.list-item[data-type="customization"]',
-      theater: '.list-item[data-type="theater"]',
-      theaterHot: '.list-item[data-type="theater"]', // 筛选栏对应数据
-      theaterNew: '.list-item[data-type="theater"]',
-      theaterRecommended: '.list-item[data-type="theater"]',
-      theaterPaid: '.list-item[data-type="theater"]',
-      shop: '.list-item[data-type="shop"]'
-    }
+    fullMatch: /<yuse_data>.*?<announcements>(.*?)<\/announcements>.*?<customizations>(.*?)<\/customizations>.*?<theater>(.*?)<\/theater>.*?<theater_hot>(.*?)<\/theater_hot>.*?<theater_new>(.*?)<\/theater_new>.*?<theater_recommended>(.*?)<\/theater_recommended>.*?<theater_paid>(.*?)<\/theater_paid>.*?<shop>(.*?)<\/shop>.*?<\/yuse_data>/s,
+    announcement: /\[通告\|([^\|]+)\|([^\|]+)\|([^\|]+)\|([^\|]+)\|([^\|]+)\|([^\]]+)\]/g,
+    customization: /\[定制\|([^\|]+)\|([^\|]+)\|([^\|]+)\|([^\|]+)\|([^\|]+)\|([^\]]+)\]/g,
+    theater: /\[剧场\|([^\|]+)\|([^\|]+)\|([^\|]+)\|([^\|]+)\|([^\|]+)\|([^\|]+)\|([^\|]+)\|([^\]]+)\]/g,
+    shop: /\[商品\|([^\|]+)\|([^\|]+)\|([^\|]+)\|([^\|]+)\|([^\]]+)\]/g
   };
-
   window.YuseTheaterPages = {
-    announcements: { name: "通告拍摄", apiKeyword: "announcements", refreshMsg: "[刷新通告拍摄|请求新通告列表]" },
-    customizations: { name: "粉丝定制", apiKeyword: "customizations", refreshMsg: "[刷新粉丝定制|请求新定制列表]" },
-    theater: { name: "剧场列表", apiKeyword: "theater", refreshMsg: "[刷新剧场列表|请求新剧场内容]" },
-    shop: { name: "欲色商城", apiKeyword: "shop", refreshMsg: "[刷新欲色商城|请求新商品列表]" }
+    announcements: {
+      name: "通告拍摄",
+      apiKeyword: "announcements",
+      refreshMsg: "[刷新通告拍摄|请求新通告列表]"
+    },
+    customizations: {
+      name: "粉丝定制",
+      apiKeyword: "customizations",
+      refreshMsg: "[刷新粉丝定制|请求新定制列表]"
+    },
+    theater: {
+      name: "剧场列表",
+      apiKeyword: "theater",
+      refreshMsg: "[刷新剧场列表|请求新剧场内容]"
+    },
+    shop: {
+      name: "欲色商城",
+      apiKeyword: "shop",
+      refreshMsg: "[刷新欲色商城|请求新商品列表]"
+    }
   };
 
   class YuseTheaterApp {
     constructor() {
       this.currentView = 'announcements';
       this.savedData = {
-        announcements: '<div class="loading">加载中...</div>',
-        customizations: '<div class="loading">加载中...</div>',
-        theater: '<div class="loading">加载中...</div>',
-        theaterHot: '<div class="loading">加载中...</div>',
-        theaterNew: '<div class="loading">加载中...</div>',
-        theaterRecommended: '<div class="loading">加载中...</div>',
-        theaterPaid: '<div class="loading">加载中...</div>',
-        shop: '<div class="loading">加载中...</div>'
+        announcements: '<div class="loading">初始化加载...</div>',
+        customizations: '<div class="loading">初始化加载...</div>',
+        theater: '<div class="loading">初始化加载...</div>',
+        shop: '<div class="loading">初始化加载...</div>'
       };
-      this.renderCooldown = 300;
+      this.isAutoRender = true;
       this.lastRenderTime = 0;
+      this.renderCooldown = 300;
       this.init();
     }
 
     init() {
-      console.log('[YuseTheater] 初始化');
+      console.log('[YuseTheater] 初始化欲色剧场 App');
       this.setupDOMObserver();
-      this.createRefreshButton();
+      this.setupEventListeners();
+      this.updateAppContent();
       this.parseNewData(); // 初始化强制解析
     }
 
-    // 保留：创建顶部刷新按钮
-    createRefreshButton() {
-      const header = document.querySelector('.app-header') || document.querySelector('.header');
-      if (!header) return;
-      const refreshBtn = document.createElement('button');
-      refreshBtn.id = 'yuse-global-refresh';
-      refreshBtn.style.cssText = `background: var(--accent-color); color: #fff; border: none; border-radius: 6px; padding: 4px 10px; font-size: 12px; cursor: pointer; display: flex; align-items: center; gap: 4px; margin-left: auto;`;
-      refreshBtn.innerHTML = '🔄 刷新';
-      refreshBtn.addEventListener('click', () => this.parseNewData());
-      header.appendChild(refreshBtn);
+    setupDOMObserver() {
+      try {
+        const chatContainer = document.querySelector('#chat') || document.querySelector('.mes');
+        if (chatContainer) {
+          new MutationObserver(() => this.parseNewData()).observe(chatContainer, {
+            childList: true,
+            subtree: true
+          });
+        }
+      } catch (error) {
+        console.warn('[YuseTheater] DOM观察器设置失败:', error);
+      }
     }
 
-    // 核心修复：用fullMatch+DOM解析HTML数据
+    setupEventListeners() {
+      window.addEventListener('messageUpdate', () => this.parseNewData());
+    }
+
     parseNewData() {
-      if (Date.now() - this.lastRenderTime < this.renderCooldown) return;
+      if (!this.isAutoRender) return;
+      const currentTime = Date.now();
+      if (currentTime - this.lastRenderTime < this.renderCooldown) return;
+
       try {
         const chatData = this.getChatContent();
-        // 1. 第一步：用fullMatch提取<yuse_data>内的所有HTML（关键！）
-        const fullMatchResult = chatData.match(window.YuseTheaterRegex.fullMatch);
-        if (!fullMatchResult) {
-          console.warn('[YuseTheater] 未找到<yuse_data>标签');
-          this.lastRenderTime = Date.now();
-          return;
+        const fullMatch = chatData.match(window.YuseTheaterRegex.fullMatch);
+        if (fullMatch) {
+          const [, announcements, customizations, theater, theaterHot, theaterNew, theaterRecommended, theaterPaid, shop] = fullMatch;
+          this.savedData = {
+            announcements: announcements || '<div class="empty-state">暂无通告</div>',
+            customizations: customizations || '<div class="empty-state">暂无定制</div>',
+            theater: theater || '<div class="empty-state">暂无剧场</div>',
+            theaterHot, theaterNew, theaterRecommended, theaterPaid,
+            shop: shop || '<div class="empty-state">暂无商品</div>'
+          };
+          this.updateAppContent(); // 数据变更立即更新
         }
-        const yuseHtml = fullMatchResult[1]; // 拿到<yuse_data>内的完整HTML
-
-        // 2. 第二步：用DOMParser解析HTML（正确处理嵌套结构）
-        const parser = new DOMParser();
-        const doc = parser.parseFromString(yuseHtml, 'text/html');
-
-        // 3. 第三步：按页面类型提取对应DOM元素，生成渲染内容
-        this.savedData.announcements = this.renderPageItems(doc, 'announcements');
-        this.savedData.customizations = this.renderPageItems(doc, 'customizations');
-        this.savedData.theater = this.renderPageItems(doc, 'theater');
-        this.savedData.shop = this.renderPageItems(doc, 'shop');
-
-        // 剧场筛选栏数据（从HTML中提取对应分类，此处示例用默认剧场数据，可按实际HTML结构调整）
-        this.savedData.theaterHot = this.savedData.theater;
-        this.savedData.theaterNew = this.savedData.theater;
-        this.savedData.theaterRecommended = this.savedData.theater;
-        this.savedData.theaterPaid = this.savedData.theater;
-
-        this.updateAppContent(); // 解析成功后更新页面
       } catch (error) {
-        console.error('[YuseTheater] 解析失败:', error);
+        console.error('[YuseTheater] 解析数据失败:', error);
       }
-      this.lastRenderTime = Date.now();
+      this.lastRenderTime = currentTime;
     }
 
-    // 辅助：从DOM中提取指定页面的列表项，生成渲染HTML
-    renderPageItems(doc, pageKey) {
-      const selector = window.YuseTheaterRegex.pageSelectors[pageKey];
-      const items = doc.querySelectorAll(selector);
-      if (items.length === 0) return '<div class="empty-state">暂无数据</div>';
-
-      let html = '';
-      items.forEach(item => {
-        // 直接从DOM元素获取data-*属性（精准无错）
-        const data = {
-          type: item.dataset.type,
-          title: item.dataset.title || '',
-          description: item.dataset.description || '',
-          actor: item.dataset.actor || '',
-          location: item.dataset.location || '',
-          payment: item.dataset.payment || '',
-          fanId: item.dataset.fanId || '',
-          typeName: item.dataset.typeName || '',
-          request: item.dataset.request || '',
-          deadline: item.dataset.deadline || '',
-          notes: item.dataset.notes || '',
-          cover: item.dataset.cover || '',
-          popularity: item.dataset.popularity || '',
-          favorites: item.dataset.favorites || '',
-          views: item.dataset.views || '',
-          price: item.dataset.price || '',
-          highestBid: item.dataset.highestBid || ''
-        };
-
-        // 按类型生成列表项HTML（与你的样板数据结构匹配）
-        switch (data.type) {
-          case 'announcement':
-            html += `
-              <div class="list-item" data-type="announcement" data-title="${data.title}" data-description="${data.description}" data-actor="${data.actor}" data-location="${data.location}" data-payment="${data.payment}">
-                <div class="item-title">${data.title}</div>
-                <div class="item-meta"><span>📍 ${data.location}</span><span>🎬 ${data.actor}</span><span class="item-price">💰 ${data.payment}</span></div>
-              </div>
-            `;
-            break;
-          case 'customization':
-            html += `
-              <div class="list-item" data-type="customization" data-fanId="${data.fanId}" data-typeName="${data.typeName}" data-request="${data.request}" data-deadline="${data.deadline}" data-notes="${data.notes}" data-payment="${data.payment}">
-                <div class="item-title">${data.fanId} 的 ${data.typeName} 定制</div>
-                <div class="item-meta"><span>⏰ ${data.deadline}</span><span class="item-price">💰 ${data.payment}</span></div>
-                <div class="item-actions"><button class="action-button accept-btn">接取</button></div>
-              </div>
-            `;
-            break;
-          case 'theater':
-            html += `
-              <div class="list-item" data-type="theater" data-title="${data.title}" data-cover="${data.cover}" data-description="${data.description}" data-popularity="${data.popularity}" data-favorites="${data.favorites}" data-views="${data.views}" data-price="${data.price}">
-                <div class="item-title">${data.title}</div>
-                <div class="item-meta"><span>❤️ ${data.popularity}</span><span>⭐ ${data.favorites}</span><span>▶️ ${data.views}</span><span class="item-price">💰 ${data.price}</span></div>
-              </div>
-            `;
-            break;
-          case 'shop':
-            html += `
-              <div class="list-item" data-type="shop" data-name="${data.title}" data-description="${data.description}" data-price="${data.price}" data-highestBid="${data.highestBid}">
-                <div class="item-title">${data.title}</div>
-                <div class="item-meta"><span class="item-price">💰 ${data.price}</span><span>当前最高价：${data.highestBid}</span></div>
-              </div>
-            `;
-            break;
-        }
-      });
-      return html;
-    }
-
-    // 保留：获取对话内容（包含开场白）
     getChatContent() {
       const chatElement = document.querySelector('#chat') || document.querySelector('.mes');
       return chatElement?.innerText || '';
     }
 
-    // 以下方法（switchView、getAppContent、updateAppContent等）保持不变，省略重复代码...
     switchView(pageKey) {
       if (!window.YuseTheaterPages[pageKey] || this.currentView === pageKey) return;
       this.currentView = pageKey;
+      // 切换时强制显示加载状态，防止空屏
+      this.savedData[pageKey] = '<div class="loading">加载中...</div>';
       this.updateAppContent();
+      // 延迟解析（模拟数据加载，实际已缓存）
+      setTimeout(() => this.updateAppContent(), 50);
     }
 
     getAppContent() {
-      const page = window.YuseTheaterPages[this.currentView];
-      const data = this.savedData[this.currentView];
-      let content = '';
-      if (this.currentView === 'theater') {
-        content = `
+      const pageConfig = window.YuseTheaterPages[this.currentView];
+      const pageData = this.savedData[this.currentView];
+      const content = `
+        <div class="yuse-content-area">
+          ${this.renderPageContent(pageData)}
+        </div>
+      `;
+      const nav = Object.keys(window.YuseTheaterPages).map(key => `
+        <button class="yuse-nav-btn ${key === this.currentView ? 'active' : ''}" 
+                data-page="${key}" 
+                onclick="yuseTheaterApp.switchView('${key}')">
+          ${this.getNavIcon(key)} ${window.YuseTheaterPages[key].name}
+        </button>
+      `).join('');
+
+      return `
+        <div class="yuse-theater-app">
+          ${content}
+          <div class="yuse-nav-bar">${nav}</div>
+        </div>
+      `;
+    }
+
+    renderPageContent(data) {
+      return `
+        ${this.currentView === 'theater' ? `
           <div class="theater-filters">
             <button class="filter-btn" data-filter="hot">🔥 最热</button>
             <button class="filter-btn" data-filter="new">🆕 最新</button>
             <button class="filter-btn" data-filter="recommended">❤️ 推荐</button>
             <button class="filter-btn" data-filter="paid">💸 高价定制</button>
           </div>
-          <div class="yuse-theater-list" id="theater-list">${data}</div>
-        `;
-      } else {
-        content = `<div class="${page.apiKeyword}-list">${data}</div>`;
-      }
-      return `
-        <div class="yuse-theater-app" style="position: relative; height: 100%; overflow: hidden;">
-          <div class="yuse-content-area">${content}</div>
-          <div class="yuse-nav-bar" style="position: fixed; bottom: 0; left: 0; width: 100%; background: #fff; border-top: 1px solid #f0f0f0; padding: 10px 0;">
-            ${Object.entries(window.YuseTheaterPages).map(([k, v]) => `
-              <button class="yuse-nav-btn ${k === this.currentView ? 'active' : ''}" onclick="yuseTheaterApp.switchView('${k}')">
-                ${this.getNavIcon(k)} ${v.name}
-              </button>
-            `).join('')}
-          </div>
-        </div>
+        ` : ''}
+        ${data}
       `;
     }
 
-    getNavIcon(pageKey) {
-      return { announcements: '📢', customizations: '💖', theater: '🎬', shop: '🛒' }[pageKey];
-    }
-
     updateAppContent() {
-      const appEl = document.getElementById('app-content');
-      if (appEl) {
-        appEl.innerHTML = this.getAppContent();
-        this.bindPageEvents();
-      }
+      const appElement = document.getElementById('app-content');
+      if (!appElement) return;
+
+      // 使用文档片段优化DOM更新
+      const fragment = document.createDocumentFragment();
+      fragment.innerHTML = this.getAppContent();
+      
+      // 保留滚动位置（关键优化）
+      const oldContent = appElement.firstChild;
+      const scrollTop = oldContent?.scrollTop || 0;
+      
+      appElement.replaceChildren(fragment);
+      appElement.firstChild.scrollTop = scrollTop;
+
+      // 立即绑定事件（解决点击无响应）
+      this.bindPageEvents();
     }
 
     bindPageEvents() {
-      // 事件绑定逻辑保持不变，省略重复代码...
+      const app = document.getElementById('app-content');
+      app?.addEventListener('click', (e) => {
+        // 接取按钮事件（直接发送AI，保留用户需求）
+        if (e.target.classList.contains('accept-btn')) {
+          const item = e.target.closest('.list-item');
+          const type = item.dataset.type;
+          if (type === 'announcement') {
+            this.sendToSillyTavern(`[通告|${item.dataset.title}|${item.dataset.description}|${item.dataset.actor}|${item.dataset.location}|${item.dataset.payment}]`);
+          } else if (type === 'customization') {
+            this.sendToSillyTavern(`[定制|${item.dataset.typeName}|${item.dataset.request}|${item.dataset.fanId}|${item.dataset.deadline}|${item.dataset.notes}|${item.dataset.payment}]`);
+          }
+          item.style.opacity = '0';
+          setTimeout(() => item.remove(), 300);
+          return;
+        }
+
+        // 筛选按钮事件
+        if (e.target.classList.contains('filter-btn')) {
+          const filter = e.target.dataset.filter;
+          const theaterList = document.getElementById('theater-list');
+          theaterList.innerHTML = this.savedData[`theater_${filter}`] || '<div class="empty-state">暂无数据</div>';
+        }
+      });
     }
 
-    // 其他方法（handleAccept、showItemModal等）保持不变，省略重复代码...
+    sendToSillyTavern(message) {
+      const textarea = document.querySelector('#send_textarea');
+      textarea.value = textarea.value ? `${textarea.value}\n${message}` : message;
+      textarea.dispatchEvent(new Event('input'));
+      textarea.focus();
+    }
+
+    getNavIcon(pageKey) {
+      return {
+        announcements: '📢',
+        customizations: '💖',
+        theater: '🎬',
+        shop: '🛒'
+      }[pageKey];
+    }
   }
 
   window.YuseTheaterApp = YuseTheaterApp;
   window.yuseTheaterApp = new YuseTheaterApp();
+  console.log('[YuseTheater] 终极修复版初始化完成');
 }
 
-// 保留全局函数（兼容手机插件）
-window.getYuseTheaterAppContent = () => window.yuseTheaterApp?.getAppContent() || '<div class="error-state">未初始化</div>';
-window.bindYuseTheaterEvents = () => window.yuseTheaterApp?.bindPageEvents();
-window.refreshYuseTheaterPage = (pageKey) => window.yuseTheaterApp?.parseNewData();
+// 兼容旧版调用
+window.getYuseTheaterAppContent = () => window.yuseTheaterApp.getAppContent();
+window.bindYuseTheaterEvents = () => {};
