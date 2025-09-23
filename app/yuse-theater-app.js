@@ -42,13 +42,13 @@ if (typeof window.YuseTheaterApp === 'undefined') {
       this.loadDefaultData();
       this.setupDOMObserver();
       this.setupEventListeners();
-      this.createRefreshButton();
+      this.createRefreshButton(); 
       this.updateAppContent();
-      this.parseNewData(); // 初始化时主动解析
+      this.parseNewData(); 
     }
     loadDefaultData() {
       for (const page in window.YuseTheaterPages) {
-        this.savedData[page] = '<div class="loading">加载中，请稍候...</div>'; // 强制显示加载状态
+        this.savedData[page] = '<div class="loading">加载中...</div>'; // 强制初始加载状态
       }
     }
     setupDOMObserver() {
@@ -81,7 +81,6 @@ if (typeof window.YuseTheaterApp === 'undefined') {
       window.addEventListener('contextUpdate', () => this.parseNewData());
       window.addEventListener('messageUpdate', () => this.parseNewData());
     }
-    // 顶部刷新按钮：直接发送请求给AI
     createRefreshButton() {
       const header = document.querySelector('.app-header') || document.querySelector('.header');
       if (!header) return;
@@ -93,7 +92,7 @@ if (typeof window.YuseTheaterApp === 'undefined') {
         margin-left: auto;
       `;
       refreshBtn.innerHTML = '🔄 刷新';
-      refreshBtn.addEventListener('click', () => this.sendRefreshRequest(this.currentView, true)); // 第二个参数为true时直接发送
+      refreshBtn.addEventListener('click', () => this.sendRefreshRequest(this.currentView, true)); // 新增直接发送标识
       header.appendChild(refreshBtn);
     }
     parseNewData() {
@@ -117,7 +116,7 @@ if (typeof window.YuseTheaterApp === 'undefined') {
         }
       } catch (error) {
         console.error('[YuseTheater] 解析数据失败:', error);
-        this.savedData[this.currentView] = '<div class="empty-state">数据解析失败，请重试</div>';
+        this.savedData[this.currentView] = '<div class="empty-state">数据解析失败，请刷新重试</div>';
         this.updateAppContent();
       }
       this.lastRenderTime = currentTime;
@@ -144,34 +143,42 @@ if (typeof window.YuseTheaterApp === 'undefined') {
       }
       return '';
     }
-    // 刷新逻辑优化：直接发送给AI并触发解析
+    // 刷新逻辑修改：直接发送给AI并触发解析
     sendRefreshRequest(pageKey, sendToAI = false) {
       const pageConfig = window.YuseTheaterPages[pageKey];
       if (!pageConfig) return;
       const refreshMsg = pageConfig.refreshMsg;
       if (sendToAI) {
-        this.sendToSillyTavern(refreshMsg); // 直接发送给AI
-        this.showToast(`正在刷新${pageConfig.name}...`);
+        this.sendToSillyTavern(refreshMsg, true); // 直接发送给AI
+      } else {
+        this.sendToSillyTavern(refreshMsg); // 仅填输入框
       }
+      this.showToast(`正在刷新${pageConfig.name}...`);
       this.savedData[pageKey] = '<div class="loading">刷新中...</div>';
       this.updateAppContent();
       setTimeout(() => this.parseNewData(), 500); // 延迟触发解析，确保AI响应
     }
-    sendToSillyTavern(message) {
+    sendToSillyTavern(message, sendImmediately = false) {
       try {
         const textarea = document.querySelector('#send_textarea');
-        const sendBtn = document.querySelector('#send_but');
-        if (textarea && sendBtn) {
-          textarea.value = message;
+        if (textarea) {
+          textarea.value = textarea.value ? `${textarea.value}\n${message}` : message;
           textarea.dispatchEvent(new Event('input', { bubbles: true }));
-          sendBtn.click(); // 直接发送给AI
+          textarea.focus();
+          if (sendImmediately) {
+            const sendBtn = document.querySelector('#send_but');
+            if (sendBtn) sendBtn.click();
+          }
           return true;
         }
         const backupTextarea = document.querySelector('textarea');
         if (backupTextarea) {
-          backupTextarea.value = message;
+          backupTextarea.value = backupTextarea.value ? `${backupTextarea.value}\n${message}` : message;
           backupTextarea.dispatchEvent(new Event('input', { bubbles: true }));
-          backupTextarea.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true }));
+          backupTextarea.focus();
+          if (sendImmediately) {
+            backupTextarea.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true }));
+          }
           return true;
         }
       } catch (error) {
@@ -182,9 +189,8 @@ if (typeof window.YuseTheaterApp === 'undefined') {
     switchView(pageKey) {
       if (!window.YuseTheaterPages[pageKey] || this.currentView === pageKey) return;
       this.currentView = pageKey;
-      this.savedData[pageKey] = '<div class="loading">切换中，请稍候...</div>'; // 切换时显示加载
       this.updateAppContent();
-      this.sendRefreshRequest(pageKey, true); // 切换页面时直接发送刷新请求给AI
+      this.parseNewData(); // 切换后立即解析数据，彻底解决空屏
     }
     getAppContent() {
       const pageConfig = window.YuseTheaterPages[this.currentView];
@@ -572,7 +578,7 @@ window.bindYuseTheaterEvents = function () {
 window.bindYuseTheaterAppEvents = window.bindYuseTheaterEvents;
 window.refreshYuseTheaterPage = function (pageKey) {
   if (window.yuseTheaterApp) {
-    window.yuseTheaterApp.sendRefreshRequest(pageKey, true);
+    window.yuseTheaterApp.sendRefreshRequest(pageKey, true); // 直接发送给AI
   }
 };
 console.log('[YuseTheater] 欲色剧场 App 脚本加载完成');
