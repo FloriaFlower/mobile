@@ -36,7 +36,6 @@ if (typeof window.YuseTheaterApp === 'undefined') {
       this.lastRenderTime = 0;
       this.renderCooldown = 500;
       this.handlePageClick = this.handlePageClick.bind(this);
-      // 原生页眉选择器（根据实际场景调整，此处默认匹配常见原生页眉类名）
       this.nativeHeaderSelector = '.app-header, #app-header, header';
       this.init();
     }
@@ -135,7 +134,7 @@ if (typeof window.YuseTheaterApp === 'undefined') {
       const pageConfig = window.YuseTheaterPages[pageKey];
       if (!pageConfig) return;
       const refreshMsg = pageConfig.refreshMsg;
-      this.sendToSillyTavern(refreshMsg, true);
+      this.sendToSillyTavern(refreshMsg, true); // 刷新消息自动发送给AI
       this.showToast(`正在刷新${pageConfig.name}...`);
     }
     sendToSillyTavern(message, isAutoSend = false) {
@@ -146,7 +145,7 @@ if (typeof window.YuseTheaterApp === 'undefined') {
           textarea.value = textarea.value ? `${textarea.value}\n${message}` : message;
           textarea.dispatchEvent(new Event('input', { bubbles: true }));
           if (isAutoSend && sendBtn) {
-            sendBtn.click();
+            sendBtn.click(); // 自动发送刷新请求给AI
           }
           return true;
         }
@@ -169,22 +168,25 @@ if (typeof window.YuseTheaterApp === 'undefined') {
       this.currentView = pageKey;
       this.updateAppContent();
       this.updateHeader();
-      // 切换页面时更新原生页眉的刷新按钮
       this.updateNativeHeaderRefreshBtn();
     }
-    // 核心新增：更新原生页眉的刷新按钮（绑定当前页面的刷新事件）
+    // 核心修复：刷新按钮单独绑定点击事件（解决原生页眉按钮不在app-content内的问题）
     updateNativeHeaderRefreshBtn() {
       const nativeHeader = document.querySelector(this.nativeHeaderSelector);
       if (!nativeHeader) return;
-      // 移除已有的刷新按钮，避免重复
+      // 移除旧按钮，避免重复
       const oldRefreshBtn = nativeHeader.querySelector('.yuse-refresh-btn');
       if (oldRefreshBtn) oldRefreshBtn.remove();
-      // 创建新的刷新按钮
+      // 创建新刷新按钮
       const refreshBtn = document.createElement('button');
       refreshBtn.className = 'refresh-btn yuse-refresh-btn';
       refreshBtn.dataset.page = this.currentView;
       refreshBtn.innerHTML = '🔄 刷新';
-      // 插入到原生页眉右侧（确保页眉是flex布局）
+      // 核心修复：直接给按钮绑定点击事件（不依赖app-content的事件委托）
+      refreshBtn.addEventListener('click', () => {
+        this.sendRefreshRequest(this.currentView); // 触发刷新，发送请求给AI
+      });
+      // 插入原生页眉右侧
       nativeHeader.style.display = 'flex';
       nativeHeader.style.justifyContent = 'space-between';
       nativeHeader.style.alignItems = 'center';
@@ -194,7 +196,6 @@ if (typeof window.YuseTheaterApp === 'undefined') {
       const pageConfig = window.YuseTheaterPages[this.currentView];
       const pageData = this.savedData[this.currentView] || '<div class="empty-state">暂无数据</div>';
       let content = '';
-      // 移除原页面内部页眉，仅保留内容区
       switch (this.currentView) {
         case 'announcements':
           content = `<div class="yuse-announcement-list">${pageData}</div>`;
@@ -225,7 +226,6 @@ if (typeof window.YuseTheaterApp === 'undefined') {
           </button>
         `;
       }).join('');
-      // 应用容器添加背景渐变（JS内联确保优先级，也可在CSS中设置）
       return `
         <div class="yuse-theater-app" style="position: relative; height: 100%; overflow: hidden;">
           <div class="yuse-content-area">${content}</div>
@@ -253,12 +253,10 @@ if (typeof window.YuseTheaterApp === 'undefined') {
         
         const contentArea = appElement.querySelector('.yuse-content-area');
         if (contentArea) {
-          // 调整内容区内边距：顶部避开原生页眉，底部避开导航栏
           contentArea.style.padding = '16px 16px 60px';
           contentArea.style.overflowY = 'auto';
           contentArea.style.height = 'calc(100vh - 120px)';
         }
-        // 更新原生页眉的刷新按钮
         this.updateNativeHeaderRefreshBtn();
         appElement.addEventListener('click', this.handlePageClick);
         console.log('[YuseTheater] 页面内容更新完成（对齐原版）');
@@ -269,13 +267,7 @@ if (typeof window.YuseTheaterApp === 'undefined') {
     handlePageClick(e) {
       const appContainer = document.getElementById('app-content');
       if (!appContainer) return;
-      // 1. 刷新按钮事件（匹配原生页眉的刷新按钮）
-      const refreshBtn = e.target.closest('.refresh-btn');
-      if (refreshBtn) {
-        const pageKey = refreshBtn.dataset.page;
-        this.sendRefreshRequest(pageKey);
-        return;
-      }
+      // 移除原refreshBtn处理（已单独绑定事件）
       // 2. 导航按钮事件
       const navBtn = e.target.closest('.yuse-nav-btn');
       if (navBtn) {
@@ -597,7 +589,6 @@ if (typeof window.YuseTheaterApp === 'undefined') {
       if (appElement) {
         appElement.removeEventListener('click', this.handlePageClick);
       }
-      // 销毁时移除原生页眉的刷新按钮
       const nativeHeader = document.querySelector(this.nativeHeaderSelector);
       if (nativeHeader) {
         const refreshBtn = nativeHeader.querySelector('.yuse-refresh-btn');
