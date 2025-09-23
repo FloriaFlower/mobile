@@ -25,10 +25,20 @@
 
 /* 应用容器（全屏+渐变背景） */
 .yuse-theater-app {
-  display: flex;
-  flex-direction: column;
+  position: relative;
   height: 100%;
-  background: linear-gradient(135deg, var(--light-blue), var(--light-pink)); /* 原版渐变 */
+  overflow: hidden;
+}
+
+.yuse-nav-bar {
+   position: absolute !important; /* 强制覆盖JS内联样式（防止冲突） */
+   bottom: 0;
+   left: 0;
+   width: 100%;
+   box-sizing: border-box;
+   background: #fff; /* 增加背景色，避免透明穿透 */
+   box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.06); /* 底部阴影提升层次感 */
+   padding: 8px 0; /* 内边距优化，适配按钮大小 */
 }
 
 /* 页面头部（标题+刷新按钮，对齐原版） */
@@ -66,11 +76,10 @@
 
 /* 内容区域（仅保留单滚动，删除重复） */
 .yuse-content-area {
-  flex: 1;
-  overflow-y: auto;
-  padding: 15px;
-  background: #fafafa; /* 原版背景 */
-  box-sizing: border-box;
+   padding-bottom: 60px !important; /* 优先级确保不被覆盖，适配导航栏高度 */
+   height: calc(100vh - 120px) !important;
+   overflow-y: auto !important;
+   box-sizing: border-box;
 }
 
 /* 内容区滚动条（对齐原版） */
