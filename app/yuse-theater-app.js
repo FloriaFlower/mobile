@@ -34,7 +34,7 @@ if (typeof window.YuseTheaterApp === 'undefined') {
       this.savedData = {};
       this.isAutoRender = true;
       this.lastRenderTime = 0;
-      this.renderCooldown = 500;
+      this.renderCooldown = 300; // 缩短冷却时间，提升响应
       this.init();
     }
     init() {
@@ -42,13 +42,14 @@ if (typeof window.YuseTheaterApp === 'undefined') {
       this.loadDefaultData();
       this.setupDOMObserver();
       this.setupEventListeners();
+      this.createRefreshButton(); // 新增：创建顶部刷新按钮
       this.updateAppContent();
       this.parseNewData(); // 初始化时主动解析已有对话框内容
     }
     loadDefaultData() {
       for (const page in window.YuseTheaterPages) {
         if (!this.savedData[page]) {
-          this.savedData[page] = '<div class="empty-state">等待加载数据...</div>';
+          this.savedData[page] = '<div class="loading">加载中...</div>'; // 新增加载状态
         }
       }
     }
@@ -82,6 +83,21 @@ if (typeof window.YuseTheaterApp === 'undefined') {
       window.addEventListener('contextUpdate', () => this.parseNewData());
       window.addEventListener('messageUpdate', () => this.parseNewData());
     }
+    // 新增：创建顶部刷新按钮，绑定到原生页眉右侧
+    createRefreshButton() {
+      const header = document.querySelector('.app-header') || document.querySelector('.header'); // 适配原生页眉类名
+      if (!header) return;
+      const refreshBtn = document.createElement('button');
+      refreshBtn.id = 'yuse-global-refresh';
+      refreshBtn.style.cssText = `
+        background: var(--accent-color); color: #fff; border: none; border-radius: 6px;
+        padding: 4px 10px; font-size: 12px; cursor: pointer; display: flex; align-items: center; gap: 4px;
+        margin-left: auto;
+      `;
+      refreshBtn.innerHTML = '🔄 刷新';
+      refreshBtn.addEventListener('click', () => this.sendRefreshRequest(this.currentView));
+      header.appendChild(refreshBtn);
+    }
     parseNewData() {
       if (!this.isAutoRender) return;
       const currentTime = Date.now();
@@ -103,6 +119,8 @@ if (typeof window.YuseTheaterApp === 'undefined') {
         }
       } catch (error) {
         console.error('[YuseTheater] 解析数据失败:', error);
+        this.savedData[this.currentView] = '<div class="empty-state">数据解析失败，请刷新重试</div>';
+        this.updateAppContent();
       }
       this.lastRenderTime = currentTime;
     }
@@ -134,6 +152,8 @@ if (typeof window.YuseTheaterApp === 'undefined') {
       const refreshMsg = pageConfig.refreshMsg;
       this.sendToSillyTavern(refreshMsg);
       this.showToast(`正在刷新${pageConfig.name}...`);
+      this.savedData[pageKey] = '<div class="loading">刷新中...</div>'; // 显示刷新状态
+      this.updateAppContent();
     }
     sendToSillyTavern(message) {
       try {
@@ -160,6 +180,7 @@ if (typeof window.YuseTheaterApp === 'undefined') {
       if (!window.YuseTheaterPages[pageKey] || this.currentView === pageKey) return;
       this.currentView = pageKey;
       this.updateAppContent();
+      this.parseNewData(); // 切换页面时主动解析数据，避免空屏
     }
     getAppContent() {
       const pageConfig = window.YuseTheaterPages[this.currentView];
@@ -228,9 +249,9 @@ if (typeof window.YuseTheaterApp === 'undefined') {
         if (contentArea) {
           contentArea.style.paddingBottom = '60px';
           contentArea.style.overflowY = 'auto';
-          contentArea.style.height = 'calc(100vh - 120px)'; // 适配原生页眉高度
+          contentArea.style.height = 'calc(100vh - 120px)';
         }
-        this.bindPageEvents(); // 立即绑定事件，解决空屏后无响应
+        this.bindPageEvents();
         console.log('[YuseTheater] 页面内容更新完成');
       } else {
         console.error('[YuseTheater] 未找到app-content容器，无法更新内容');
@@ -332,14 +353,6 @@ if (typeof window.YuseTheaterApp === 'undefined') {
             theaterList.innerHTML = filteredData;
           }, 200);
         }
-        e.stopPropagation();
-        return;
-      }
-      // 刷新按钮事件（原生页眉的刷新按钮）
-      const refreshBtn = target.closest('.refresh-btn');
-      if (refreshBtn) {
-        const pageKey = this.currentView;
-        this.sendRefreshRequest(pageKey);
         e.stopPropagation();
         return;
       }
