@@ -93,7 +93,7 @@ if (typeof window.YuseTheaterApp === 'undefined') {
         const fullMatch = chatData.match(window.YuseTheaterRegex.fullMatch);
         if (fullMatch) {
           const [, announcements, customizations, theater, theaterHot, theaterNew, theaterRecommended, theaterPaid, shop] = fullMatch;
-          // 核心修改：对每个模块添加“存在且去空格后非空”的判断
+          // 核心修改：每个模块赋值均添加“内容存在且去空格后非空”判断
           if (announcements && announcements.trim() !== '') this.savedData.announcements = announcements;
           if (customizations && customizations.trim() !== '') this.savedData.customizations = customizations;
           if (theater && theater.trim() !== '') this.savedData.theater = theater;
