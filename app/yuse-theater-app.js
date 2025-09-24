@@ -1,6 +1,6 @@
 if (typeof window.YuseTheaterApp === 'undefined') {
   window.YuseTheaterRegex = {
-    // 保持已兼容单个模块的正则逻辑
+    // 支持单个模块数据匹配
     fullMatch: /<yuse_data>.*?(?:<announcements>(.*?)<\/announcements>.*?)?(?:<customizations>(.*?)<\/customizations>.*?)?(?:<theater>(.*?)<\/theater>.*?)?(?:<theater_hot>(.*?)<\/theater_hot>.*?)?(?:<theater_new>(.*?)<\/theater_new>.*?)?(?:<theater_recommended>(.*?)<\/theater_recommended>.*?)?(?:<theater_paid>(.*?)<\/theater_paid>.*?)?(?:<shop>(.*?)<\/shop>.*?)?<\/yuse_data>/s,
     announcement: /\[通告\|([^\|]+)\|([^\|]+)\|([^\|]+)\|([^\|]+)\|([^\|]+)\|([^\]]+)\]/g,
     customization: /\[定制\|([^\|]+)\|([^\|]+)\|([^\|]+)\|([^\|]+)\|([^\|]+)\|([^\]]+)\]/g,
@@ -29,6 +29,40 @@ if (typeof window.YuseTheaterApp === 'undefined') {
       refreshMsg: "[刷新欲色商城|请求新商品列表]"
     }
   };
+
+  // --------------- 核心修复1：提前定义全局函数，确保外部可访问 ---------------
+  window.getYuseTheaterAppContent = function () {
+    if (window.yuseTheaterApp) {
+      console.log('[YuseTheater] 全局函数调用：getYuseTheaterAppContent');
+      return window.yuseTheaterApp.getAppContent();
+    }
+    return '<div class="error-state">欲色剧场 app 实例未初始化</div>';
+  };
+
+  window.bindYuseTheaterEvents = function () {
+    if (window.yuseTheaterApp) {
+      console.log('[YuseTheater] 全局函数调用：bindYuseTheaterEvents');
+      setTimeout(() => {
+        const appElement = document.getElementById('app-content');
+        if (appElement) {
+          appElement.addEventListener('click', window.yuseTheaterApp.handlePageClick);
+        }
+      }, 100);
+    } else {
+      console.warn('[YuseTheater] bindYuseTheaterEvents：app 实例未找到');
+    }
+  };
+
+  // 保持别名一致性
+  window.bindYuseTheaterAppEvents = window.bindYuseTheaterEvents;
+
+  window.refreshYuseTheaterPage = function (pageKey) {
+    if (window.yuseTheaterApp) {
+      console.log('[YuseTheater] 全局函数调用：refreshYuseTheaterPage，页面键：', pageKey);
+      window.yuseTheaterApp.sendRefreshRequest(pageKey);
+    }
+  };
+
   class YuseTheaterApp {
     constructor() {
       this.currentView = 'announcements';
@@ -40,6 +74,7 @@ if (typeof window.YuseTheaterApp === 'undefined') {
       this.nativeHeaderSelector = '.app-header, #app-header, header';
       this.init();
     }
+
     init() {
       console.log('[YuseTheater] 初始化欲色剧场 App（对齐原版）');
       this.loadDefaultData();
@@ -48,6 +83,7 @@ if (typeof window.YuseTheaterApp === 'undefined') {
       this.updateAppContent();
       this.parseNewData();
     }
+
     loadDefaultData() {
       for (const page in window.YuseTheaterPages) {
         if (!this.savedData[page]) {
@@ -55,6 +91,7 @@ if (typeof window.YuseTheaterApp === 'undefined') {
         }
       }
     }
+
     setupDOMObserver() {
       try {
         const chatContainer = document.querySelector('#chat') || document.querySelector('.mes') || document.querySelector('.chat-container');
@@ -71,7 +108,7 @@ if (typeof window.YuseTheaterApp === 'undefined') {
               }
             });
             if (hasNewMsg) {
-              // 延长延迟确保AI消息完全渲染到DOM
+              // 延长延迟确保AI消息完全渲染
               setTimeout(() => this.parseNewData(), 600);
             }
           });
@@ -82,28 +119,30 @@ if (typeof window.YuseTheaterApp === 'undefined') {
         console.warn('[YuseTheater] DOM观察器设置失败:', error);
       }
     }
+
     setupEventListeners() {
       window.addEventListener('contextUpdate', () => this.parseNewData());
       window.addEventListener('messageUpdate', () => this.parseNewData());
-      // 新增：监听页面切换时强制解析，确保当前视图数据最新
+      // 新增视图切换事件，确保切换后数据刷新
       window.addEventListener('yuseViewSwitch', () => this.parseNewData());
     }
+
     parseNewData() {
       if (!this.isAutoRender) return;
       const currentTime = Date.now();
-      // 核心修复1：若解析到新数据，忽略冷却时间（避免刷新消息被冷却拦截）
       const timeDiff = currentTime - this.lastRenderTime;
+      let isDataUpdated = false; // 标记是否真的更新了数据
+
       try {
         const chatData = this.getChatContent();
-        console.log('[YuseTheater] 当前获取的聊天内容:', chatData.slice(0, 200) + '...'); // 打印前200字符便于调试
-        
+        console.log('[YuseTheater] 解析数据 - 当前聊天内容长度:', chatData.length);
+
         const fullMatch = chatData.match(window.YuseTheaterRegex.fullMatch);
         if (fullMatch) {
-          console.log('[YuseTheater] 匹配到yuse_data数据，开始更新:', fullMatch);
+          console.log('[YuseTheater] 匹配到yuse_data数据，开始更新');
           const [, announcements, customizations, theater, theaterHot, theaterNew, theaterRecommended, theaterPaid, shop] = fullMatch;
-          
-          // 核心修复2：赋值后立即标记更新，强制触发渲染
-          let isDataUpdated = false;
+
+          // 非空判断，仅更新有效数据
           if (announcements && announcements.trim() !== '') {
             this.savedData.announcements = announcements;
             isDataUpdated = true;
@@ -136,12 +175,12 @@ if (typeof window.YuseTheaterApp === 'undefined') {
             this.savedData.shop = shop;
             isDataUpdated = true;
           }
-          
-          // 仅当数据真的更新时，强制渲染（忽略冷却）
+
+          // 数据更新时强制渲染，忽略冷却
           if (isDataUpdated) {
-            this.lastRenderTime = currentTime; // 重置冷却时间
+            this.lastRenderTime = currentTime;
             this.updateAppContent();
-            console.log('[YuseTheater] 数据更新成功，已触发页面渲染');
+            console.log('[YuseTheater] 数据更新成功，当前视图:', this.currentView);
           }
         } else {
           console.log('[YuseTheater] 未匹配到yuse_data数据');
@@ -149,16 +188,17 @@ if (typeof window.YuseTheaterApp === 'undefined') {
       } catch (error) {
         console.error('[YuseTheater] 解析数据失败:', error);
       }
-      // 非数据更新场景仍保留冷却
+
+      // 非数据更新场景保留冷却
       if (!isDataUpdated && timeDiff < this.renderCooldown) {
-        console.log('[YuseTheater] 处于冷却期，跳过非必要解析');
+        console.log('[YuseTheater] 冷却期内，跳过非必要解析');
         return;
       }
       this.lastRenderTime = currentTime;
     }
+
     getChatContent() {
       try {
-        // 核心修复3：增强聊天数据获取兼容性，覆盖更多场景
         // 1. 优先获取mobileContext（原生场景）
         const mobileContext = window.mobileContextEditor;
         if (mobileContext) {
@@ -169,6 +209,7 @@ if (typeof window.YuseTheaterApp === 'undefined') {
             return msgStr;
           }
         }
+
         // 2. 获取全局chat对象（SillyTavern场景）
         const globalChat = window.chat || window.SillyTavern?.chat;
         if (globalChat && Array.isArray(globalChat)) {
@@ -176,10 +217,11 @@ if (typeof window.YuseTheaterApp === 'undefined') {
           console.log('[YuseTheater] 从全局chat获取聊天数据，长度:', msgStr.length);
           return msgStr;
         }
-        // 3. 从DOM直接获取（兼容自定义容器）
+
+        // 3. 从DOM获取（兼容更多容器）
         const chatContainer = document.querySelector('#chat') || document.querySelector('.mes') || document.querySelector('.chat-container');
         if (chatContainer) {
-          // 保留HTML标签（避免文本处理丢失<yuse_data>结构）
+          // 保留HTML标签，避免丢失<yuse_data>结构
           const msgStr = chatContainer.innerHTML.replace(/\s+/g, ' ').trim();
           console.log('[YuseTheater] 从DOM获取聊天数据，长度:', msgStr.length);
           return msgStr;
@@ -189,15 +231,17 @@ if (typeof window.YuseTheaterApp === 'undefined') {
       }
       return '';
     }
+
     sendRefreshRequest(pageKey) {
       const pageConfig = window.YuseTheaterPages[pageKey];
       if (!pageConfig) return;
       const refreshMsg = pageConfig.refreshMsg;
       this.sendToSillyTavern(refreshMsg, true);
       this.showToast(`正在刷新${pageConfig.name}...`);
-      // 核心修复4：刷新请求发送后，主动触发一次解析（防止观察器漏检）
+      // 主动触发解析，防止观察器漏检
       setTimeout(() => this.parseNewData(), 1000);
     }
+
     sendToSillyTavern(message, isAutoSend = false) {
       try {
         const textarea = document.querySelector('#send_textarea');
@@ -210,6 +254,7 @@ if (typeof window.YuseTheaterApp === 'undefined') {
           }
           return true;
         }
+
         const backupTextarea = document.querySelector('textarea');
         if (backupTextarea) {
           backupTextarea.value = backupTextarea.value ? `${backupTextarea.value}\n${message}` : message;
@@ -224,20 +269,26 @@ if (typeof window.YuseTheaterApp === 'undefined') {
       }
       return false;
     }
+
     switchView(pageKey) {
       if (!window.YuseTheaterPages[pageKey] || this.currentView === pageKey) return;
       this.currentView = pageKey;
-      // 触发自定义事件，强制解析当前视图数据
+      // 触发视图切换事件，强制解析最新数据
       window.dispatchEvent(new Event('yuseViewSwitch'));
       this.updateAppContent();
       this.updateHeader();
       this.updateNativeHeaderRefreshBtn();
     }
+
     updateNativeHeaderRefreshBtn() {
       const nativeHeader = document.querySelector(this.nativeHeaderSelector);
       if (!nativeHeader) return;
+
+      // 移除旧按钮
       const oldRefreshBtn = nativeHeader.querySelector('.yuse-refresh-btn');
       if (oldRefreshBtn) oldRefreshBtn.remove();
+
+      // 创建新按钮
       const refreshBtn = document.createElement('button');
       refreshBtn.className = 'refresh-btn yuse-refresh-btn';
       refreshBtn.dataset.page = this.currentView;
@@ -245,15 +296,19 @@ if (typeof window.YuseTheaterApp === 'undefined') {
       refreshBtn.addEventListener('click', () => {
         this.sendRefreshRequest(this.currentView);
       });
+
+      // 插入页眉
       nativeHeader.style.display = 'flex';
       nativeHeader.style.justifyContent = 'space-between';
       nativeHeader.style.alignItems = 'center';
       nativeHeader.appendChild(refreshBtn);
     }
+
     getAppContent() {
       const pageConfig = window.YuseTheaterPages[this.currentView];
       const pageData = this.savedData[this.currentView] || '<div class="empty-state">暂无数据</div>';
       let content = '';
+
       switch (this.currentView) {
         case 'announcements':
           content = `<div class="yuse-announcement-list">${pageData}</div>`;
@@ -276,6 +331,7 @@ if (typeof window.YuseTheaterApp === 'undefined') {
           content = `<div class="yuse-shop-list">${pageData}</div>`;
           break;
       }
+
       const nav = Object.keys(window.YuseTheaterPages).map(pageKey => {
         const navConfig = window.YuseTheaterPages[pageKey];
         return `
@@ -284,6 +340,7 @@ if (typeof window.YuseTheaterApp === 'undefined') {
           </button>
         `;
       }).join('');
+
       return `
         <div class="yuse-theater-app" style="position: relative; height: 100%; overflow: hidden;">
           <div class="yuse-content-area">${content}</div>
@@ -293,6 +350,7 @@ if (typeof window.YuseTheaterApp === 'undefined') {
         </div>
       `;
     }
+
     getNavIcon(pageKey) {
       const iconMap = {
         announcements: '📢',
@@ -302,19 +360,21 @@ if (typeof window.YuseTheaterApp === 'undefined') {
       };
       return iconMap[pageKey] || '📄';
     }
+
     updateAppContent() {
       const content = this.getAppContent();
       const appElement = document.getElementById('app-content');
       if (appElement) {
         appElement.removeEventListener('click', this.handlePageClick);
         appElement.innerHTML = content;
-        
+
         const contentArea = appElement.querySelector('.yuse-content-area');
         if (contentArea) {
           contentArea.style.padding = '16px 16px 60px';
           contentArea.style.overflowY = 'auto';
           contentArea.style.height = 'calc(100vh - 120px)';
         }
+
         this.updateNativeHeaderRefreshBtn();
         appElement.addEventListener('click', this.handlePageClick);
         console.log('[YuseTheater] 页面内容更新完成，当前视图:', this.currentView);
@@ -322,15 +382,20 @@ if (typeof window.YuseTheaterApp === 'undefined') {
         console.error('[YuseTheater] 未找到app-content容器，无法更新内容');
       }
     }
+
     handlePageClick(e) {
       const appContainer = document.getElementById('app-content');
       if (!appContainer) return;
+
+      // 导航按钮
       const navBtn = e.target.closest('.yuse-nav-btn');
       if (navBtn) {
         const pageKey = navBtn.dataset.page;
         this.switchView(pageKey);
         return;
       }
+
+      // 拒绝按钮
       const rejectBtn = e.target.closest('.reject-btn');
       if (rejectBtn) {
         const listItem = rejectBtn.closest('.list-item');
@@ -346,6 +411,8 @@ if (typeof window.YuseTheaterApp === 'undefined') {
         e.stopPropagation();
         return;
       }
+
+      // 定制直接接取
       const acceptBtn = e.target.closest('.accept-btn');
       if (acceptBtn && acceptBtn.closest('.list-item') && acceptBtn.closest('.list-item').dataset.type === 'customization') {
         const listItem = acceptBtn.closest('.list-item');
@@ -359,6 +426,8 @@ if (typeof window.YuseTheaterApp === 'undefined') {
         e.stopPropagation();
         return;
       }
+
+      // 列表项弹窗
       const listItem = e.target.closest('.list-item');
       if (listItem) {
         const itemData = listItem.dataset;
@@ -382,6 +451,8 @@ if (typeof window.YuseTheaterApp === 'undefined') {
         }
         return;
       }
+
+      // 剧场筛选
       const filterBtn = e.target.closest('.filter-btn');
       if (filterBtn) {
         const filterType = filterBtn.dataset.filter;
@@ -412,8 +483,9 @@ if (typeof window.YuseTheaterApp === 'undefined') {
         return;
       }
     }
+
     showAnnouncementDetail(itemData) {
-      console.log('[YuseTheater] 显示原版通告弹窗', itemData);
+      console.log('[YuseTheater] 显示通告弹窗', itemData);
       const detailHtml = `
         <div class="detail-section">
           <h4>剧情简介</h4>
@@ -431,6 +503,7 @@ if (typeof window.YuseTheaterApp === 'undefined') {
         <button class="action-button accept-btn" id="accept-announcement-btn">接取</button>
       `;
       this.createOriginalModal(itemData.title, detailHtml, footerHtml);
+
       const acceptBtn = document.getElementById('accept-announcement-btn');
       if (acceptBtn) {
         acceptBtn.addEventListener('click', () => {
@@ -441,8 +514,9 @@ if (typeof window.YuseTheaterApp === 'undefined') {
         });
       }
     }
+
     showCustomizationDetail(itemData) {
-      console.log('[YuseTheater] 显示原版定制弹窗', itemData);
+      console.log('[YuseTheater] 显示定制弹窗', itemData);
       const detailHtml = `
         <div class="detail-section">
           <h4>定制类型</h4>
@@ -470,6 +544,7 @@ if (typeof window.YuseTheaterApp === 'undefined') {
         <button class="action-button accept-btn" id="accept-custom-btn">接取</button>
       `;
       this.createOriginalModal(`${itemData.fanId} 的定制`, detailHtml, footerHtml);
+
       const acceptBtn = document.getElementById('accept-custom-btn');
       if (acceptBtn) {
         acceptBtn.addEventListener('click', () => {
@@ -480,8 +555,9 @@ if (typeof window.YuseTheaterApp === 'undefined') {
         });
       }
     }
+
     showTheaterDetail(itemData) {
-      console.log('[YuseTheater] 显示原版剧场弹窗', itemData);
+      console.log('[YuseTheater] 显示剧场弹窗', itemData);
       const renderComments = (reviewsStr) => {
         try {
           const reviews = JSON.parse(reviewsStr.replace(/'/g, '"'));
@@ -495,6 +571,7 @@ if (typeof window.YuseTheaterApp === 'undefined') {
           return '<div class="comment">评论加载失败</div>';
         }
       };
+
       const detailHtml = `
         <div class="cover-image" style="background-image: url('${itemData.cover || 'https://picsum.photos/400/200?random=1'}')"></div>
         <div class="detail-section">
@@ -518,8 +595,9 @@ if (typeof window.YuseTheaterApp === 'undefined') {
       `;
       this.createOriginalModal(itemData.title, detailHtml, footerHtml);
     }
+
     showShopDetail(itemData) {
-      console.log('[YuseTheater] 显示原版商城弹窗', itemData);
+      console.log('[YuseTheater] 显示商城弹窗', itemData);
       const renderComments = (commentsStr) => {
         try {
           const comments = JSON.parse(commentsStr.replace(/'/g, '"'));
@@ -533,6 +611,7 @@ if (typeof window.YuseTheaterApp === 'undefined') {
           return '<div class="comment">评论加载失败</div>';
         }
       };
+
       const detailHtml = `
         <div class="detail-section">
           <h4>商品卖点</h4>
@@ -553,9 +632,11 @@ if (typeof window.YuseTheaterApp === 'undefined') {
       `;
       this.createOriginalModal(itemData.name, detailHtml, footerHtml);
     }
+
     createOriginalModal(header, body, footer) {
       const existingModal = document.querySelector('.yuse-modal');
       if (existingModal) existingModal.remove();
+
       const modal = document.createElement('div');
       modal.className = 'yuse-modal';
       modal.style.cssText = `
@@ -595,6 +676,7 @@ if (typeof window.YuseTheaterApp === 'undefined') {
       `;
       document.body.appendChild(modal);
       setTimeout(() => modal.style.opacity = '1', 10);
+
       const closeBtn = modal.querySelector('.close-btn');
       if (closeBtn) {
         closeBtn.addEventListener('click', () => {
@@ -602,6 +684,7 @@ if (typeof window.YuseTheaterApp === 'undefined') {
           setTimeout(() => modal.remove(), 300);
         });
       }
+
       modal.addEventListener('click', (e) => {
         if (e.target === modal) {
           modal.style.opacity = '0';
@@ -609,6 +692,7 @@ if (typeof window.YuseTheaterApp === 'undefined') {
         }
       });
     }
+
     updateHeader() {
       if (window.mobilePhone && window.mobilePhone.updateAppHeader) {
         window.mobilePhone.updateAppHeader({
@@ -618,6 +702,7 @@ if (typeof window.YuseTheaterApp === 'undefined') {
         });
       }
     }
+
     showToast(message) {
       const toast = document.createElement('div');
       toast.className = 'yuse-toast';
@@ -635,6 +720,7 @@ if (typeof window.YuseTheaterApp === 'undefined') {
         setTimeout(() => toast.remove(), 300);
       }, 2000);
     }
+
     destroy() {
       this.isAutoRender = false;
       const appElement = document.getElementById('app-content');
@@ -649,32 +735,15 @@ if (typeof window.YuseTheaterApp === 'undefined') {
       console.log('[YuseTheater] 销毁欲色剧场 App');
     }
   }
+
+  // 实例化App（确保全局函数已定义后再实例化）
   window.YuseTheaterApp = YuseTheaterApp;
   window.yuseTheaterApp = new YuseTheaterApp();
   console.log('[YuseTheater] app 实例初始化完成（对齐原版）');
+  console.log('[YuseTheater] 全局函数状态:', {
+    getYuseTheaterAppContent: typeof window.getYuseTheaterAppContent,
+    bindYuseTheaterEvents: typeof window.bindYuseTheaterEvents
+  });
 }
-window.getYuseTheaterAppContent = function () {
-  if (window.yuseTheaterApp) {
-    return window.yuseTheaterApp.getAppContent();
-  }
-  return '<div class="error-state">欲色剧场 app 实例未初始化</div>';
-};
-window.bindYuseTheaterEvents = function () {
-  if (window.yuseTheaterApp) {
-    setTimeout(() => {
-      const appElement = document.getElementById('app-content');
-      if (appElement) {
-        appElement.addEventListener('click', window.yuseTheaterApp.handlePageClick);
-      }
-    }, 100);
-  } else {
-    console.warn('[YuseTheater] bindYuseTheaterEvents：app 实例未找到');
-  }
-};
-window.bindYuseTheaterAppEvents = window.bindYuseTheaterEvents;
-window.refreshYuseTheaterPage = function (pageKey) {
-  if (window.yuseTheaterApp) {
-    window.yuseTheaterApp.sendRefreshRequest(pageKey);
-  }
-};
-console.log('[YuseTheater] 欲色剧场 App 脚本加载完成（完全对齐原版）');
+
+console.log('[YuseTheater] 欲色剧场 App 脚本加载完成');
