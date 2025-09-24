@@ -89,48 +89,65 @@ if (typeof window.YuseTheaterApp === 'undefined') {
       const currentTime = Date.now();
       if (currentTime - this.lastRenderTime < this.renderCooldown) return;
       try {
-        const chatData = this.getChatContent();
+        const chatData = this.getChatContent(); // 重点优化此处
+        // 新增：打印原始聊天数据（调试用）
+        console.log('[YuseTheater DEBUG] 原始聊天数据：', chatData); 
+    
         const fullMatch = chatData.match(window.YuseTheaterRegex.fullMatch);
         if (fullMatch) {
           const [, announcements, customizations, theater, theaterHot, theaterNew, theaterRecommended, theaterPaid, shop] = fullMatch;
-          // 核心修改：对8个模块均添加“存在且去空格非空”判断
-          if (announcements && announcements.trim() !== '') this.savedData.announcements = announcements;
-          if (customizations && customizations.trim() !== '') this.savedData.customizations = customizations;
-          if (theater && theater.trim() !== '') this.savedData.theater = theater;
-          if (theaterHot && theaterHot.trim() !== '') this.savedData.theaterHot = theaterHot;
-          if (theaterNew && theaterNew.trim() !== '') this.savedData.theaterNew = theaterNew;
-          if (theaterRecommended && theaterRecommended.trim() !== '') this.savedData.theaterRecommended = theaterRecommended;
-          if (theaterPaid && theaterPaid.trim() !== '') this.savedData.theaterPaid = theaterPaid;
-          if (shop && shop.trim() !== '') this.savedData.shop = shop;
+      
+          // 新增：打印各分组内容（调试用）
+          console.log('[YuseTheater DEBUG] 解析到的customizations：', customizations);
+      
+          // 核心修复：允许标签内容含换行+严格非空判断（保留原逻辑基础上增强容错）
+          const updateData = (key, value) => {
+            if (value && value.trim().replace(/<\/?[^>]+>/g, '').trim() !== '') { // 去除标签后再判空
+              this.savedData[key] = value;
+              console.log(`[YuseTheater] 成功更新${key}数据`);
+            }
+          };
+      
+          updateData('announcements', announcements);
+          updateData('customizations', customizations);
+          updateData('theater', theater);
+          updateData('theaterHot', theaterHot);
+          updateData('theaterNew', theaterNew);
+          updateData('theaterRecommended', theaterRecommended);
+          updateData('theaterPaid', theaterPaid);
+          updateData('shop', shop);
+      
           this.updateAppContent();
+        } else {
+          console.warn('[YuseTheater] 未匹配到<yuse_data>标签，请检查AI回复格式');
         }
       } catch (error) {
         console.error('[YuseTheater] 解析数据失败:', error);
       }
       this.lastRenderTime = currentTime;
     }
+
     getChatContent() {
       try {
-        const mobileContext = window.mobileContextEditor;
-        if (mobileContext) {
-          const chatData = mobileContext.getCurrentChatData();
-          if (chatData?.messages) {
-            return chatData.messages.map(msg => msg.mes || '').join('\n');
+       // 优先获取AI生成的<yuse_data>（针对SillyTavern等平台优化）
+        const aiMessages = (window.mobileContextEditor?.getCurrentChatData()?.messages || [])
+          .concat(window.chat || []);
+      
+        for (const msg of aiMessages.reverse()) { // 倒序查找最新的yuse_data
+          if (msg.mes?.includes('<yuse_data>')) {
+            return msg.mes; // 直接返回含yuse_data的消息内容
           }
         }
-        const globalChat = window.chat || window.SillyTavern?.chat;
-        if (globalChat && Array.isArray(globalChat)) {
-          return globalChat.map(msg => msg.mes || '').join('\n');
-        }
+    
+        // 兼容旧逻辑
         const chatContainer = document.querySelector('#chat') || document.querySelector('.mes');
-        if (chatContainer) {
-          return chatContainer.textContent.replace(/\s+/g, '\n').trim();
-        }
+        return chatContainer?.textContent?.replace(/\s+/g, '\n').trim() || '';
       } catch (error) {
         console.warn('[YuseTheater] 获取对话内容失败:', error);
+        return '';
       }
-      return '';
     }
+
     sendRefreshRequest(pageKey) {
       const pageConfig = window.YuseTheaterPages[pageKey];
       if (!pageConfig) return;
