@@ -1,6 +1,7 @@
 if (typeof window.YuseTheaterApp === 'undefined') {
   window.YuseTheaterRegex = {
-    fullMatch: /<yuse_data>.*?<announcements>(.*?)<\/announcements>.*?<customizations>(.*?)<\/customizations>.*?<theater>(.*?)<\/theater>.*?<theater_hot>(.*?)<\/theater_hot>.*?<theater_new>(.*?)<\/theater_new>.*?<theater_recommended>(.*?)<\/theater_recommended>.*?<theater_paid>(.*?)<\/theater_paid>.*?<shop>(.*?)<\/shop>.*?<\/yuse_data>/s,
+    // 核心修改：将8个模块标签均改为「可选匹配」，支持仅返回单个模块数据
+    fullMatch: /<yuse_data>.*?(?:<announcements>(.*?)<\/announcements>.*?)?(?:<customizations>(.*?)<\/customizations>.*?)?(?:<theater>(.*?)<\/theater>.*?)?(?:<theater_hot>(.*?)<\/theater_hot>.*?)?(?:<theater_new>(.*?)<\/theater_new>.*?)?(?:<theater_recommended>(.*?)<\/theater_recommended>.*?)?(?:<theater_paid>(.*?)<\/theater_paid>.*?)?(?:<shop>(.*?)<\/shop>.*?)?<\/yuse_data>/s,
     announcement: /\[通告\|([^\|]+)\|([^\|]+)\|([^\|]+)\|([^\|]+)\|([^\|]+)\|([^\]]+)\]/g,
     customization: /\[定制\|([^\|]+)\|([^\|]+)\|([^\|]+)\|([^\|]+)\|([^\|]+)\|([^\]]+)\]/g,
     theater: /\[剧场\|([^\|]+)\|([^\|]+)\|([^\|]+)\|([^\|]+)\|([^\|]+)\|([^\|]+)\|([^\|]+)\|([^\]]+)\]/g,
@@ -46,8 +47,6 @@ if (typeof window.YuseTheaterApp === 'undefined') {
       this.setupEventListeners();
       this.updateAppContent();
       this.parseNewData();
-      // 修复3：初始化时强制触发一次解析（解决首次加载不触发问题）
-      setTimeout(() => this.parseNewData(), 1000);
     }
     loadDefaultData() {
       for (const page in window.YuseTheaterPages) {
@@ -86,123 +85,58 @@ if (typeof window.YuseTheaterApp === 'undefined') {
       window.addEventListener('contextUpdate', () => this.parseNewData());
       window.addEventListener('messageUpdate', () => this.parseNewData());
     }
-    // 修复2：重构parseNewData，用防御性正则分步提取（允许标签乱序+兼容换行）
     parseNewData() {
       if (!this.isAutoRender) return;
       const currentTime = Date.now();
       if (currentTime - this.lastRenderTime < this.renderCooldown) return;
       try {
         const chatData = this.getChatContent();
-        // 调试日志：打印原始聊天数据
-        console.log('[YuseTheater DEBUG] 原始聊天数据：', chatData); 
-
-        // 第一步：先捕获完整<yuse_data>块（忽略内部标签顺序）
-        const yuseDataMatch = chatData.match(/<yuse_data>([\s\S]*?)<\/yuse_data>/s);
-        if (yuseDataMatch) {
-          const yuseData = yuseDataMatch[1];
-          // 调试日志：打印完整yuse_data内容
-          console.log('[YuseTheater DEBUG] 完整yuse_data内容：', yuseData);
-
-          // 第二步：分步提取各模块数据（兼容任意标签顺序）
-          const announcements = this.extractTag(yuseData, 'announcements');
-          const customizations = this.extractTag(yuseData, 'customizations');
-          const theater = this.extractTag(yuseData, 'theater');
-          const theaterHot = this.extractTag(yuseData, 'theater_hot');
-          const theaterNew = this.extractTag(yuseData, 'theater_new');
-          const theaterRecommended = this.extractTag(yuseData, 'theater_recommended');
-          const theaterPaid = this.extractTag(yuseData, 'theater_paid');
-          const shop = this.extractTag(yuseData, 'shop');
-
-          // 调试日志：打印解析到的customizations数据
-          console.log('[YuseTheater DEBUG] 解析到的customizations：', customizations);
-
-          // 核心修复：去除标签后判空，避免纯HTML标签导致的误判
-          const updateData = (key, value) => {
-            if (value && value.trim().replace(/<\/?[^>]+>/g, '').trim() !== '') {
-              this.savedData[key] = value;
-              console.log(`[YuseTheater] 成功更新${key}数据`);
-            }
-          };
-
-          updateData('announcements', announcements);
-          updateData('customizations', customizations);
-          updateData('theater', theater);
-          updateData('theaterHot', theaterHot);
-          updateData('theaterNew', theaterNew);
-          updateData('theaterRecommended', theaterRecommended);
-          updateData('theaterPaid', theaterPaid);
-          updateData('shop', shop);
-
+        const fullMatch = chatData.match(window.YuseTheaterRegex.fullMatch);
+        if (fullMatch) {
+          const [, announcements, customizations, theater, theaterHot, theaterNew, theaterRecommended, theaterPaid, shop] = fullMatch;
+          // 保留「非空判断」，仅更新有有效数据的模块
+          if (announcements && announcements.trim() !== '') this.savedData.announcements = announcements;
+          if (customizations && customizations.trim() !== '') this.savedData.customizations = customizations;
+          if (theater && theater.trim() !== '') this.savedData.theater = theater;
+          if (theaterHot && theaterHot.trim() !== '') this.savedData.theaterHot = theaterHot;
+          if (theaterNew && theaterNew.trim() !== '') this.savedData.theaterNew = theaterNew;
+          if (theaterRecommended && theaterRecommended.trim() !== '') this.savedData.theaterRecommended = theaterRecommended;
+          if (theaterPaid && theaterPaid.trim() !== '') this.savedData.theaterPaid = theaterPaid;
+          if (shop && shop.trim() !== '') this.savedData.shop = shop;
           this.updateAppContent();
-        } else {
-          console.warn('[YuseTheater] 未匹配到<yuse_data>标签，请检查AI回复格式');
         }
       } catch (error) {
         console.error('[YuseTheater] 解析数据失败:', error);
       }
       this.lastRenderTime = currentTime;
     }
-    // 新增：标签提取工具函数（统一处理标签内容提取）
-    extractTag(data, tagName) {
-      const regex = new RegExp(`<${tagName}>([^<]+)<\/${tagName}>`, 'is'); // 'is'忽略大小写+匹配换行
-      const match = data.match(regex);
-      return match ? match[1].trim() : '';
-    }
-    // 修复1：增强getChatContent，兼容多平台消息结构（SillyTavern/Alternative frontend等）
     getChatContent() {
       try {
-        // 1. 优先从平台专属API获取消息（兼容SillyTavern/移动端）
-        let aiMessages = [];
-        // 兼容SillyTavern（通过Store获取最新聊天记录）
-        if (window.Store && window.Store.getState().chat.history) {
-          aiMessages = window.Store.getState().chat.history;
-        } 
-        // 兼容原版mobileContextEditor
-        else if (window.mobileContextEditor?.getCurrentChatData()?.messages) {
-          aiMessages = window.mobileContextEditor.getCurrentChatData().messages;
-        }
-        // 兼容Alternative frontend（chatHistory.messages）
-        else if (window.chatHistory?.messages) {
-          aiMessages = window.chatHistory.messages;
-        }
-        // 兜底：从DOM获取消息元素
-        else {
-          const msgElements = document.querySelectorAll('.message, .mes');
-          aiMessages = Array.from(msgElements).map(el => ({
-            mes: el.textContent,
-            timestamp: el.dataset.timestamp || Date.now() // 补全时间戳
-          }));
-        }
-
-        // 按时间戳倒序（最新消息在前），避免旧数据覆盖
-        const sortedMsgs = [...aiMessages].sort((a, b) => {
-          const ta = a.timestamp ? Number(a.timestamp) : 0;
-          const tb = b.timestamp ? Number(b.timestamp) : 0;
-          return tb - ta;
-        });
-
-        // 查找包含<yuse_data>的最新消息（兼容mes/content/text字段）
-        for (const msg of sortedMsgs) {
-          const content = msg.mes || msg.content || msg.text || '';
-          if (content.includes('<yuse_data>')) {
-            console.log('[YuseTheater DEBUG] 命中含yuse_data的消息:', content);
-            return content;
+        const mobileContext = window.mobileContextEditor;
+        if (mobileContext) {
+          const chatData = mobileContext.getCurrentChatData();
+          if (chatData?.messages) {
+            return chatData.messages.map(msg => msg.mes || '').join('\n');
           }
         }
-
-        // 最终兜底：从聊天容器提取文本
+        const globalChat = window.chat || window.SillyTavern?.chat;
+        if (globalChat && Array.isArray(globalChat)) {
+          return globalChat.map(msg => msg.mes || '').join('\n');
+        }
         const chatContainer = document.querySelector('#chat') || document.querySelector('.mes');
-        return chatContainer?.textContent?.replace(/\s+/g, '\n').trim() || '';
+        if (chatContainer) {
+          return chatContainer.textContent.replace(/\s+/g, '\n').trim();
+        }
       } catch (error) {
         console.warn('[YuseTheater] 获取对话内容失败:', error);
-        return '';
       }
+      return '';
     }
     sendRefreshRequest(pageKey) {
       const pageConfig = window.YuseTheaterPages[pageKey];
       if (!pageConfig) return;
       const refreshMsg = pageConfig.refreshMsg;
-      this.sendToSillyTavern(refreshMsg, true);
+      this.sendToSillyTavern(refreshMsg, true); // 刷新消息自动发送给AI
       this.showToast(`正在刷新${pageConfig.name}...`);
     }
     sendToSillyTavern(message, isAutoSend = false) {
@@ -213,7 +147,7 @@ if (typeof window.YuseTheaterApp === 'undefined') {
           textarea.value = textarea.value ? `${textarea.value}\n${message}` : message;
           textarea.dispatchEvent(new Event('input', { bubbles: true }));
           if (isAutoSend && sendBtn) {
-            sendBtn.click();
+            sendBtn.click(); // 自动发送刷新请求给AI
           }
           return true;
         }
@@ -238,18 +172,23 @@ if (typeof window.YuseTheaterApp === 'undefined') {
       this.updateHeader();
       this.updateNativeHeaderRefreshBtn();
     }
+    // 核心修复：刷新按钮单独绑定点击事件（解决原生页眉按钮不在app-content内的问题）
     updateNativeHeaderRefreshBtn() {
       const nativeHeader = document.querySelector(this.nativeHeaderSelector);
       if (!nativeHeader) return;
+      // 移除旧按钮，避免重复
       const oldRefreshBtn = nativeHeader.querySelector('.yuse-refresh-btn');
       if (oldRefreshBtn) oldRefreshBtn.remove();
+      // 创建新刷新按钮
       const refreshBtn = document.createElement('button');
       refreshBtn.className = 'refresh-btn yuse-refresh-btn';
       refreshBtn.dataset.page = this.currentView;
       refreshBtn.innerHTML = '🔄 刷新';
+      // 核心修复：直接给按钮绑定点击事件（不依赖app-content的事件委托）
       refreshBtn.addEventListener('click', () => {
-        this.sendRefreshRequest(this.currentView);
+        this.sendRefreshRequest(this.currentView); // 触发刷新，发送请求给AI
       });
+      // 插入原生页眉右侧
       nativeHeader.style.display = 'flex';
       nativeHeader.style.justifyContent = 'space-between';
       nativeHeader.style.alignItems = 'center';
@@ -330,12 +269,15 @@ if (typeof window.YuseTheaterApp === 'undefined') {
     handlePageClick(e) {
       const appContainer = document.getElementById('app-content');
       if (!appContainer) return;
+      // 移除原refreshBtn处理（已单独绑定事件）
+      // 2. 导航按钮事件
       const navBtn = e.target.closest('.yuse-nav-btn');
       if (navBtn) {
         const pageKey = navBtn.dataset.page;
         this.switchView(pageKey);
         return;
       }
+      // 3. 拒绝按钮事件
       const rejectBtn = e.target.closest('.reject-btn');
       if (rejectBtn) {
         const listItem = rejectBtn.closest('.list-item');
@@ -351,6 +293,7 @@ if (typeof window.YuseTheaterApp === 'undefined') {
         e.stopPropagation();
         return;
       }
+      // 4. 定制列表直接接取
       const acceptBtn = e.target.closest('.accept-btn');
       if (acceptBtn && acceptBtn.closest('.list-item') && acceptBtn.closest('.list-item').dataset.type === 'customization') {
         const listItem = acceptBtn.closest('.list-item');
@@ -364,6 +307,7 @@ if (typeof window.YuseTheaterApp === 'undefined') {
         e.stopPropagation();
         return;
       }
+      // 5. 列表项弹窗事件
       const listItem = e.target.closest('.list-item');
       if (listItem) {
         const itemData = listItem.dataset;
@@ -387,6 +331,7 @@ if (typeof window.YuseTheaterApp === 'undefined') {
         }
         return;
       }
+      // 6. 剧场筛选按钮事件
       const filterBtn = e.target.closest('.filter-btn');
       if (filterBtn) {
         const filterType = filterBtn.dataset.filter;
