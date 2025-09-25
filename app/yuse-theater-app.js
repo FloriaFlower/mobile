@@ -1,6 +1,6 @@
 if (typeof window.YuseTheaterApp === 'undefined') {
   window.YuseTheaterRegex = {
-    fullMatch: /<yuse_data>(?:(?!<yuse_data>).)*?(?:<announcements>(.*?)<\/announcements>)?(?:<customizations>(.*?)<\/customizations>)?(?:<theater>(.*?)<\/theater>)?(?:<theater_hot>(.*?)<\/theater_hot>)?(?:<theater_new>(.*?)<\/theater_new>)?(?:<theater_recommended>(.*?)<\/theater_recommended>)?(?:<theater_paid>(.*?)<\/theater_paid>)?(?:<shop>(.*?)<\/shop>)?<\/yuse_data>/s,
+    fullMatch: /<yuse_data>\s*(?:(?!<yuse_data>).)*?(?:<announcements>(.*?)<\/announcements>)?\s*(?:<customizations>(.*?)<\/customizations>)?\s*(?:<theater>(.*?)<\/theater>)?\s*(?:<theater_hot>(.*?)<\/theater_hot>)?\s*(?:<theater_new>(.*?)<\/theater_new>)?\s*(?:<theater_recommended>(.*?)<\/theater_recommended>)?\s*(?:<theater_paid>(.*?)<\/theater_paid>)?\s*(?:<shop>(.*?)<\/shop>)?\s*<\/yuse_data>/s,
     announcement: /\[通告\|([^\|]+)\|([^\|]+)\|([^\|]+)\|([^\|]+)\|([^\|]+)\|([^\]]+)\]/g,
     customization: /\[定制\|([^\|]+)\|([^\|]+)\|([^\|]+)\|([^\|]+)\|([^\|]+)\|([^\]]+)\]/g,
     theater: /\[剧场\|([^\|]+)\|([^\|]+)\|([^\|]+)\|([^\|]+)\|([^\|]+)\|([^\|]+)\|([^\|]+)\|([^\]]+)\]/g,
