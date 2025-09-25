@@ -39,7 +39,6 @@ if (typeof window.YuseTheaterApp === 'undefined') {
       this.lastRenderTime = 0;
       this.renderCooldown = 500;
       this.handlePageClick = this.handlePageClick.bind(this);
-      // 专属页眉选择器，避免影响其他App
       this.nativeHeaderSelector = '.app-header.yuse-theater-header, #app-header.yuse-theater-header, header.yuse-theater-header';
       this.init();
     }
