@@ -6577,10 +6577,12 @@ async loadYuseTheaterApp() {
 
     try {
       console.log('[Mobile Phone] 返回主界面');
+      if (window.yuseTheaterApp) {
+        window.yuseTheaterApp.destroy();
+      }
 
       // 清除用户导航意图
       this._userNavigationIntent = null;
-
       this.currentApp = null;
       this.currentAppState = null;
       this.appStack = []; // 清空应用栈
