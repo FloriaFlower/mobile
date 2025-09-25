@@ -156,9 +156,10 @@ if (typeof window.YuseTheaterApp === 'undefined') {
             this.savedData.announcements = announcements;
             isDataUpdated = true;
           }
-          if (customizations && customizations.trim() !== '') {
+          if (customizations && customizations.trim() !== '' && customizations.trim() !== this.savedData.customizations?.trim()) {
             this.savedData.customizations = customizations;
             isDataUpdated = true;
+            console.log('[YuseTheater] 检测到新customizations数据，更新savedData'); // 新增日志，确认新数据写入
           }
           if (theater && theater.trim() !== '') {
             this.savedData.theater = theater;
@@ -408,6 +409,9 @@ if (typeof window.YuseTheaterApp === 'undefined') {
         }
         this.updateNativeHeaderRefreshBtn();
         appElement.addEventListener('click', this.handlePageClick);
+        if (this.currentView === 'customizations') {
+          console.log(`[YuseTheater] 定制页面渲染数据长度: ${this.savedData.customizations?.length || 0} 字符`);
+        }
         console.log(`[YuseTheater] 页面内容更新完成，当前视图: ${this.currentView}`);
       } else {
         console.error('[YuseTheater] 未找到app-content容器，无法更新内容');
