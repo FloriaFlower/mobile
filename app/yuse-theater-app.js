@@ -39,7 +39,7 @@ if (typeof window.YuseTheaterApp === 'undefined') {
       this.lastRenderTime = 0;
       this.renderCooldown = 500;
       this.handlePageClick = this.handlePageClick.bind(this);
-      this.nativeHeaderSelector = '.app-header.yuse-theater-header, #app-header.yuse-theater-header, header.yuse-theater-header, .app-header, #app-header, header';
+      this.nativeHeaderSelector = '.app-header.yuse-theater-header, #app-header.yuse-theater-header, header.yuse-theater-header';
       this.init();
     }
 
@@ -233,6 +233,14 @@ if (typeof window.YuseTheaterApp === 'undefined') {
     // 优化4：仅给欲色剧场页眉添加刷新按钮（通过专属选择器+专属按钮类）
     updateNativeHeaderRefreshBtn() {
       const nativeHeader = document.querySelector(this.nativeHeaderSelector);
+      if (!nativeHeader) {
+        const commonHeader = document.querySelector('.app-header, #app-header, header');
+        if (commonHeader && commonHeader.closest('#app-screen[data-app="yuse-theater"]')) {
+          commonHeader.classList.add('yuse-theater-header');
+          console.log('[YuseTheater] 已给欲色剧场页眉添加专属类');
+          nativeHeader = commonHeader;
+        }
+      }
       if (!nativeHeader) return;
 
       // 仅移除欲色剧场专属的刷新按钮
