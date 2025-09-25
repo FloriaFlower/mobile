@@ -37,6 +37,8 @@ if (typeof window.YuseTheaterApp === 'undefined') {
       this.lastRenderTime = 0;
       this.renderCooldown = 500;
       this.handlePageClick = this.handlePageClick.bind(this);
+      // 精准定位欲色剧场页眉的选择器（确保不选中其他APP）
+      this.yuseHeaderSelector = '.app-screen.yuse-theater-active .app-header, .app-screen.yuse-theater-active #app-header, .app-screen.yuse-theater-active header';
       this.init();
     }
     init() {
@@ -46,8 +48,29 @@ if (typeof window.YuseTheaterApp === 'undefined') {
       this.setupEventListeners();
       this.updateAppContent();
       this.parseNewData();
-      // 初始化时通知mobile-phone生成专属按钮（模仿shop-app）
+      // 强制添加应用标识类（避免DOM渲染延迟导致类缺失）
+      this.forceAddAppActiveClass();
+      // 初始化按钮（双重保障：先通知mobile-phone，再手动检查）
       this.updateHeader();
+      setTimeout(() => this.ensureRefreshBtnExists(), 200); // 延迟检查，确保页眉已渲染
+    }
+    // 强制给应用容器添加专属类（解决类添加不及时问题）
+    forceAddAppActiveClass() {
+      const appScreen = document.querySelector('.app-screen') || document.getElementById('app-screen');
+      if (appScreen) {
+        // 移除所有其他APP的专属类，避免冲突
+        appScreen.classList.remove('shop-app-active', 'task-app-active', 'forum-app-active', 'weibo-app-active');
+        // 强制添加欲色剧场专属类
+        appScreen.classList.add('yuse-theater-active');
+        appScreen.setAttribute('data-app', 'yuse-theater');
+        // 给页眉也添加标识
+        const appHeader = appScreen.querySelector('.app-header, #app-header, header');
+        if (appHeader) {
+          appHeader.setAttribute('data-app', 'yuse-theater');
+          appHeader.classList.add('yuse-theater-header');
+        }
+        console.log('[YuseTheater] 已强制添加应用专属标识类');
+      }
     }
     loadDefaultData() {
       for (const page in window.YuseTheaterPages) {
@@ -82,7 +105,17 @@ if (typeof window.YuseTheaterApp === 'undefined') {
       window.addEventListener('messageUpdate', () => this.parseNewData());
       window.addEventListener('yuseViewSwitch', () => {
         this.parseNewData();
-        this.updateHeader(); // 视图切换时同步更新按钮
+        this.updateHeader();
+        this.ensureRefreshBtnExists(); // 视图切换后确保按钮存在
+      });
+      // 监听APP切换事件（防止其他APP切换后按钮残留/丢失）
+      window.addEventListener('appSwitch', (e) => {
+        if (e.detail?.app === 'yuse-theater') {
+          this.forceAddAppActiveClass();
+          this.ensureRefreshBtnExists();
+        } else {
+          this.removeRefreshBtn(); // 切换到其他APP时移除按钮
+        }
       });
     }
     parseNewData() {
@@ -95,7 +128,6 @@ if (typeof window.YuseTheaterApp === 'undefined') {
         const fullMatch = chatData.match(window.YuseTheaterRegex.fullMatch);
         if (fullMatch) {
           const [, announcements, customizations, theater, theaterHot, theaterNew, theaterRecommended, theaterPaid, shop] = fullMatch;
-          // 仅更新有效数据
           if (announcements && announcements.trim() !== '') {
             this.savedData.announcements = announcements;
             isDataUpdated = true;
@@ -131,7 +163,6 @@ if (typeof window.YuseTheaterApp === 'undefined') {
     }
     getChatContent() {
       try {
-        // 优先从mobileContext获取最新2条消息
         const mobileContext = window.mobileContextEditor;
         if (mobileContext) {
           const chatData = mobileContext.getCurrentChatData();
@@ -140,13 +171,11 @@ if (typeof window.YuseTheaterApp === 'undefined') {
             return latestMessages.map(msg => msg.mes || '').join('\n');
           }
         }
-        // 兼容SillyTavern场景
         const globalChat = window.chat || window.SillyTavern?.chat;
         if (globalChat && Array.isArray(globalChat)) {
           const latestMessages = globalChat.slice(-2);
           return latestMessages.map(msg => msg.mes || '').join('\n');
         }
-        // 从DOM获取
         const chatContainer = document.querySelector('#chat') || document.querySelector('.mes') || document.querySelector('.chat-container');
         if (chatContainer) {
           const msgNodes = chatContainer.querySelectorAll('.mes, .message, .chat-message');
@@ -163,21 +192,18 @@ if (typeof window.YuseTheaterApp === 'undefined') {
       if (!pageConfig) return;
       this.sendToSillyTavern(pageConfig.refreshMsg, true);
       this.showToast(`正在刷新${pageConfig.name}...（等待AI返回数据，约50秒）`);
-      // 优化1：重试次数改为1次，解析延迟改为50秒（50000ms）
       const retryTimes = 1;
       const retryInterval = 10000;
-      // 首次解析：50秒后
       setTimeout(() => {
         console.log(`[YuseTheater] 首次解析刷新数据（等待AI输出50秒）`);
         this.parseNewData();
-        // 仅1次重试
         if (retryTimes >= 1) {
           setTimeout(() => {
             console.log(`[YuseTheater] 第1次重试解析刷新数据`);
             this.parseNewData();
           }, retryInterval);
         }
-      }, 50000); // 50秒 = 50000毫秒
+      }, 50000);
     }
     sendToSillyTavern(message, isAutoSend = false) {
       try {
@@ -209,42 +235,76 @@ if (typeof window.YuseTheaterApp === 'undefined') {
       this.currentView = pageKey;
       window.dispatchEvent(new Event('yuseViewSwitch'));
       this.updateAppContent();
-      this.updateHeader(); // 切换视图后更新按钮（模仿shop-app）
+      this.updateHeader();
+      this.ensureRefreshBtnExists();
       console.log(`[YuseTheater] 切换视图至：${pageKey}`);
     }
-    // 完全模仿shop-app：通过mobile-phone.js生成专属按钮，不直接操作DOM
+    // 核心：双重保障生成按钮（通知mobile-phone + 手动兜底）
     updateHeader() {
+      this.forceAddAppActiveClass(); // 先确保标识类存在
+      const pageConfig = window.YuseTheaterPages[this.currentView];
+      // 1. 通知mobile-phone生成按钮（对齐shop-app逻辑）
       if (window.mobilePhone && window.mobilePhone.updateAppHeader) {
-        const pageConfig = window.YuseTheaterPages[this.currentView];
-        // 1. 传递APP唯一标识（app: 'yuse-theater'），让mobile-phone只在当前APP页眉生成按钮
-        // 2. 按钮添加专属类yuse-theater-refresh-btn，配合CSS隔离
         const headerState = {
-          app: 'yuse-theater', // 关键：APP唯一标识，与其他APP区分
+          app: 'yuse-theater',
           title: pageConfig.name,
           view: this.currentView,
-          // 刷新按钮配置（仅当前APP生效）
           refreshBtn: {
-            className: 'refresh-btn yuse-theater-refresh-btn', // 专属类+基础样式类
+            className: 'refresh-btn yuse-theater-refresh-btn',
             innerHTML: '🔄 刷新',
             clickAction: () => this.sendRefreshRequest(this.currentView),
-            app: 'yuse-theater' // 额外标记APP，确保mobile-phone精准匹配
+            app: 'yuse-theater'
           }
         };
         window.mobilePhone.updateAppHeader(headerState);
-        // 给应用容器添加专属类（模仿shop-app的.shop-app-active），用于CSS样式隔离
-        const appScreen = document.querySelector('.app-screen[data-app="yuse-theater"]') || document.querySelector('.app-screen');
-        if (appScreen) {
-          // 移除其他APP的专属类，添加欲色剧场专属类
-          appScreen.classList.remove('shop-app-active', 'task-app-active');
-          appScreen.classList.add('yuse-theater-active');
-          // 给页眉添加APP标识，辅助mobile-phone定位
-          const appHeader = appScreen.querySelector('.app-header, #app-header, header');
-          if (appHeader) {
-            appHeader.setAttribute('data-app', 'yuse-theater');
-            appHeader.classList.add('yuse-theater-header');
-          }
+        console.log('[YuseTheater] 已通知mobile-phone生成刷新按钮');
+      }
+      // 2. 手动检查并创建按钮（兜底，防止mobile-phone处理失败）
+      this.ensureRefreshBtnExists();
+    }
+    // 兜底：确保欲色剧场页眉一定有刷新按钮（只操作当前APP页眉）
+    ensureRefreshBtnExists() {
+      // 精准找到欲色剧场的页眉（排除其他APP）
+      const yuseHeader = document.querySelector(this.yuseHeaderSelector);
+      if (!yuseHeader) {
+        console.log('[YuseTheater] 未找到欲色剧场页眉，100ms后重试');
+        setTimeout(() => this.ensureRefreshBtnExists(), 100);
+        return;
+      }
+      // 检查是否已有按钮，没有则创建
+      let refreshBtn = yuseHeader.querySelector('.yuse-theater-refresh-btn');
+      if (!refreshBtn) {
+        refreshBtn = document.createElement('button');
+        refreshBtn.className = 'refresh-btn yuse-theater-refresh-btn';
+        refreshBtn.innerHTML = '🔄 刷新';
+        refreshBtn.title = '刷新当前页面内容';
+        // 绑定点击事件
+        refreshBtn.addEventListener('click', () => {
+          this.sendRefreshRequest(this.currentView);
+        });
+        // 只添加到欲色剧场的页眉右侧（找到header-right容器）
+        const headerRight = yuseHeader.querySelector('#app-header-right') || yuseHeader.querySelector('.app-header-right');
+        if (headerRight) {
+          headerRight.appendChild(refreshBtn);
+          console.log('[YuseTheater] 已手动创建刷新按钮');
+        } else {
+          // 找不到右侧容器时，直接添加到页眉（确保显示）
+          yuseHeader.appendChild(refreshBtn);
+          console.log('[YuseTheater] 已手动添加刷新按钮到页眉');
         }
       }
+    }
+    // 移除按钮（只移除欲色剧场的，避免影响其他APP）
+    removeRefreshBtn() {
+      const allRefreshBtns = document.querySelectorAll('.yuse-theater-refresh-btn');
+      allRefreshBtns.forEach(btn => {
+        // 只移除欲色剧场页眉下的按钮
+        const parentHeader = btn.closest(this.yuseHeaderSelector);
+        if (parentHeader) {
+          btn.remove();
+          console.log('[YuseTheater] 已移除欲色剧场刷新按钮');
+        }
+      });
     }
     getAppContent() {
       const pageConfig = window.YuseTheaterPages[this.currentView];
@@ -299,10 +359,11 @@ if (typeof window.YuseTheaterApp === 'undefined') {
       if (appElement) {
         appElement.removeEventListener('click', this.handlePageClick);
         appElement.innerHTML = content;
-        // 给应用容器添加APP唯一标识（模仿shop-app），辅助mobile-phone定位页眉
+        // 确保应用容器标识存在
         const appScreen = appElement.closest('.app-screen');
         if (appScreen) {
           appScreen.setAttribute('data-app', 'yuse-theater');
+          appScreen.classList.add('yuse-theater-active');
         }
         const contentArea = appElement.querySelector('.yuse-content-area');
         if (contentArea) {
@@ -311,7 +372,6 @@ if (typeof window.YuseTheaterApp === 'undefined') {
           contentArea.style.height = 'calc(100vh - 120px)';
         }
         appElement.addEventListener('click', this.handlePageClick);
-        // 优化2：仅保留粉丝定制页面渲染日志
         if (this.currentView === 'customizations') {
           console.log(`[YuseTheater] 定制页面渲染长度: ${this.savedData.customizations?.length || 0} 字符`);
         }
@@ -320,13 +380,11 @@ if (typeof window.YuseTheaterApp === 'undefined') {
     handlePageClick(e) {
       const appContainer = document.getElementById('app-content');
       if (!appContainer) return;
-      // 导航切换
       const navBtn = e.target.closest('.yuse-nav-btn');
       if (navBtn) {
         this.switchView(navBtn.dataset.page);
         return;
       }
-      // 拒绝按钮
       const rejectBtn = e.target.closest('.reject-btn');
       if (rejectBtn) {
         const listItem = rejectBtn.closest('.list-item');
@@ -339,7 +397,6 @@ if (typeof window.YuseTheaterApp === 'undefined') {
         e.stopPropagation();
         return;
       }
-      // 接取定制
       const acceptBtn = e.target.closest('.accept-btn');
       if (acceptBtn && acceptBtn.closest('.list-item')?.dataset.type === 'customization') {
         const listItem = acceptBtn.closest('.list-item');
@@ -351,7 +408,6 @@ if (typeof window.YuseTheaterApp === 'undefined') {
         e.stopPropagation();
         return;
       }
-      // 列表项详情
       const listItem = e.target.closest('.list-item');
       if (listItem) {
         const itemData = listItem.dataset;
@@ -367,7 +423,6 @@ if (typeof window.YuseTheaterApp === 'undefined') {
         }
         return;
       }
-      // 剧场筛选
       const filterBtn = e.target.closest('.filter-btn');
       if (filterBtn) {
         const filterType = filterBtn.dataset.filter;
@@ -389,7 +444,6 @@ if (typeof window.YuseTheaterApp === 'undefined') {
         return;
       }
     }
-    // 通告详情
     showAnnouncementDetail(itemData) {
       const detailHtml = `
         <div class="detail-section"><h4>剧情简介</h4><p>${itemData.description || '无'}</p></div>
@@ -410,7 +464,6 @@ if (typeof window.YuseTheaterApp === 'undefined') {
         document.querySelector('.yuse-modal').remove();
       });
     }
-    // 定制详情
     showCustomizationDetail(itemData) {
       const detailHtml = `
         <div class="detail-section"><h4>定制类型</h4><p>${itemData.typeName || '无'}</p></div>
@@ -430,7 +483,6 @@ if (typeof window.YuseTheaterApp === 'undefined') {
         document.querySelector('.yuse-modal').remove();
       });
     }
-    // 剧场详情
     showTheaterDetail(itemData) {
       const renderComments = (reviewsStr) => {
         try {
@@ -454,7 +506,6 @@ if (typeof window.YuseTheaterApp === 'undefined') {
       const footerHtml = `<button class="action-button accept-btn" onclick="document.querySelector('.yuse-modal').remove()">返回</button>`;
       this.createOriginalModal(itemData.title, detailHtml, footerHtml);
     }
-    // 商城详情
     showShopDetail(itemData) {
       const renderComments = (commentsStr) => {
         try {
@@ -508,9 +559,14 @@ if (typeof window.YuseTheaterApp === 'undefined') {
       this.isAutoRender = false;
       const appElement = document.getElementById('app-content');
       if (appElement) appElement.removeEventListener('click', this.handlePageClick);
-      // 移除欲色剧场专属按钮（仅当前APP）
-      const oldRefreshBtn = document.querySelector('.yuse-theater-active .yuse-theater-refresh-btn');
-      if (oldRefreshBtn) oldRefreshBtn.remove();
+      // 移除欲色剧场专属按钮（彻底清理）
+      this.removeRefreshBtn();
+      // 清除应用标识类
+      const appScreen = document.querySelector('.app-screen.yuse-theater-active');
+      if (appScreen) {
+        appScreen.classList.remove('yuse-theater-active');
+        appScreen.removeAttribute('data-app');
+      }
       console.log('[YuseTheater] 销毁欲色剧场 App');
     }
   }
