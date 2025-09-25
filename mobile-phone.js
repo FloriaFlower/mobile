@@ -4,6 +4,7 @@
  */
 class MobilePhone {
   constructor() {
+    console.log('[Mobile Phone] ♻️MobilePhone 类开始实例化！');
     this.isVisible = false;
     this.currentApp = null;
     this.apps = {};
@@ -21,7 +22,6 @@ class MobilePhone {
     this._loadingStartTime = {};
     this.init();
   }
-
   init() {
     this.loadDragHelper();
     this.clearPositionCache();
@@ -33,13 +33,11 @@ class MobilePhone {
       this.initTextColor();
     }, 1000);
   }
-
   loadDragHelper() {
     const cssLink = document.createElement('link');
     cssLink.rel = 'stylesheet';
     cssLink.href = '/scripts/extensions/third-party/mobile/drag-helper.css';
     document.head.appendChild(cssLink);
-
     if (typeof DragHelper === 'undefined') {
       const script = document.createElement('script');
       script.src = '/scripts/extensions/third-party/mobile/drag-helper.js';
@@ -52,34 +50,29 @@ class MobilePhone {
       document.head.appendChild(script);
     }
   }
-
   createPhoneButton() {
-    try {
-      const existingButton = document.getElementById('mobile-phone-trigger');
-      if (existingButton) {
-        existingButton.remove();
-      }
-
-      const button = document.createElement('button');
-      button.id = 'mobile-phone-trigger';
-      button.className = 'mobile-phone-trigger';
-      button.innerHTML = '📱';
-      button.title = '打开手机界面';
-      button.addEventListener('click', () => this.togglePhone());
-
-      if (!document.body) {
-        console.error('[Mobile Phone] 严重错误：document.body 仍不存在！');
-        setTimeout(() => this.createPhoneButton(), 500);
-        return;
-      }
-
-      document.body.appendChild(button);
-      this.initDragForButton(button);
-    } catch (error) {
-      console.error('[Mobile Phone] 创建按钮时发生错误:', error.stack);
+  try {
+    const existingButton = document.getElementById('mobile-phone-trigger');
+    if (existingButton) {
+      existingButton.remove();
     }
+    const button = document.createElement('button');
+    button.id = 'mobile-phone-trigger';
+    button.className = 'mobile-phone-trigger';
+    button.innerHTML = '📱';
+    button.title = '打开手机界面';
+    button.addEventListener('click', () => this.togglePhone());
+    if (!document.body) {
+      console.error('[Mobile Phone] 严重错误：document.body 仍不存在！');
+      setTimeout(() => this.createPhoneButton(), 500);
+      return;
+    }
+    document.body.appendChild(button);
+    this.initDragForButton(button);
+  } catch (error) {
+    console.error('[Mobile Phone] 创建按钮时发生错误（含完整栈）:', error.stack);
   }
-
+}
   initDragForButton(button) {
     const tryInitDrag = () => {
       if (typeof DragHelper !== 'undefined') {
@@ -93,13 +86,13 @@ class MobilePhone {
           savePosition: false,
           storageKey: 'mobile-phone-trigger-position',
         });
+        console.log('[Mobile Phone] 拖拽功能初始化成功');
       } else {
         setTimeout(tryInitDrag, 100);
       }
     };
     tryInitDrag();
   }
-
   clearPositionCache() {
     try {
       localStorage.removeItem('mobile-phone-trigger-position');
@@ -108,7 +101,6 @@ class MobilePhone {
       console.warn('[Mobile Phone] 清理位置缓存时发生错误:', error);
     }
   }
-
   initFrameDrag() {
     const tryInitFrameDrag = () => {
       if (typeof DragHelper !== 'undefined') {
@@ -126,6 +118,7 @@ class MobilePhone {
             touchTimeout: 300,
             dragHandle: '.mobile-status-bar',
           });
+          console.log('[Mobile Phone] 框架拖拽功能初始化成功');
         }
       } else {
         setTimeout(tryInitFrameDrag, 100);
@@ -133,14 +126,12 @@ class MobilePhone {
     };
     tryInitFrameDrag();
   }
-
   createPhoneContainer() {
     try {
       const existingContainer = document.getElementById('mobile-phone-container');
       if (existingContainer) {
         existingContainer.remove();
       }
-
       const container = document.createElement('div');
       container.id = 'mobile-phone-container';
       container.className = 'mobile-phone-container';
@@ -259,13 +250,11 @@ class MobilePhone {
                     </div>
                 </div>
             `;
-
       if (!document.body) {
         console.error('[Mobile Phone] document.body 不存在，延迟创建容器');
         setTimeout(() => this.createPhoneContainer(), 100);
         return;
       }
-
       document.body.appendChild(container);
       this.bindEvents();
       this.initFrameDrag();
@@ -273,7 +262,6 @@ class MobilePhone {
       console.error('[Mobile Phone] 创建容器时发生错误:', error);
     }
   }
-
   bindEvents() {
     document.querySelector('.mobile-phone-overlay').addEventListener('click', () => {
       const isCompatibilityMode =
@@ -284,7 +272,6 @@ class MobilePhone {
         this.hidePhone();
       }
     });
-
     document.getElementById('back-button').addEventListener('click', () => {
       if (this._lastBackButtonClick && Date.now() - this._lastBackButtonClick < 300) {
         return;
@@ -292,7 +279,6 @@ class MobilePhone {
       this._lastBackButtonClick = Date.now();
       this.handleBackButton();
     });
-
     document.querySelectorAll('.app-icon').forEach(icon => {
       icon.addEventListener('click', e => {
         const appName = e.currentTarget.getAttribute('data-app');
@@ -304,30 +290,23 @@ class MobilePhone {
       });
     });
   }
-
   handleBackButton() {
     this._userNavigationIntent = null;
-
     if (!this.currentAppState) {
       this.goHome();
       return;
     }
-
     const currentApp = this.currentAppState.app;
     const atRoot = this.isCurrentlyAtAppRoot(currentApp, this.currentAppState);
-
     if (this.currentApp && this.currentApp !== currentApp) {
       this.currentApp = currentApp;
     }
-
     if (!atRoot) {
       this.returnToAppMain(currentApp);
       return;
     }
-
     this.goHome();
   }
-
   returnToForumMainList() {
     const forumMainState = {
       app: 'forum',
@@ -338,7 +317,6 @@ class MobilePhone {
     this.currentAppState = forumMainState;
     this.currentApp = 'forum';
     this.updateAppHeader(forumMainState);
-
     if (window.getForumAppContent && window.bindForumEvents) {
       const forumContent = window.getForumAppContent();
       if (forumContent) {
@@ -346,6 +324,7 @@ class MobilePhone {
         window.bindForumEvents();
         if (window.forumUI) {
           window.forumUI.currentThreadId = null;
+          window.forumUI.currentView = 'main';
           if (window.forumUI.resetState) {
             window.forumUI.resetState();
           }
@@ -357,7 +336,6 @@ class MobilePhone {
       this.handleForumApp();
     }
   }
-
   returnToMessageList() {
     const messageListState = {
       app: 'messages',
@@ -367,33 +345,28 @@ class MobilePhone {
     this.appStack = [messageListState];
     this.currentAppState = messageListState;
     this.updateAppHeader(messageListState);
-
     if (window.messageApp && window.messageApp.showMessageList) {
       window.messageApp.currentView = 'messageList';
       window.messageApp.currentFriendId = null;
       window.messageApp.currentFriendName = null;
       window.messageApp.showMessageList();
+    } else {
+      console.error('[Mobile Phone] messageApp实例不存在或showMessageList方法不可用');
     }
   }
-
   isAppRootPage(state) {
     if (!state) return false;
-
     if (state.app === 'messages') {
       return state.view === 'messageList' || state.view === 'main' || state.view === 'list';
     }
-
     if (state.app === 'forum') {
       return state.view === 'main' || !state.view || state.view === 'list';
     }
-
     return state.view === 'main';
   }
-
   restoreAppState(state) {
     this.currentAppState = state;
     this.updateAppHeader(state);
-
     if (state.app === 'messages') {
       if (state.view === 'messageList' || state.view === 'list') {
         if (window.messageApp) {
@@ -477,7 +450,6 @@ class MobilePhone {
       }
     }
   }
-
   updateAppHeader(state) {
     const titleElement = document.getElementById('app-title');
     const headerRight = document.getElementById('app-header-right');
@@ -486,9 +458,7 @@ class MobilePhone {
       headerRight.innerHTML = '';
       return;
     }
-
     titleElement.textContent = state.title || this.apps[state.app]?.name || '应用';
-
     const appScreen = document.getElementById('app-screen');
     const appContent = document.getElementById('app-content');
     const appHeader = document.getElementById('app-header');
@@ -510,31 +480,33 @@ class MobilePhone {
       appHeader.setAttribute('data-app', state.app || '');
       appHeader.setAttribute('data-view', state.view || 'main');
     }
-
     headerRight.innerHTML = '';
 
-    // 欲色剧场专属页眉按钮逻辑（状态驱动+即时销毁）
+    // 欲色剧场专属页眉按钮（状态驱动）
     if (state.app === 'yuse-theater') {
-      // 1. 清理残留按钮（即时销毁）
-      const existingRefreshBtn = document.getElementById('yuse-refresh-btn');
-      if (existingRefreshBtn) existingRefreshBtn.remove();
-      
-      // 2. 创建刷新按钮（状态驱动）
-      const refreshBtn = document.createElement('button');
-      refreshBtn.id = 'yuse-refresh-btn';
-      refreshBtn.className = 'app-header-btn yuse-theater-btn';
-      refreshBtn.innerHTML = '<<i class="fas fa-sync-alt"></</i>';
-      refreshBtn.title = '刷新剧场内容';
-      
-      // 3. 绑定点击事件（触发自定义刷新方法）
-      refreshBtn.addEventListener('click', () => {
-        if (window.yuseTheaterApp && typeof window.yuseTheaterApp.refreshTheater === 'function') {
-          window.yuseTheaterApp.refreshTheater();
-        }
-      });
-      
-      headerRight.appendChild(refreshBtn);
-      console.log('[YuseTheater] 激活专属按钮: yuse-refresh-btn');
+      if (state.headerButtons && state.headerButtons.length > 0) {
+        state.headerButtons.forEach(btn => {
+          if (btn.activeWhen && btn.activeWhen()) {
+            const headerBtn = document.createElement('button');
+            headerBtn.id = btn.id;
+            headerBtn.className = `app-header-btn ${btn.className || ''}`;
+            headerBtn.innerHTML = btn.icon;
+            headerBtn.title = btn.title;
+            headerBtn.style.background = '#d63384';
+            headerBtn.style.color = 'white';
+            headerBtn.style.transition = 'transform 0.2s ease';
+            headerBtn.addEventListener('mouseover', () => {
+              headerBtn.style.transform = 'scale(1.05)';
+            });
+            headerBtn.addEventListener('mouseout', () => {
+              headerBtn.style.transform = 'scale(1)';
+            });
+            headerBtn.addEventListener('click', btn.action);
+            headerRight.appendChild(headerBtn);
+            console.log(`[YuseTheater] 激活专属按钮: ${btn.id}`);
+          }
+        });
+      }
     } 
     // Task应用原有逻辑
     else if (state.app === 'task') {
@@ -558,14 +530,12 @@ class MobilePhone {
         textColorBtn.title = '切换文字颜色';
         textColorBtn.addEventListener('click', () => this.toggleTextColor());
         headerRight.appendChild(textColorBtn);
-
         const imageConfigBtn = document.createElement('button');
         imageConfigBtn.className = 'app-header-btn';
         imageConfigBtn.innerHTML = '<<i class="fas fa-image"></</i>';
         imageConfigBtn.title = '图片设置';
         imageConfigBtn.addEventListener('click', () => this.showImageConfigModal());
         headerRight.appendChild(imageConfigBtn);
-
         const addFriendBtn = document.createElement('button');
         addFriendBtn.className = 'app-header-btn';
         addFriendBtn.innerHTML = '➕';
@@ -581,7 +551,6 @@ class MobilePhone {
           photoBtn.addEventListener('click', () => this.showFriendImageConfigModal(state.friendId, state.friendName));
           headerRight.appendChild(photoBtn);
         }
-
         const refreshBtn = document.createElement('button');
         refreshBtn.className = 'app-header-btn';
         refreshBtn.innerHTML = '<<i class="fas fa-sync-alt"></</i>';
@@ -604,7 +573,6 @@ class MobilePhone {
           this.generateFriendsCircleContent();
         });
         headerRight.appendChild(generateBtn);
-
         const cameraBtn = document.createElement('button');
         cameraBtn.className = 'app-header-btn';
         cameraBtn.innerHTML = '<<i class="fas fa-camera"></</i>';
@@ -665,7 +633,6 @@ class MobilePhone {
           }
         });
         headerRight.appendChild(generateBtn);
-
         const postBtn = document.createElement('button');
         postBtn.className = 'app-header-btn';
         postBtn.innerHTML = '发帖';
@@ -678,7 +645,6 @@ class MobilePhone {
           }
         });
         headerRight.appendChild(postBtn);
-
         const styleBtn = document.createElement('button');
         styleBtn.className = 'app-header-btn';
         styleBtn.innerHTML = '风格';
@@ -691,11 +657,12 @@ class MobilePhone {
             const forumStylesTab = document.querySelector('[data-tab="forum-styles"]');
             if (forumStylesTab) {
               forumStylesTab.click();
+            } else {
+              console.warn('[Mobile Phone] 未找到论坛风格设置标签页');
             }
           }, 300);
         });
         headerRight.appendChild(styleBtn);
-
         const refreshBtn = document.createElement('button');
         refreshBtn.className = 'app-header-btn';
         refreshBtn.innerHTML = '刷新';
@@ -735,7 +702,6 @@ class MobilePhone {
         }
       });
       headerRight.appendChild(generateBtn);
-
       const refreshBtn = document.createElement('button');
       refreshBtn.className = 'app-header-btn';
       refreshBtn.innerHTML = '刷新';
@@ -750,7 +716,6 @@ class MobilePhone {
         }
       });
       headerRight.appendChild(refreshBtn);
-
       const postBtn = document.createElement('button');
       postBtn.className = 'app-header-btn';
       postBtn.innerHTML = '发博';
@@ -765,7 +730,6 @@ class MobilePhone {
         }
       });
       headerRight.appendChild(postBtn);
-
       const switchAccountBtn = document.createElement('button');
       switchAccountBtn.className = 'app-header-btn';
       const isMainAccount = window.weiboManager ? window.weiboManager.currentAccount.isMainAccount : true;
@@ -808,7 +772,6 @@ class MobilePhone {
         }
       });
       headerRight.appendChild(viewBtn);
-
       const categoryBtn = document.createElement('button');
       categoryBtn.className = 'app-header-btn shop-accent-btn';
       categoryBtn.innerHTML = '分类';
@@ -832,7 +795,6 @@ class MobilePhone {
         }
       });
       headerRight.appendChild(categoryBtn);
-
       const searchBtn = document.createElement('button');
       searchBtn.className = 'app-header-btn';
       searchBtn.innerHTML = '🔍';
@@ -843,7 +805,6 @@ class MobilePhone {
         }
       });
       headerRight.appendChild(searchBtn);
-
       const refreshBtn = document.createElement('button');
       refreshBtn.className = 'app-header-btn';
       refreshBtn.innerHTML = '<<i class="fas fa-sync-alt"></</i>';
@@ -862,7 +823,6 @@ class MobilePhone {
         state.viewerCount || '-'
       }</span>`;
       headerRight.appendChild(viewerBadge);
-
       const giftBtn = document.createElement('button');
       giftBtn.className = 'app-header-btn gift-log-btn';
       giftBtn.title = '礼物流水';
@@ -873,7 +833,6 @@ class MobilePhone {
         }
       });
       headerRight.appendChild(giftBtn);
-
       const endBtn = document.createElement('button');
       endBtn.className = 'app-header-btn end-stream-btn';
       endBtn.title = '结束直播';
@@ -892,7 +851,6 @@ class MobilePhone {
         state.viewerCount || '-'
       }</span>`;
       headerRight.appendChild(viewerBadge);
-
       const exitBtn = document.createElement('button');
       exitBtn.className = 'app-header-btn end-stream-btn';
       exitBtn.title = '退出直播间';
@@ -905,29 +863,23 @@ class MobilePhone {
       headerRight.appendChild(exitBtn);
     }
   }
-
   pushAppState(state) {
     if (!state || !state.app) {
-      console.warn('[Mobile Phone] 推送状态无效，跳过:', state);
       return;
     }
-
     const currentState = this.currentAppState;
     if (currentState && this.isSameAppState(currentState, state)) {
       return;
     }
-
     const topState = this.appStack[this.appStack.length - 1];
     if (topState && this.isSameAppState(topState, state)) {
       return;
     }
-
     this.appStack.push(state);
     this.currentAppState = state;
     this.currentApp = state.app;
     this.updateAppHeader(state);
   }
-
   isSameAppState(state1, state2) {
     if (!state1 || !state2) return false;
     return state1.app === state2.app &&
@@ -936,19 +888,16 @@ class MobilePhone {
            state1.threadId === state2.threadId &&
            state1.title === state2.title;
   }
-
   refreshMessages() {
     if (window.messageApp && window.messageApp.refreshMessageList) {
       window.messageApp.refreshMessageList();
     }
   }
-
   refreshMessageDetail() {
     if (window.messageApp && window.messageApp.refreshMessageDetail) {
       window.messageApp.refreshMessageDetail();
     }
   }
-
   showMessageList() {
     if (window.messageApp && window.messageApp.showMessageList) {
       window.messageApp.showMessageList();
@@ -956,7 +905,6 @@ class MobilePhone {
       console.error('[Mobile Phone] messageApp实例不存在或showMessageList方法不可用');
     }
   }
-
   showMessageDetail(friendId, friendName) {
     if (window.messageApp && window.messageApp.showMessageDetail) {
       window.messageApp.showMessageDetail(friendId, friendName);
@@ -964,15 +912,12 @@ class MobilePhone {
       console.error('[Mobile Phone] messageApp实例不存在或showMessageDetail方法不可用');
     }
   }
-
   toggleGallerySelect() {
     console.log('[Mobile Phone] 切换相册选择模式');
   }
-
   showSettingsSearch() {
     console.log('[Mobile Phone] 显示设置搜索');
   }
-
   showAddFriend() {
     if (window.messageApp && window.messageApp.showAddFriend) {
       window.messageApp.showAddFriend();
@@ -980,16 +925,13 @@ class MobilePhone {
       console.error('[Mobile Phone] messageApp实例不存在或showAddFriend方法不可用');
     }
   }
-
   async generateFriendsCircleContent() {
     try {
       if (window.showMobileToast) {
         window.showMobileToast('🎭 正在生成朋友圈内容...', 'info');
       }
-
       const message =
         '用户正在查看朋友圈，请根据朋友圈规则系统，生成3-5个正确的朋友圈格式，根据角色间的关系为每条朋友圈生成0-5条回复。回复请使用与原楼层相同id。请使用正确的三位数楼层id,楼层id不能与历史楼层id重复。请正确使用前缀s或w。严禁代替用户回复。禁止发表情包或颜文字，可以使用emoji。';
-
       if (window.friendsCircle && window.friendsCircle.sendToAI) {
         await window.friendsCircle.sendToAI(message);
         if (window.showMobileToast) {
@@ -1008,7 +950,6 @@ class MobilePhone {
       }
     }
   }
-
   saveAddFriend() {
     if (window.messageApp && window.messageApp.addFriend) {
       window.messageApp.addFriend();
@@ -1016,7 +957,6 @@ class MobilePhone {
       console.error('[Mobile Phone] messageApp实例不存在或addFriend方法不可用');
     }
   }
-
   registerApps() {
     this.apps = {
       messages: {
@@ -1165,7 +1105,6 @@ class MobilePhone {
       },
     };
   }
-
   togglePhone() {
     if (this.isVisible) {
       this.hidePhone();
@@ -1173,7 +1112,6 @@ class MobilePhone {
       this.showPhone();
     }
   }
-
   showPhone() {
     const container = document.getElementById('mobile-phone-container');
     container.style.display = 'flex';
@@ -1182,22 +1120,17 @@ class MobilePhone {
     }, 10);
     this.isVisible = true;
     this.isPhoneActive = true;
-
     this.initStyleConfigManager();
-
     if (this.currentAppState) {
       document.getElementById('home-screen').style.display = 'none';
       document.getElementById('app-screen').style.display = 'block';
       this.restoreAppState(this.currentAppState);
     }
-
     this.startStateSyncLoop();
-
     if (window.MobileContextPlugin && window.MobileContextPlugin.updatePointerEventsSettings) {
       window.MobileContextPlugin.updatePointerEventsSettings();
     }
   }
-
   hidePhone() {
     const container = document.getElementById('mobile-phone-container');
     container.classList.remove('active');
@@ -1206,17 +1139,8 @@ class MobilePhone {
     }, 300);
     this.isVisible = false;
     this.isPhoneActive = false;
-
-    // 欲色剧场退出时清理（即时销毁）
-    const yuseRefreshBtn = document.getElementById('yuse-refresh-btn');
-    if (yuseRefreshBtn) {
-      yuseRefreshBtn.remove();
-      console.log('[YuseTheater] 隐藏界面触发按钮清理');
-    }
-
     this.stopStateSyncLoop();
   }
-
   initStyleConfigManager() {
     if (
       window.styleConfigManager &&
@@ -1225,7 +1149,6 @@ class MobilePhone {
     ) {
       return;
     }
-
     if (window.StyleConfigManager && !window.styleConfigManager) {
       try {
         window.styleConfigManager = new window.StyleConfigManager();
@@ -1236,7 +1159,6 @@ class MobilePhone {
       this.loadStyleConfigManager();
     }
   }
-
   async loadStyleConfigManager() {
     try {
       const existingScript = document.querySelector('script[src*="style-config-manager.js"]');
@@ -1248,7 +1170,6 @@ class MobilePhone {
         }, 1000);
         return;
       }
-
       const script = document.createElement('script');
       script.src = '/scripts/extensions/third-party/mobile/app/style-config-manager.js';
       script.type = 'text/javascript';
@@ -1260,6 +1181,9 @@ class MobilePhone {
             } catch (error) {
               console.error('[Mobile Phone] ❌ 创建样式配置管理器实例失败:', error);
             }
+          } else if (window.styleConfigManager) {
+          } else {
+            console.warn('[Mobile Phone] ⚠️ StyleConfigManager 类未正确加载');
           }
         }, 500);
       };
@@ -1271,18 +1195,15 @@ class MobilePhone {
       console.error('[Mobile Phone] ❌ 动态加载样式配置管理器失败:', error);
     }
   }
-
   openApp(appName) {
     if (this._openingApp === appName) {
       return;
     }
-
     const app = this.apps[appName];
     if (!app) {
       console.warn('[Mobile Phone] 应用不存在:', appName);
       return;
     }
-
     if (this.currentApp === appName &&
         this.currentAppState &&
         this.currentAppState.app === appName &&
@@ -1292,11 +1213,14 @@ class MobilePhone {
 
     // 切换应用时清理欲色剧场按钮（即时销毁）
     if (this.currentApp === 'yuse-theater' && appName !== 'yuse-theater') {
-      const yuseBtn = document.getElementById('yuse-refresh-btn');
-      if (yuseBtn) {
-        yuseBtn.remove();
-        console.log(`[YuseTheater] 切换到${appName}，清理剧场按钮`);
+      const headerRight = document.getElementById('app-header-right');
+      if (headerRight) {
+        const yuseBtn = headerRight.querySelector('#yuse-refresh-btn');
+        if (yuseBtn) {
+          yuseBtn.remove();
+        }
       }
+      console.log(`[YuseTheater] 切换到${appName}，清理剧场按钮`);
     }
 
     this._userNavigationIntent = {
@@ -1304,7 +1228,6 @@ class MobilePhone {
       timestamp: Date.now(),
       fromApp: this.currentApp
     };
-
     this._openingApp = appName;
     try {
       const needsAsyncLoading = ['forum', 'weibo', 'api'].includes(appName);
@@ -1313,28 +1236,22 @@ class MobilePhone {
         this._loadingApps.add(appName);
         this._loadingStartTime[appName] = Date.now();
       }
-
       this.currentApp = appName;
-
       const appState = {
         app: appName,
         title: app.name,
         view: appName === 'messages' ? 'messageList' : 'main',
       };
-
       this.appStack = [appState];
       this.currentAppState = appState;
       this.updateAppHeader(appState);
-
       if (app.isCustomApp && app.customHandler) {
         app.customHandler();
       } else {
         document.getElementById('app-content').innerHTML = app.content;
       }
-
       document.getElementById('home-screen').style.display = 'none';
       document.getElementById('app-screen').style.display = 'block';
-
       document.getElementById('app-screen').classList.add('slide-in');
       setTimeout(() => {
         document.getElementById('app-screen').classList.remove('slide-in');
@@ -1345,7 +1262,6 @@ class MobilePhone {
       }, 500);
     }
   }
-
   showAppLoadingState(appName, appTitle) {
     const loadingContent = `
       <div class="app-loading-container">
@@ -1364,70 +1280,53 @@ class MobilePhone {
     document.getElementById('app-content').innerHTML = loadingContent;
     this.simulateLoadingProgress(appName);
   }
-
   simulateLoadingProgress(appName) {
     const progressBar = document.getElementById(`loading-progress-${appName}`);
     if (!progressBar) return;
-
     let progress = 0;
     const interval = setInterval(() => {
       if (!this._loadingApps.has(appName) || this._userNavigationIntent?.targetApp !== appName) {
         clearInterval(interval);
         return;
       }
-
       progress += Math.random() * 15 + 5;
       if (progress > 90) progress = 90;
       progressBar.style.width = `${progress}%`;
     }, 200);
-
     setTimeout(() => {
       clearInterval(interval);
     }, 10000);
   }
-
   isUserNavigationIntentValid(appName) {
     if (!this._userNavigationIntent) return false;
-
     const intent = this._userNavigationIntent;
     const now = Date.now();
-
     if (now - intent.timestamp > 30000) {
       return false;
     }
-
     if (intent.targetApp !== appName) {
       return false;
     }
-
     if (this.currentApp !== appName) {
       return false;
     }
-
     return true;
   }
-
   completeAppLoading(appName) {
     this._loadingApps.delete(appName);
-
     if (this._loadingStartTime[appName]) {
       const loadTime = Date.now() - this._loadingStartTime[appName];
-      console.log(`[Mobile Phone] ${appName} 加载耗时: ${loadTime}ms`);
       delete this._loadingStartTime[appName];
     }
-
     if (!this.isUserNavigationIntentValid(appName)) {
       return false;
     }
-
     const progressBar = document.getElementById(`loading-progress-${appName}`);
     if (progressBar) {
       progressBar.style.width = '100%';
     }
-
     return true;
   }
-
   async handleForumApp() {
     try {
       document.getElementById('app-content').innerHTML = `
@@ -1436,14 +1335,12 @@ class MobilePhone {
                     <div class="loading-text">正在加载论坛...</div>
                 </div>
             `;
-
       const loadWithTimeout = (promise, timeout = 15000) => {
         return Promise.race([
           promise,
           new Promise((_, reject) => setTimeout(() => reject(new Error('论坛模块加载超时')), timeout)),
         ]);
       };
-
       try {
         await loadWithTimeout(this.loadForumApp());
       } catch (error) {
@@ -1451,11 +1348,9 @@ class MobilePhone {
         window._forumAppLoading = null;
         await loadWithTimeout(this.loadForumApp());
       }
-
       if (!this.completeAppLoading('forum')) {
         return;
       }
-
       let currentState = this.appStack[this.appStack.length - 1];
       if (!currentState || currentState.app !== 'forum') {
         const initialState = {
@@ -1466,7 +1361,6 @@ class MobilePhone {
         this.pushAppState(initialState);
         currentState = initialState;
       }
-
       const view = currentState.view || 'main';
       let content = '';
       if (view === 'forumControl') {
@@ -1480,13 +1374,10 @@ class MobilePhone {
         }
         content = window.getForumAppContent();
       }
-
       if (!content || content.trim() === '') {
         throw new Error(`论坛${view === 'forumControl' ? '控制' : '主界面'}内容为空`);
       }
-
       document.getElementById('app-content').innerHTML = content;
-
       if (view === 'forumControl') {
         if (window.bindForumControlEvents) {
           window.bindForumControlEvents();
@@ -1496,7 +1387,6 @@ class MobilePhone {
           window.bindForumEvents();
         }
       }
-
       setTimeout(() => {
         const forumStyleSelect = document.getElementById('forum-style-select');
         if (forumStyleSelect) {
@@ -1516,7 +1406,6 @@ class MobilePhone {
             `;
     }
   }
-
   async handleWeiboApp() {
     try {
       document.getElementById('app-content').innerHTML = `
@@ -1525,14 +1414,12 @@ class MobilePhone {
                     <div class="loading-text">正在加载微博...</div>
                 </div>
             `;
-
       const loadWithTimeout = (promise, timeout = 15000) => {
         return Promise.race([
           promise,
           new Promise((_, reject) => setTimeout(() => reject(new Error('微博模块加载超时')), timeout)),
         ]);
       };
-
       try {
         await loadWithTimeout(this.loadWeiboApp());
       } catch (error) {
@@ -1540,15 +1427,12 @@ class MobilePhone {
         window._weiboAppLoading = null;
         await loadWithTimeout(this.loadWeiboApp());
       }
-
       if (!this.completeAppLoading('weibo')) {
         return;
       }
-
       const currentState = this.appStack[this.appStack.length - 1] || { view: 'main' };
       const view = currentState.view || 'main';
       let content = '';
-
       if (view === 'weiboControl') {
         if (!window.getWeiboControlAppContent) {
           throw new Error('getWeiboControlAppContent 函数未找到');
@@ -1560,13 +1444,10 @@ class MobilePhone {
         }
         content = window.getWeiboAppContent();
       }
-
       if (!content || content.trim() === '') {
         throw new Error(`微博${view === 'weiboControl' ? '控制' : '主界面'}内容为空`);
       }
-
       document.getElementById('app-content').innerHTML = content;
-
       if (view === 'weiboControl') {
         if (window.bindWeiboControlEvents) {
           window.bindWeiboControlEvents();
@@ -1589,7 +1470,6 @@ class MobilePhone {
             `;
     }
   }
-
   async handleSettingsApp() {
     try {
       document.getElementById('app-content').innerHTML = `
@@ -1598,24 +1478,18 @@ class MobilePhone {
                     <div class="loading-text">正在加载样式设置...</div>
                 </div>
             `;
-
       await this.loadStyleConfigApp();
-
       if (!window.getStyleConfigAppContent) {
         throw new Error('getStyleConfigAppContent 函数未找到');
       }
-
       const content = window.getStyleConfigAppContent();
       if (!content || content.trim() === '') {
         throw new Error('样式配置应用内容为空');
       }
-
       document.getElementById('app-content').innerHTML = content;
-
       if (window.bindStyleConfigEvents) {
         window.bindStyleConfigEvents();
       }
-
       if (window.styleConfigManager && !window.styleConfigManager.isConfigReady()) {
         const loadingHint = document.createElement('div');
         loadingHint.className = 'config-loading-hint';
@@ -1637,7 +1511,6 @@ class MobilePhone {
                     </div>
                 `;
         document.body.appendChild(loadingHint);
-
         window.styleConfigManager
           .waitForReady()
           .then(() => {
@@ -1681,7 +1554,6 @@ class MobilePhone {
             `;
     }
   }
-
   async handleMessagesApp() {
     try {
       document.getElementById('app-content').innerHTML = `
@@ -1690,24 +1562,18 @@ class MobilePhone {
                     <div class="loading-text">正在加载消息应用...</div>
                 </div>
             `;
-
       await this.loadMessageApp();
-
       if (!window.getMessageAppContent) {
         throw new Error('getMessageAppContent 函数未找到');
       }
-
       const content = window.getMessageAppContent();
       if (!content || content.trim() === '') {
         throw new Error('消息应用内容为空');
       }
-
       document.getElementById('app-content').innerHTML = content;
-
       if (window.bindMessageAppEvents) {
         window.bindMessageAppEvents();
       }
-
       if (!this.currentAppState || this.currentAppState.app !== 'messages') {
         const messageState = {
           app: 'messages',
@@ -1722,172 +1588,4 @@ class MobilePhone {
       console.error('[Mobile Phone] 加载消息应用失败:', error);
       document.getElementById('app-content').innerHTML = `
                 <div class="error-message">
-                    <div class="error-icon">⚠️</div>
-                    <div class="error-title">加载失败</div>
-                    <div class="error-details">${error.message}</div>
-                    <button class="retry-button" onclick="window.MobilePhone.openApp('messages')">
-                        重试
-                    </button>
-                </div>
-            `;
-    }
-  }
-
-  async handleYuseTheaterApp() {
-    try {
-      document.getElementById('app-content').innerHTML = `
-                <div class="loading-placeholder">
-                    <div class="loading-icon">⏳</div>
-                    <div class="loading-text">正在加载欲色剧场...</div>
-                </div>
-            `;
-
-      await this.loadYuseTheaterApp();
-
-      if (!window.getYuseTheaterAppContent) {
-        throw new Error('getYuseTheaterAppContent 函数未找到');
-      }
-
-      const content = window.getYuseTheaterAppContent();
-      if (!content || content.trim() === '') {
-        throw new Error('欲色剧场应用内容为空');
-      }
-
-      document.getElementById('app-content').innerHTML = content;
-
-      if (window.bindYuseTheaterAppEvents) {
-        window.bindYuseTheaterAppEvents();
-      }
-
-      // 初始化时触发状态同步（确保按钮显示）
-      if (this.currentAppState && this.currentAppState.app === 'yuse-theater') {
-        this.updateAppHeader(this.currentAppState);
-      }
-    } catch (error) {
-      console.error('[Mobile Phone] 处理欲色剧场应用失败:', error);
-      document.getElementById('app-content').innerHTML = `
-                <div class="error-placeholder">
-                    <div class="error-icon">❌</div>
-                    <div class="error-text">欲色剧场加载失败</div>
-                    <div class="error-detail">${error.message}</div>
-                    <button onclick="window.mobilePhone.handleYuseTheaterApp()" class="retry-button">重试</button>
-                </div>
-            `;
-    }
-  }
-
-  async handleShopApp() {
-    try {
-      document.getElementById('app-content').innerHTML = `
-                <div class="loading-placeholder">
-                    <div class="loading-icon">⏳</div>
-                    <div class="loading-text">正在加载购物应用...</div>
-                </div>
-            `;
-
-      await this.loadShopApp();
-
-      if (!window.getShopAppContent) {
-        throw new Error('getShopAppContent 函数未找到');
-      }
-
-      const content = window.getShopAppContent();
-      if (!content || content.trim() === '') {
-        throw new Error('购物应用内容为空');
-      }
-
-      document.getElementById('app-content').innerHTML = content;
-
-      if (window.bindShopAppEvents) {
-        window.bindShopAppEvents();
-      }
-    } catch (error) {
-      console.error('[Mobile Phone] 处理购物应用失败:', error);
-      document.getElementById('app-content').innerHTML = `
-                <div class="error-placeholder">
-                    <div class="error-icon">❌</div>
-                    <div class="error-text">购物应用加载失败</div>
-                    <div class="error-detail">${error.message}</div>
-                    <button onclick="window.mobilePhone.handleShopApp()" class="retry-button">重试</button>
-                </div>
-            `;
-    }
-  }
-
-  async handleBackpackApp() {
-    try {
-      document.getElementById('app-content').innerHTML = `
-                <div class="loading-placeholder">
-                    <div class="loading-icon">⏳</div>
-                    <div class="loading-text">正在加载背包应用...</div>
-</div>
-            `;
-
-      await this.loadBackpackApp();
-
-      if (!window.getBackpackAppContent) {
-        throw new Error('getBackpackAppContent 函数未找到');
-      }
-
-      const content = window.getBackpackAppContent();
-      if (!content || content.trim() === '') {
-        throw new Error('背包应用内容为空');
-      }
-
-      document.getElementById('app-content').innerHTML = content;
-
-      if (window.bindBackpackAppEvents) {
-        window.bindBackpackAppEvents();
-      }
-    } catch (error) {
-      console.error('[Mobile Phone] 处理背包应用失败:', error);
-      document.getElementById('app-content').innerHTML = `
-                <div class="error-placeholder">
-                    <div class="error-icon">❌</div>
-                    <div class="error-text">背包应用加载失败</div>
-                    <div class="error-detail">${error.message}</div>
-                    <button onclick="window.mobilePhone.handleBackpackApp()" class="retry-button">重试</button>
-                </div>
-            `;
-    }
-  }
-
-  async handleTaskApp() {
-    try {
-      document.getElementById('app-content').innerHTML = `
-                <div class="loading-placeholder">
-                    <div class="loading-icon">⏳</div>
-                    <div class="loading-text">正在加载任务应用...</div>
-                </div>
-            `;
-
-      await this.loadTaskApp();
-
-      if (!window.getTaskAppContent) {
-        throw new Error('getTaskAppContent 函数未找到');
-      }
-
-      const content = window.getTaskAppContent();
-      if (!content || content.trim() === '') {
-        throw new Error('任务应用内容为空');
-      }
-
-      document.getElementById('app-content').innerHTML = content;
-
-      if (window.bindTaskAppEvents) {
-        window.bindTaskAppEvents();
-      }
-    } catch (error) {
-      console.error('[Mobile Phone] 处理任务应用失败:', error);
-      document.getElementById('app-content').innerHTML = `
-                <div class="error-placeholder">
-                    <div class="error-icon">❌</div>
-                    <div class="error-text">任务应用加载失败</div>
-                    <div class="error-detail">${error.message}</div>
-                    <button onclick="window.mobilePhone.handleTaskApp()" class="retry-button">重试</button>
-                </div>
-            `;
-    }
-  }
-
-  async handleLiveApp() {
+                    <div class="error-icon">⚠️
