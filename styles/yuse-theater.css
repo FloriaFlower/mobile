@@ -54,6 +54,16 @@
   background: #b87a8b; /* 主色加深色，匹配新主色 */
 }
 
+/* 新增：仅在欲色剧场容器内生效 */
+.yuse-theater-app ~ .app-header .yuse-theater-refresh-btn,
+.app-content:has(.yuse-theater-app) .app-header .yuse-theater-refresh-btn {
+  display: flex !important;
+}
+/* 其他App中隐藏欲色剧场的刷新按钮 */
+.app-content:not(:has(.yuse-theater-app)) .yuse-theater-refresh-btn {
+  display: none !important;
+}
+
 /* 内容区域调整：顶部避开原生页眉，底部避开导航栏 */
 .yuse-content-area {
   padding: 16px 16px 60px !important; /* 顶部16px避开原生页眉 */
