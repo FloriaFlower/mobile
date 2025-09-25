@@ -724,24 +724,6 @@ class MobilePhone {
     // 清除旧的功能按钮
     headerRight.innerHTML = '';
 
-    // 新增：专属按钮清理逻辑（模仿Task的header管理）
-    const yuseBtn = headerRight.querySelector('#yuse-refresh-btn');
-    if (state.app !== 'yuse-theater' && yuseBtn) {
-      console.log('[YuseTheater] 移除非激活状态的刷新按钮');
-      yuseBtn.remove();
-    }
-    // 新增：动态注入按钮
-    if (state.headerButtons?.length) {
-      state.headerButtons.forEach(btn => {
-        if (btn.activeWhen?.() !== true) return; // 非当前应用上下文不渲染
-        const exists = headerRight.querySelector(`[id="${btn.id}"]`);
-        if (!exists) {
-          headerRight.insertAdjacentHTML('beforeend', btn.html);
-          btn.onClick?.(); 
-          console.log(`[YuseTheater] 激活专属按钮: ${btn.id}`);
-        }
-      });
-    }
     // 根据应用状态添加功能按钮
     if (state.app === 'messages') {
       if (state.view === 'messageList' || state.view === 'list') {
@@ -1682,10 +1664,6 @@ class MobilePhone {
         this._openingApp = null;
       }, 500); // 500ms后清除防抖标记
     }
-    if (appName !== 'yuse-theater' && window.yuseTheaterApp) {
-      window.yuseTheaterApp.destroy();
-      console.log(`[YuseTheater] 切换到${appName}，清理剧场按钮`);
-    }
   }
 
   // 显示应用加载状态
@@ -1795,7 +1773,7 @@ class MobilePhone {
     console.log('[Mobile Phone] 应用加载完成，用户导航意图有效:', appName);
     return true; // 可以执行跳转
   }
-  
+
   // 处理论坛应用
   async handleForumApp() {
     try {
@@ -6616,11 +6594,6 @@ async loadYuseTheaterApp() {
       setTimeout(() => {
         this._goingHome = false;
       }, 300);
-    }
-    
-    if (window.yuseTheaterApp) {
-      window.yuseTheaterApp.destroy();
-      console.log('[YuseTheater] 主页切换触发组件销毁');
     }
   }
 
