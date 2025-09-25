@@ -12,7 +12,6 @@ if (typeof window.YuseTheaterApp === 'undefined') {
     theater: { name: "剧场列表", apiKeyword: "theater", refreshMsg: "[刷新剧场列表|请求新剧场内容]" },
     shop: { name: "欲色商城", apiKeyword: "shop", refreshMsg: "[刷新欲色商城|请求新商品列表]" }
   };
-  // 全局函数定义
   window.getYuseTheaterAppContent = function () {
     if (window.yuseTheaterApp) return window.yuseTheaterApp.getAppContent();
     return '<div class="error-state">欲色剧场 app 实例未初始化</div>';
@@ -37,7 +36,7 @@ if (typeof window.YuseTheaterApp === 'undefined') {
       this.lastRenderTime = 0;
       this.renderCooldown = 500;
       this.handlePageClick = this.handlePageClick.bind(this);
-      // 【修改1：保留专属类选择器，新增日志便于排查】
+      // 【关键1：选择器只认专属类，绝不匹配普通页眉】
       this.nativeHeaderSelector = '.app-header.yuse-theater-header, #app-header.yuse-theater-header, header.yuse-theater-header';
       this.init();
     }
@@ -46,31 +45,19 @@ if (typeof window.YuseTheaterApp === 'undefined') {
       this.loadDefaultData();
       this.setupDOMObserver();
       this.setupEventListeners();
-
-      // 【修改2：关键！先给页眉打标，再执行更新内容（原顺序颠倒导致首次找不到）】
-      const nativeHeader = this.markHeaderWithExclusiveClass();
-      // 打标成功后，立即更新内容+创建刷新按钮
-      if (nativeHeader) {
-        console.log('[YuseTheater] 页眉打标成功，开始创建刷新按钮');
-        this.updateAppContent();
-        this.parseNewData();
-      } else {
-        // 兜底：若没找到页眉，1秒后重试（避免DOM未加载完成）
-        console.warn('[YuseTheater] 首次未找到页眉，1秒后重试');
-        setTimeout(() => {
-          this.markHeaderWithExclusiveClass();
-          this.updateAppContent();
-          this.parseNewData();
-        }, 1000);
-      }
+      this.parseNewData();
+      // 【移除：不再初始化时全局打标，改为渲染时按需打标】
     }
 
-    // 【新增：单独抽离“页眉打标”方法，逻辑更清晰】
-    markHeaderWithExclusiveClass() {
-      // 优先找常见的页眉元素（覆盖更多场景）
-      const headerSelectors = ['.app-header', '#app-header', 'header', '.header', '#header'];
+    // 【新增：按需打标 - 仅当欲色剧场激活时给页眉加类】
+    markHeaderOnlyWhenActive() {
+      // 先确认当前是欲色剧场的上下文（app-content里有欲色剧场容器）
+      const yuseAppContainer = document.querySelector('.yuse-theater-app');
+      if (!yuseAppContainer) return null;
+
+      // 只找全局页眉，避免匹配其他元素
+      const headerSelectors = ['.app-header', '#app-header', 'header'];
       let targetHeader = null;
-      // 遍历所有可能的页眉选择器，找到第一个存在的
       for (const selector of headerSelectors) {
         const elem = document.querySelector(selector);
         if (elem) {
@@ -78,19 +65,13 @@ if (typeof window.YuseTheaterApp === 'undefined') {
           break;
         }
       }
-      // 给找到的页眉加专属类
-      if (targetHeader) {
-        if (!targetHeader.classList.contains('yuse-theater-header')) {
-          targetHeader.classList.add('yuse-theater-header');
-          console.log('[YuseTheater] 已给页眉添加专属类：yuse-theater-header', targetHeader);
-        } else {
-          console.log('[YuseTheater] 页眉已存在专属类，无需重复添加');
-        }
-        return targetHeader;
-      } else {
-        console.error('[YuseTheater] 未找到任何页眉元素，请检查页面DOM结构');
-        return null;
+
+      // 给页眉加专属类（确保其他App不会继承）
+      if (targetHeader && !targetHeader.classList.contains('yuse-theater-header')) {
+        targetHeader.classList.add('yuse-theater-header');
+        console.log('[YuseTheater] 仅在欲色剧场激活时，给页眉添加专属类');
       }
+      return targetHeader;
     }
 
     loadDefaultData() {
@@ -125,6 +106,10 @@ if (typeof window.YuseTheaterApp === 'undefined') {
       window.addEventListener('contextUpdate', () => this.parseNewData());
       window.addEventListener('messageUpdate', () => this.parseNewData());
       window.addEventListener('yuseViewSwitch', () => this.parseNewData());
+      // 【新增：监听手机框架切换App事件，及时清理标记】
+      window.addEventListener('mobileAppSwitch', () => {
+        this.clearHeaderMark();
+      });
     }
     parseNewData() {
       if (!this.isAutoRender) return;
@@ -248,19 +233,28 @@ if (typeof window.YuseTheaterApp === 'undefined') {
       console.log(`[YuseTheater] 切换视图至：${pageKey}`);
     }
     updateNativeHeaderRefreshBtn() {
-      // 【修改3：补充日志，明确是否进入该方法、是否找到页眉】
-      console.log('[YuseTheater] 开始更新页眉刷新按钮，选择器：', this.nativeHeaderSelector);
-      const nativeHeader = document.querySelector(this.nativeHeaderSelector);
-      if (!nativeHeader) {
-        console.warn('[YuseTheater] 未找到带专属类的页眉，尝试重新打标');
-        this.markHeaderWithExclusiveClass(); // 重新打标后再试一次
+      // 【关键2：双重校验 - 先确认欲色剧场上下文，再创建按钮】
+      const yuseAppContainer = document.querySelector('.yuse-theater-app');
+      if (!yuseAppContainer) {
+        console.log('[YuseTheater] 非欲色剧场上下文，不创建刷新按钮');
+        this.clearHeaderMark(); // 清理残留标记
         return;
       }
-      // 移除旧按钮+创建新按钮（逻辑不变）
+
+      // 按需打标并找到页眉
+      const nativeHeader = this.markHeaderOnlyWhenActive();
+      if (!nativeHeader) {
+        console.warn('[YuseTheater] 未找到页眉，无法创建刷新按钮');
+        return;
+      }
+
+      // 移除旧按钮（只删自己的）
       const oldRefreshBtn = nativeHeader.querySelector('.yuse-theater-refresh-btn');
       if (oldRefreshBtn) oldRefreshBtn.remove();
+
+      // 创建专属刷新按钮
       const refreshBtn = document.createElement('button');
-      refreshBtn.className = 'refresh-btn yuse-theater-refresh-btn';
+      refreshBtn.className = 'refresh-btn yuse-theater-refresh-btn'; // 专属类，避免被其他App识别
       refreshBtn.dataset.page = this.currentView;
       refreshBtn.innerHTML = '🔄 刷新';
       refreshBtn.addEventListener('click', () => {
@@ -271,7 +265,7 @@ if (typeof window.YuseTheaterApp === 'undefined') {
       nativeHeader.style.justifyContent = 'space-between';
       nativeHeader.style.alignItems = 'center';
       nativeHeader.appendChild(refreshBtn);
-      console.log('[YuseTheater] 刷新按钮创建成功！');
+      console.log('[YuseTheater] 刷新按钮创建成功（仅欲色剧场可见）');
     }
     getAppContent() {
       const pageConfig = window.YuseTheaterPages[this.currentView];
@@ -307,6 +301,7 @@ if (typeof window.YuseTheaterApp === 'undefined') {
           </button>
         `;
       }).join('');
+      // 【关键3：给App容器加专属类，用于上下文校验】
       return `
         <div class="yuse-theater-app" style="position: relative; height: 100%; overflow: hidden;">
           <div class="yuse-content-area">${content}</div>
@@ -332,7 +327,7 @@ if (typeof window.YuseTheaterApp === 'undefined') {
           contentArea.style.overflowY = 'auto';
           contentArea.style.height = 'calc(100vh - 120px)';
         }
-        // 【修改4：确保更新内容后，主动触发刷新按钮创建】
+        // 渲染完成后，创建刷新按钮（触发按需打标）
         this.updateNativeHeaderRefreshBtn();
         appElement.addEventListener('click', this.handlePageClick);
         if (this.currentView === 'customizations') {
@@ -529,22 +524,27 @@ if (typeof window.YuseTheaterApp === 'undefined') {
         setTimeout(() => toast.remove(), 300);
       }, 3000);
     }
+
+    // 【关键4：清理标记 - 切换到其他App时必须移除专属类】
+    clearHeaderMark() {
+      const nativeHeader = document.querySelector('.yuse-theater-header');
+      if (nativeHeader) {
+        nativeHeader.classList.remove('yuse-theater-header');
+        console.log('[YuseTheater] 已移除页眉专属类，避免影响其他App');
+      }
+    }
+
     destroy() {
       this.isAutoRender = false;
       const appElement = document.getElementById('app-content');
       if (appElement) appElement.removeEventListener('click', this.handlePageClick);
       const oldRefreshBtn = document.querySelector('.yuse-theater-refresh-btn');
       if (oldRefreshBtn) oldRefreshBtn.remove();
-      // 【修改5：销毁时确保移除专属类】
-      const nativeHeader = document.querySelector('.yuse-theater-header');
-      if (nativeHeader) {
-        nativeHeader.classList.remove('yuse-theater-header');
-        console.log('[YuseTheater] 销毁时移除页眉专属类');
-      }
+      // 【关键5：销毁时强制清理标记】
+      this.clearHeaderMark();
       console.log('[YuseTheater] 销毁欲色剧场 App');
     }
   }
-  // 实例化
   window.YuseTheaterApp = YuseTheaterApp;
   window.yuseTheaterApp = new YuseTheaterApp();
   console.log('[YuseTheater] 欲色剧场 App 加载完成');
