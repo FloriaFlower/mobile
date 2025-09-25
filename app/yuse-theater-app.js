@@ -1,6 +1,6 @@
 if (typeof window.YuseTheaterApp === 'undefined') {
   window.YuseTheaterRegex = {
-    fullMatch: /<yuse_data>(?:(?!<yuse_data>).)*?(?:<announcements>(.*?)<\/announcements>.*?)?(?:<customizations>(.*?)<\/customizations>.*?)?(?:<theater>(.*?)<\/theater>.*?)?(?:<theater_hot>(.*?)<\/theater_hot>.*?)?(?:<theater_new>(.*?)<\/theater_new>.*?)?(?:<theater_recommended>(.*?)<\/theater_recommended>.*?)?(?:<theater_paid>(.*?)<\/theater_paid>.*?)?(?:<shop>(.*?)<\/shop>.*?)?<\/yuse_data>/s,
+    fullMatch: /<yuse_data>(?:(?!<yuse_data>).)*(?:<announcements>(.*?)<\/announcements>.*)?(?:<customizations>(.*?)<\/customizations>.*)?(?:<theater>(.*?)<\/theater>.*)?(?:<theater_hot>(.*?)<\/theater_hot>.*)?(?:<theater_new>(.*?)<\/theater_new>.*)?(?:<theater_recommended>(.*?)<\/theater_recommended>.*)?(?:<theater_paid>(.*?)<\/theater_paid>.*)?(?:<shop>(.*?)<\/shop>.*)?<\/yuse_data>/s,
     announcement: /\[通告\|([^\|]+)\|([^\|]+)\|([^\|]+)\|([^\|]+)\|([^\|]+)\|([^\]]+)\]/g,
     customization: /\[定制\|([^\|]+)\|([^\|]+)\|([^\|]+)\|([^\|]+)\|([^\|]+)\|([^\]]+)\]/g,
     theater: /\[剧场\|([^\|]+)\|([^\|]+)\|([^\|]+)\|([^\|]+)\|([^\|]+)\|([^\|]+)\|([^\|]+)\|([^\]]+)\]/g,
@@ -148,6 +148,7 @@ if (typeof window.YuseTheaterApp === 'undefined') {
         
         const fullMatch = chatData.match(window.YuseTheaterRegex.fullMatch);
         if (fullMatch) {
+          console.log('[YuseTheater] 完整匹配的yuse_data:', fullMatch[0].slice(0, 100) + '...');
           console.log('[YuseTheater] 匹配到yuse_data数据，开始更新');
           const [, announcements, customizations, theater, theaterHot, theaterNew, theaterRecommended, theaterPaid, shop] = fullMatch;
           console.log('[YuseTheater] 捕获到的customizations数据:', customizations?.slice(0,50) || '空');
