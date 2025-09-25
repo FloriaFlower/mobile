@@ -35,7 +35,6 @@
   border-bottom: 1px solid var(--border-color) !important;
   z-index: 999 !important;
 }
-
 /* 刷新按钮样式调整 */
 .refresh-btn {
   background: var(--accent-color);
@@ -61,6 +60,30 @@
   overflow-y: auto !important;
   box-sizing: border-box;
   -webkit-overflow-scrolling: touch;
+}
+/* 仅欲色剧场生效：页眉按钮样式隔离 */
+.yuse-theater-active .app-header,
+.yuse-theater-active #app-header,
+.yuse-theater-active header {
+  display: flex !important;
+  justify-content: space-between !important;
+  align-items: center !important;
+}
+/* 仅欲色剧场的刷新按钮显示，其他APP隐藏 */
+.yuse-theater-refresh-btn {
+  display: none !important; /* 默认隐藏 */
+}
+.yuse-theater-active .yuse-theater-refresh-btn {
+  display: flex !important; /* 仅欲色剧场显示 */
+  background: var(--accent-color) !important;
+  color: #fff !important;
+  border: none !important;
+  border-radius: 6px !important;
+  padding: 6px 12px !important;
+  font-size: 12px !important;
+}
+.yuse-theater-active .yuse-theater-refresh-btn:hover {
+  background: #b87a8b !important;
 }
 
 /* 主色相关样式 */
