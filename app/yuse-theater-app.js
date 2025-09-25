@@ -156,10 +156,11 @@ if (typeof window.YuseTheaterApp === 'undefined') {
             this.savedData.announcements = announcements;
             isDataUpdated = true;
           }
-          if (customizations && customizations.trim() !== '' && customizations.trim() !== this.savedData.customizations?.trim()) {
+          if (customizations && customizations.trim() !== '') {
             this.savedData.customizations = customizations;
             isDataUpdated = true;
-            console.log('[YuseTheater] 检测到新customizations数据，更新savedData'); // 新增日志，确认新数据写入
+            console.log('[YuseTheater] 检测到新customizations数据，更新savedData');
+            console.log(`[YuseTheater] 新数据长度: ${customizations.length} 字符`); // 新增日志，看新数据实际长度
           }
           if (theater && theater.trim() !== '') {
             this.savedData.theater = theater;
