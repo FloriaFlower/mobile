@@ -46,13 +46,14 @@ if (typeof window.YuseTheaterApp === 'undefined') {
       this.loadDefaultData();
       this.setupDOMObserver();
       this.setupEventListeners();
+      // 1. 先强制加类（确保标识存在）
+      this.forceAddAppActiveClass();
+      // 2. 立即更新页眉+创建按钮（无延迟）
+      this.updateHeader();
       this.updateAppContent();
       this.parseNewData();
-      // 强制添加应用标识类（避免DOM渲染延迟导致类缺失）
-      this.forceAddAppActiveClass();
-      // 初始化按钮（双重保障：先通知mobile-phone，再手动检查）
-      this.updateHeader();
-      setTimeout(() => this.ensureRefreshBtnExists(), 200); // 延迟检查，确保页眉已渲染
+      // 3. 立即检查按钮（去掉200ms延迟，同步执行）
+      this.ensureRefreshBtnExists();
     }
     // 强制给应用容器添加专属类（解决类添加不及时问题）
     forceAddAppActiveClass() {
@@ -60,16 +61,16 @@ if (typeof window.YuseTheaterApp === 'undefined') {
       if (appScreen) {
         // 移除所有其他APP的专属类，避免冲突
         appScreen.classList.remove('shop-app-active', 'task-app-active', 'forum-app-active', 'weibo-app-active');
-        // 强制添加欲色剧场专属类
+        // 强制添加欲色剧场专属类（同步执行，无延迟）
         appScreen.classList.add('yuse-theater-active');
         appScreen.setAttribute('data-app', 'yuse-theater');
-        // 给页眉也添加标识
+        // 给页眉也添加标识（同步完成）
         const appHeader = appScreen.querySelector('.app-header, #app-header, header');
         if (appHeader) {
           appHeader.setAttribute('data-app', 'yuse-theater');
           appHeader.classList.add('yuse-theater-header');
         }
-        console.log('[YuseTheater] 已强制添加应用专属标识类');
+        console.log('[YuseTheater] 已同步添加应用专属标识类');
       }
     }
     loadDefaultData() {
@@ -106,15 +107,16 @@ if (typeof window.YuseTheaterApp === 'undefined') {
       window.addEventListener('yuseViewSwitch', () => {
         this.parseNewData();
         this.updateHeader();
-        this.ensureRefreshBtnExists(); // 视图切换后确保按钮存在
+        // 视图切换时立即检查按钮（无延迟）
+        this.ensureRefreshBtnExists();
       });
-      // 监听APP切换事件（防止其他APP切换后按钮残留/丢失）
+      // 监听APP切换事件（立即响应，无延迟）
       window.addEventListener('appSwitch', (e) => {
         if (e.detail?.app === 'yuse-theater') {
           this.forceAddAppActiveClass();
-          this.ensureRefreshBtnExists();
+          this.ensureRefreshBtnExists(); // 切换到欲色剧场时立即创建按钮
         } else {
-          this.removeRefreshBtn(); // 切换到其他APP时移除按钮
+          this.removeRefreshBtn(); // 切换到其他APP时立即移除
         }
       });
     }
@@ -236,14 +238,15 @@ if (typeof window.YuseTheaterApp === 'undefined') {
       window.dispatchEvent(new Event('yuseViewSwitch'));
       this.updateAppContent();
       this.updateHeader();
+      // 切换视图后立即显示按钮（无延迟）
       this.ensureRefreshBtnExists();
       console.log(`[YuseTheater] 切换视图至：${pageKey}`);
     }
-    // 核心：双重保障生成按钮（通知mobile-phone + 手动兜底）
+    // 核心：双重保障生成按钮（无延迟）
     updateHeader() {
-      this.forceAddAppActiveClass(); // 先确保标识类存在
+      this.forceAddAppActiveClass(); // 先确保标识类存在（同步执行）
       const pageConfig = window.YuseTheaterPages[this.currentView];
-      // 1. 通知mobile-phone生成按钮（对齐shop-app逻辑）
+      // 1. 通知mobile-phone生成按钮（同步调用，无延迟）
       if (window.mobilePhone && window.mobilePhone.updateAppHeader) {
         const headerState = {
           app: 'yuse-theater',
@@ -257,44 +260,42 @@ if (typeof window.YuseTheaterApp === 'undefined') {
           }
         };
         window.mobilePhone.updateAppHeader(headerState);
-        console.log('[YuseTheater] 已通知mobile-phone生成刷新按钮');
+        console.log('[YuseTheater] 已同步通知mobile-phone生成刷新按钮');
       }
-      // 2. 手动检查并创建按钮（兜底，防止mobile-phone处理失败）
+      // 2. 手动检查并创建按钮（同步执行，无延迟）
       this.ensureRefreshBtnExists();
     }
-    // 兜底：确保欲色剧场页眉一定有刷新按钮（只操作当前APP页眉）
+    // 兜底：确保欲色剧场页眉立即有按钮（消除延迟的关键）
     ensureRefreshBtnExists() {
-      // 精准找到欲色剧场的页眉（排除其他APP）
+      // 精准找到欲色剧场的页眉（同步查询，无延迟）
       const yuseHeader = document.querySelector(this.yuseHeaderSelector);
       if (!yuseHeader) {
-        console.log('[YuseTheater] 未找到欲色剧场页眉，100ms后重试');
-        setTimeout(() => this.ensureRefreshBtnExists(), 100);
+        // 仅保留极短重试（50ms，肉眼不可见），避免极端DOM渲染延迟
+        setTimeout(() => this.ensureRefreshBtnExists(), 50);
         return;
       }
-      // 检查是否已有按钮，没有则创建
+      // 检查是否已有按钮，没有则立即创建（无延迟）
       let refreshBtn = yuseHeader.querySelector('.yuse-theater-refresh-btn');
       if (!refreshBtn) {
         refreshBtn = document.createElement('button');
         refreshBtn.className = 'refresh-btn yuse-theater-refresh-btn';
         refreshBtn.innerHTML = '🔄 刷新';
         refreshBtn.title = '刷新当前页面内容';
-        // 绑定点击事件
+        // 绑定点击事件（同步完成）
         refreshBtn.addEventListener('click', () => {
           this.sendRefreshRequest(this.currentView);
         });
-        // 只添加到欲色剧场的页眉右侧（找到header-right容器）
+        // 立即添加到页眉右侧（无延迟）
         const headerRight = yuseHeader.querySelector('#app-header-right') || yuseHeader.querySelector('.app-header-right');
         if (headerRight) {
           headerRight.appendChild(refreshBtn);
-          console.log('[YuseTheater] 已手动创建刷新按钮');
         } else {
-          // 找不到右侧容器时，直接添加到页眉（确保显示）
           yuseHeader.appendChild(refreshBtn);
-          console.log('[YuseTheater] 已手动添加刷新按钮到页眉');
         }
+        console.log('[YuseTheater] 已同步创建刷新按钮');
       }
     }
-    // 移除按钮（只移除欲色剧场的，避免影响其他APP）
+    // 移除按钮（立即执行，无延迟）
     removeRefreshBtn() {
       const allRefreshBtns = document.querySelectorAll('.yuse-theater-refresh-btn');
       allRefreshBtns.forEach(btn => {
@@ -302,7 +303,7 @@ if (typeof window.YuseTheaterApp === 'undefined') {
         const parentHeader = btn.closest(this.yuseHeaderSelector);
         if (parentHeader) {
           btn.remove();
-          console.log('[YuseTheater] 已移除欲色剧场刷新按钮');
+          console.log('[YuseTheater] 已同步移除欲色剧场刷新按钮');
         }
       });
     }
@@ -359,7 +360,7 @@ if (typeof window.YuseTheaterApp === 'undefined') {
       if (appElement) {
         appElement.removeEventListener('click', this.handlePageClick);
         appElement.innerHTML = content;
-        // 确保应用容器标识存在
+        // 确保应用容器标识存在（同步执行）
         const appScreen = appElement.closest('.app-screen');
         if (appScreen) {
           appScreen.setAttribute('data-app', 'yuse-theater');
