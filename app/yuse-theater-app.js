@@ -36,6 +36,8 @@ if (typeof window.YuseTheaterApp === 'undefined') {
       this.lastRenderTime = 0;
       this.renderCooldown = 500;
       this.handlePageClick = this.handlePageClick.bind(this);
+      // 【新增代码】将当前实例挂载到window，暴露全局对象
+      window.yuseTheaterApp = this;
       this.init();
     }
     init() {
