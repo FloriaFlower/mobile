@@ -5,7 +5,6 @@
 
 class MobilePhone {
   constructor() {
-    console.log('[Mobile Phone] ♻️MobilePhone 类开始实例化！');
     this.isVisible = false;
     this.currentApp = null;
     this.apps = {};
@@ -30,13 +29,9 @@ class MobilePhone {
   }
 
   init() {
-    console.log('[Mobile Phone] ♻️init 方法开始执行：♻️1. 加载拖拽插件');
     this.loadDragHelper();
-    console.log('[Mobile Phone] ♻️init 执行：♻️2. 清理位置缓存');
-    this.clearPositionCache();
-    console.log('[Mobile Phone] ♻️init 执行：♻️3. 准备创建按钮');
-    this.createPhoneButton(); 
-    console.log('[Mobile Phone] ♻️init 执行：♻️4. 创建容器');
+    this.clearPositionCache(); // 清理位置缓存
+    this.createPhoneButton();
     this.createPhoneContainer();
     this.registerApps();
     this.startClock();
@@ -71,44 +66,38 @@ class MobilePhone {
 
   // 创建弹出按钮
   createPhoneButton() {
-  try {
-    // 1. 先打印当前DOM状态，排查body是否存在
-    console.log('[Mobile Phone] 创建按钮前检查:', {
-      documentBodyExists: !!document.body,
-      existingButton: document.getElementById('mobile-phone-trigger')
-    });
+    try {
+      // 检查是否已经存在按钮
+      const existingButton = document.getElementById('mobile-phone-trigger');
+      if (existingButton) {
+        console.log('[Mobile Phone] 按钮已存在，移除旧按钮');
+        existingButton.remove();
+      }
 
-    // 2. 检查是否已经存在按钮（包括是否被index.js创建/删除过）
-    const existingButton = document.getElementById('mobile-phone-trigger');
-    if (existingButton) {
-      console.log('[Mobile Phone] 发现外部创建的按钮，强制移除并重新创建');
-      existingButton.remove();
+      const button = document.createElement('button');
+      button.id = 'mobile-phone-trigger';
+      button.className = 'mobile-phone-trigger';
+      button.innerHTML = '📱';
+      button.title = '打开手机界面';
+      button.addEventListener('click', () => this.togglePhone());
+
+      // 确保body存在
+      if (!document.body) {
+        console.error('[Mobile Phone] document.body 不存在，延迟创建按钮');
+        setTimeout(() => this.createPhoneButton(), 100);
+        return;
+      }
+
+      document.body.appendChild(button);
+
+      // 初始化拖拽功能
+      this.initDragForButton(button);
+
+      console.log('[Mobile Phone] 手机按钮创建成功');
+    } catch (error) {
+      console.error('[Mobile Phone] 创建按钮时发生错误:', error);
     }
-
-    const button = document.createElement('button');
-    button.id = 'mobile-phone-trigger';
-    button.className = 'mobile-phone-trigger';
-    button.innerHTML = '📱';
-    button.title = '打开手机界面';
-    button.addEventListener('click', () => this.togglePhone());
-
-    // 3. 再次确认body存在（防止index.js删除body或阻断DOM）
-    if (!document.body) {
-      console.error('[Mobile Phone] 严重错误：document.body 仍不存在！');
-      // 增加更长延迟重试，避免立即失败
-      setTimeout(() => this.createPhoneButton(), 500);
-      return;
-    }
-
-    document.body.appendChild(button);
-    this.initDragForButton(button);
-    console.log('[Mobile Phone] 手机按钮创建成功（已规避外部干扰）');
-
-  } catch (error) {
-    // 4. 打印完整错误栈，方便定位
-    console.error('[Mobile Phone] 创建按钮时发生错误（含完整栈）:', error.stack);
   }
-}
 
   // 为按钮初始化拖拽功能
   initDragForButton(button) {
@@ -225,66 +214,55 @@ class MobilePhone {
                         <div class="mobile-content" id="mobile-content">
                             <!-- 主界面 -->
                             <div class="home-screen" id="home-screen">
-                                <!-- 时间卡片 -->
+                                <!-- 时间天气卡片 -->
                                 <div class="weather-card">
                                     <div class="weather-time">
-                                        <span class="current-time" id="home-time">08:08</span>                                  
+                                        <span class="current-time" id="home-time">08:08</span>
+                                        <span class="current-date" id="home-date">08/21</span>
+                                    </div>
+                                    <div class="weather-info">
+                                        <span class="weather-desc">多云转小雨</span>
                                     </div>
                                 </div>
 
 
                                 <!-- 应用图标网格 -->
                                 <div class="app-grid">
-                                    <!-- 第一行：购物，手帐，信息 -->
+                                    <!-- 第一行：信息，购物，任务 -->
                                     <div class="app-row">
-                                        <div class="app-icon" data-app="shop">
-                                            <div class="app-icon-bg purple">🛍</div>
-                                            <span class="app-label">购物</span>
-                                        </div>
-                                        <div class="app-icon" data-app="task">
-                                            <div class="app-icon-bg purple">📝</div>
-                                            <span class="app-label">手帐</span>
-                                        </div>
                                         <div class="app-icon" data-app="messages">
                                             <div class="app-icon-bg pink">💬</div>
                                             <span class="app-label">信息</span>
-                                        </div>                                  
-                                    </div>
-                                    <!-- 第二行：嗷咔，直播，欲色剧场 -->
-                                    <div class="app-row">
-                                        <div class="app-icon" data-app="aoka">
-                                            <div class="app-icon-bg orange">🐾</div>
-                                            <span class="app-label">嗷咔</span>
                                         </div>
-                                        <div class="app-icon" data-app="live">
-                                            <div class="app-icon-bg red">🎥</div>
-                                            <span class="app-label">直播</span>
+                                        <div class="app-icon" data-app="shop">
+                                            <div class="app-icon-bg purple">购</div>
+                                            <span class="app-label">购物</span>
                                         </div>
-                                        <div class="app-icon" data-app="yuse-theater">
-                                            <div class="app-icon-bg pink">🎬</div>
-                                            <span class="app-label">欲色剧场</span>
+                                        <div class="app-icon" data-app="task">
+                                            <div class="app-icon-bg purple">📰</div>
+                                            <span class="app-label">任务</span>
                                         </div>
                                     </div>
-                                    <!-- 第三行：论坛，微博，小红书 -->
+                                    <!-- 第二行：论坛，微博，直播 -->
                                     <div class="app-row">
                                         <div class="app-icon" data-app="forum">
                                             <div class="app-icon-bg red">📰</div>
                                             <span class="app-label">论坛</span>
                                         </div>
                                         <div class="app-icon" data-app="weibo">
-                                            <div class="app-icon-bg orange" style="font-size: 22px;color:rgba(0,0,0,0.4)">🧣</div>
+                                            <div class="app-icon-bg orange" style="font-size: 22px;color:rgba(0,0,0,0.4)">微</div>
                                             <span class="app-label">微博</span>
-                                        </div>                         
-                                        <div class="app-icon" data-app="redbook">
-                                            <div class="app-icon-bg purple">🍠</div>
-                                            <span class="app-label">小红书</span>
+                                        </div>
+                                        <div class="app-icon" data-app="live">
+                                            <div class="app-icon-bg red">🎬</div>
+                                            <span class="app-label">直播</span>
                                         </div>
                                     </div>
-                                    <!-- 第四行：浏览器，API，设置 -->
+                                    <!-- 第三行：背包，API，设置 -->
                                     <div class="app-row">
-                                        <div class="app-icon" data-app="browser">
-                                            <div class="app-icon-bg orange">💻</div>
-                                            <span class="app-label">浏览器</span>
+                                        <div class="app-icon" data-app="backpack">
+                                            <div class="app-icon-bg orange">🎒</div>
+                                            <span class="app-label">背包</span>
                                         </div>
                                         <div class="app-icon" data-app="api">
                                             <div class="app-icon-bg orange" style="font-size: 22px;color:rgba(0,0,0,0.4)">AI</div>
@@ -1024,6 +1002,7 @@ class MobilePhone {
         }
       });
       headerRight.appendChild(viewBtn);
+
       // 分类按钮
       const categoryBtn = document.createElement('button');
       categoryBtn.className = 'app-header-btn shop-accent-btn';
@@ -1129,7 +1108,7 @@ class MobilePhone {
       const endBtn = document.createElement('button');
       endBtn.className = 'app-header-btn end-stream-btn';
       endBtn.title = '结束直播';
-      endBtn.innerHTML = '⭕️';
+      endBtn.innerHTML = '⏻';
       endBtn.addEventListener('click', () => {
         if (window.liveAppEndLive) {
           window.liveAppEndLive();
@@ -1151,7 +1130,7 @@ class MobilePhone {
       const exitBtn = document.createElement('button');
       exitBtn.className = 'app-header-btn end-stream-btn';
       exitBtn.title = '退出直播间';
-      exitBtn.innerHTML = '🚪';
+      exitBtn.innerHTML = '⏻';
       exitBtn.addEventListener('click', () => {
         if (window.watchLiveAppEndLive) {
           window.watchLiveAppEndLive();
@@ -1269,7 +1248,7 @@ class MobilePhone {
 
       // 构建发送给AI的消息
       const message =
-        '用户正在查看朋友圈，请根据朋友圈规则系统，生成3-5个正确的朋友圈格式，根据角色间的关系为每条朋友圈生成0-5条回复。回复请使用与原楼层相同id。请使用正确的三位数楼层id,楼层id不能与历史楼层id重复。请正确使用前缀s或w。严禁代替用户回复。禁止发表情包或颜文字，可以使用emoji。';
+        '用户正在查看朋友圈，请根据朋友圈规则系统，生成3-5个正确的朋友圈格式，根据角色间的关系为每条朋友圈生成0-5条回复。回复请使用与原楼层相同id。请使用正确的三位数楼层id,楼层id不能与历史楼层id重复。请正确使用前缀w。严禁代替用户回复。禁止发表情包或颜文字，可以使用emoji。';
 
       // 发送消息给AI
       if (window.friendsCircle && window.friendsCircle.sendToAI) {
@@ -1415,27 +1394,11 @@ class MobilePhone {
         isCustomApp: true,
         customHandler: this.handleLiveApp.bind(this),
       },
-      browser: {
-      name: '浏览器',
-      content: '<div style="padding:20px; text-align:center;">浏览器应用正在开发中...</div>',
-      },
-      journal: {
-      name: '手帐',
-      content: '<div style="padding:20px; text-align:center;">手帐应用正在开发中...</div>',
-      },
       'yuse-theater': {
-      name: '欲色剧场',
-      content: null,
-      isCustomApp: true,
-      customHandler: this.handleYuseTheaterApp.bind(this),
-      },
-      redbook: {
-      name: '小红书',
-      content: '<div style="padding:20px; text-align:center;">小红书应用正在开发中...</div>',
-      },
-      aoka: {
-      name: '嗷咔',
-      content: '<div style="padding:20px; text-align:center;">嗷咔应用正在开发中...</div>',
+        name: '欲色剧场',
+        content: null,
+        isCustomApp: true,
+        customHandler: this.handleYuseTheaterApp.bind(this),
       },
       'watch-live': {
         name: '观看直播',
@@ -2193,54 +2156,6 @@ class MobilePhone {
     }
   }
 
-  // 处理欲色剧场应用
-  async handleYuseTheaterApp() {
-    try {
-      console.log('[Mobile Phone] 开始处理欲色剧场应用...');
-
-      // 显示加载状态
-      document.getElementById('app-content').innerHTML = `
-                <div class="loading-placeholder">
-                    <div class="loading-icon">⏳</div>
-                    <div class="loading-text">正在加载欲色剧场...</div>
-                </div>
-            `;
-
-      // 确保 yuse-theater-app 已加载
-      console.log('[Mobile Phone] 加载欲色剧场应用模块...');
-      await this.loadYuseTheaterApp();
-
-      // 直接使用全局函数获取内容
-      if (!window.getYuseTheaterAppContent) {
-        throw new Error('getYuseTheaterAppContent 函数未找到');
-      }
-
-      // 获取应用内容
-      const content = window.getYuseTheaterAppContent();
-      if (!content || content.trim() === '') {
-        throw new Error('欲色剧场应用内容为空');
-      }
-      document.getElementById('app-content').innerHTML = content;
-
-      // 绑定应用事件
-      if (window.bindYuseTheaterAppEvents) {
-        window.bindYuseTheaterAppEvents();
-      }
-
-      console.log('[Mobile Phone] ✅ 欲色剧场应用加载完成');
-    } catch (error) {
-      console.error('[Mobile Phone] 处理欲色剧场应用失败:', error);
-      document.getElementById('app-content').innerHTML = `
-                <div class="error-placeholder">
-                    <div class="error-icon">❌</div>
-                    <div class="error-text">欲色剧场加载失败</div>
-                    <div class="error-detail">${error.message}</div>
-                    <button onclick="window.mobilePhone.handleYuseTheaterApp()" class="retry-button">重试</button>
-                </div>
-            `;
-    }
-  }
-
   // 处理购物应用
   async handleShopApp() {
     try {
@@ -2500,7 +2415,53 @@ class MobilePhone {
             `;
     }
   }
+  // 处理欲色剧场应用
+  async handleYuseTheaterApp() {
+    try {
+      console.log('[Mobile Phone] 开始处理欲色剧场应用...');
 
+      // 显示加载状态
+      document.getElementById('app-content').innerHTML = `
+                <div class="loading-placeholder">
+                    <div class="loading-icon">⏳</div>
+                    <div class="loading-text">正在加载欲色剧场...</div>
+                </div>
+            `;
+
+      // 确保 yuse-theater-app 已加载
+      console.log('[Mobile Phone] 加载欲色剧场应用模块...');
+      await this.loadYuseTheaterApp();
+
+      // 直接使用全局函数获取内容
+      if (!window.getYuseTheaterAppContent) {
+        throw new Error('getYuseTheaterAppContent 函数未找到');
+      }
+
+      // 获取应用内容
+      const content = window.getYuseTheaterAppContent();
+      if (!content || content.trim() === '') {
+        throw new Error('欲色剧场应用内容为空');
+      }
+      document.getElementById('app-content').innerHTML = content;
+
+      // 绑定应用事件
+      if (window.bindYuseTheaterAppEvents) {
+        window.bindYuseTheaterAppEvents();
+      }
+
+      console.log('[Mobile Phone] ✅ 欲色剧场应用加载完成');
+    } catch (error) {
+      console.error('[Mobile Phone] 处理欲色剧场应用失败:', error);
+      document.getElementById('app-content').innerHTML = `
+                <div class="error-placeholder">
+                    <div class="error-icon">❌</div>
+                    <div class="error-text">欲色剧场加载失败</div>
+                    <div class="error-detail">${error.message}</div>
+                    <button onclick="window.mobilePhone.handleYuseTheaterApp()" class="retry-button">重试</button>
+                </div>
+            `;
+    }
+  }
   // 处理平行事件应用
   async handleParallelEventsApp() {
     try {
@@ -2853,6 +2814,7 @@ class MobilePhone {
                                 <label>启用监听:</label>
                                 <div class="toggle-switch2">
                                     <input type="checkbox" id="parallel-events-enabled" ${parallelEventsSettings.enabled ? 'checked' : ''}>
+
                                 </div>
                                 <small>开启后将持续监听楼层变化，无论手机界面是否打开</small>
                             </div>
@@ -5864,75 +5826,6 @@ class MobilePhone {
     return window._messageAppLoading;
   }
 
-  // 加载欲色剧场应用
-async loadYuseTheaterApp() {
-  console.log('[Mobile Phone] 开始加载欲色剧场应用模块...');
-  // 检查是否已加载
-  if (window.getYuseTheaterAppContent && window.bindYuseTheaterEvents && window.yuseTheaterApp) {
-    console.log('[Mobile Phone] 欲色剧场模块已存在，跳过加载');
-    return Promise.resolve();
-  }
-  // 检查是否正在加载
-  if (window._yuseTheaterAppLoading) {
-    console.log('[Mobile Phone] 欲色剧场正在加载中，等待完成');
-    return window._yuseTheaterAppLoading;
-  }
-  // 标记正在加载
-  window._yuseTheaterAppLoading = new Promise((resolve, reject) => {
-    let loadedCount = 0;
-    const totalFiles = 2;
-    const checkComplete = () => {
-      loadedCount++;
-      if (loadedCount === totalFiles) {
-        setTimeout(() => {
-          console.log('[YuseTheater Debug] 全局函数状态:', {
-          getYuseTheaterAppContent: typeof window.getYuseTheaterAppContent, 
-          bindYuseTheaterEvents: typeof window.bindYuseTheaterEvents,
-          yuseTheaterApp: typeof window.yuseTheaterApp, 
-          yuseTheaterApp_hasRefresh: window.yuseTheaterApp ? typeof window.yuseTheaterApp.sendRefreshRequest : 'undefined'
-          });
-          if (window.getYuseTheaterAppContent && window.bindYuseTheaterEvents && window.yuseTheaterApp && typeof window.yuseTheaterApp.sendRefreshRequest === 'function') {
-            console.log('[Mobile Phone] ✅ 欲色剧场模块加载并初始化完成（含全局对象）');
-            window._yuseTheaterAppLoading = null;
-            resolve();         
-          } else {
-            const missing = [];
-            if (typeof window.getYuseTheaterAppContent !== 'function') missing.push('getYuseTheaterAppContent');
-            if (typeof window.bindYuseTheaterEvents !== 'function') missing.push('bindYuseTheaterEvents');
-            reject(new Error(`欲色剧场模块初始化失败（缺少全局函数：${missing.join(', ')}）`));
-          }
-        }, 800);
-      }
-    };
-    const handleError = (name) => {
-      console.error(`[Mobile Phone] ${name} 加载失败`);
-      window._yuseTheaterAppLoading = null;
-      reject(new Error(`${name} 加载失败`));
-    };
-    // 1. 加载 CSS 文件
-    const cssLink = document.createElement('link');
-    cssLink.rel = 'stylesheet';
-    cssLink.href = '/scripts/extensions/third-party/mobile/styles/yuse-theater.css';
-    cssLink.onload = () => {
-      console.log('[Mobile Phone] yuse-theater.css 加载完成');
-      checkComplete();
-    };
-    cssLink.onerror = () => handleError('yuse-theater.css');
-    document.head.appendChild(cssLink);
-
-    // 2. 加载应用逻辑文件（yuse-theater-app.js）
-    const appScript = document.createElement('script');
-    appScript.src = '/scripts/extensions/third-party/mobile/app/yuse-theater-app.js';
-    appScript.onload = () => {
-      console.log('[Mobile Phone] yuse-theater-app.js 加载完成');
-      checkComplete();
-    };
-    appScript.onerror = () => handleError('yuse-theater-app.js');
-    document.head.appendChild(appScript);
-  });
-  return window._yuseTheaterAppLoading;
-}
-
   // 加载购物应用
   async loadShopApp() {
     console.log('[Mobile Phone] 开始加载购物应用模块...');
@@ -6407,7 +6300,74 @@ async loadYuseTheaterApp() {
 
     return window._watchLiveAppLoading;
   }
+  // 加载欲色剧场应用
+  async loadYuseTheaterApp() {
+    console.log('[Mobile Phone] 开始加载欲色剧场应用模块...');
+    // 检查是否已加载
+    if (window.getYuseTheaterAppContent && window.bindYuseTheaterEvents && window.yuseTheaterApp) {
+      console.log('[Mobile Phone] 欲色剧场模块已存在，跳过加载');
+      return Promise.resolve();
+    }
+    // 检查是否正在加载
+    if (window._yuseTheaterAppLoading) {
+      console.log('[Mobile Phone] 欲色剧场正在加载中，等待完成');
+      return window._yuseTheaterAppLoading;
+    }
+    // 标记正在加载
+    window._yuseTheaterAppLoading = new Promise((resolve, reject) => {
+      let loadedCount = 0;
+      const totalFiles = 2;
+      const checkComplete = () => {
+        loadedCount++;
+        if (loadedCount === totalFiles) {
+          setTimeout(() => {
+            console.log('[YuseTheater Debug] 全局函数状态:', {
+            getYuseTheaterAppContent: typeof window.getYuseTheaterAppContent, 
+            bindYuseTheaterEvents: typeof window.bindYuseTheaterEvents,
+            yuseTheaterApp: typeof window.yuseTheaterApp, 
+            yuseTheaterApp_hasRefresh: window.yuseTheaterApp ? typeof window.yuseTheaterApp.sendRefreshRequest : 'undefined'
+            });
+            if (window.getYuseTheaterAppContent && window.bindYuseTheaterEvents && window.yuseTheaterApp && typeof window.yuseTheaterApp.sendRefreshRequest === 'function') {
+              console.log('[Mobile Phone] ✅ 欲色剧场模块加载并初始化完成（含全局对象）');
+              window._yuseTheaterAppLoading = null;
+              resolve();         
+            } else {
+              const missing = [];
+              if (typeof window.getYuseTheaterAppContent !== 'function') missing.push('getYuseTheaterAppContent');
+              if (typeof window.bindYuseTheaterEvents !== 'function') missing.push('bindYuseTheaterEvents');
+              reject(new Error(`欲色剧场模块初始化失败（缺少全局函数：${missing.join(', ')}）`));
+            }
+          }, 800);
+        }
+      };
+      const handleError = (name) => {
+        console.error(`[Mobile Phone] ${name} 加载失败`);
+        window._yuseTheaterAppLoading = null;
+        reject(new Error(`${name} 加载失败`));
+      };
+      // 1. 加载 CSS 文件
+      const cssLink = document.createElement('link');
+      cssLink.rel = 'stylesheet';
+      cssLink.href = '/scripts/extensions/third-party/mobile/styles/yuse-theater.css';
+      cssLink.onload = () => {
+        console.log('[Mobile Phone] yuse-theater.css 加载完成');
+        checkComplete();
+      };
+      cssLink.onerror = () => handleError('yuse-theater.css');
+      document.head.appendChild(cssLink);
 
+      // 2. 加载应用逻辑文件（yuse-theater-app.js）
+      const appScript = document.createElement('script');
+      appScript.src = '/scripts/extensions/third-party/mobile/app/yuse-theater-app.js';
+      appScript.onload = () => {
+        console.log('[Mobile Phone] yuse-theater-app.js 加载完成');
+        checkComplete();
+      };
+      appScript.onerror = () => handleError('yuse-theater-app.js');
+      document.head.appendChild(appScript);
+    });
+    return window._yuseTheaterAppLoading;
+  }
   // 加载平行事件应用
   async loadParallelEventsApp() {
     console.log('[Mobile Phone] 开始加载平行事件应用模块...');
@@ -7011,7 +6971,6 @@ async loadYuseTheaterApp() {
 
 // 初始化手机界面
 function initMobilePhone() {
-  console.log('[Mobile Phone] ♻️initMobilePhone 函数已被调用！入口正常');
   if (document.readyState === 'loading') {
     // 如果文档还在加载，等待DOMContentLoaded
     document.addEventListener('DOMContentLoaded', () => {
