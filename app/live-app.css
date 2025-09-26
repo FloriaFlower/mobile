@@ -1150,3 +1150,6 @@ textarea:focus-visible {
   display: block; /* 出现时占位 */
   transition: opacity 300ms ease, transform 300ms ease;
 }
+.live-content-text img{width: 100%;
+    height: 100%;
+    object-fit: cover;}
