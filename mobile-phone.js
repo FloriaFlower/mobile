@@ -1024,21 +1024,6 @@ class MobilePhone {
         }
       });
       headerRight.appendChild(viewBtn);
-      else if (state.app === 'yuse-theater') {
-        const refreshBtn = document.createElement('button');
-        refreshBtn.className = 'app-header-btn yuse-theater-refresh-btn';
-        refreshBtn.innerHTML = '<<i class="fas fa-sync-alt"></</i>';
-        refreshBtn.title = '刷新剧场内容';
-        // 绑定点击事件（调用欲色剧场暴露的全局函数）
-        refreshBtn.addEventListener('click', () => {
-          if (window.yuseTheaterApp && window.yuseTheaterApp.refreshContent) {
-            window.yuseTheaterApp.refreshContent();
-          } else {
-            MobilePhone.showToast('剧场刷新功能未就绪', 'warning');
-          }
-        });
-        headerRight.appendChild(refreshBtn);
-      }
       // 分类按钮
       const categoryBtn = document.createElement('button');
       categoryBtn.className = 'app-header-btn shop-accent-btn';
@@ -1053,6 +1038,20 @@ class MobilePhone {
         }
       });
       headerRight.appendChild(categoryBtn);
+    } else if (state.app === 'yuse-theater') {
+      const refreshBtn = document.createElement('button');
+      refreshBtn.className = 'app-header-btn yuse-theater-refresh-btn';
+      refreshBtn.innerHTML = '<<i class="fas fa-sync-alt"></</i>';
+      refreshBtn.title = '刷新剧场内容';
+      // 绑定点击事件（调用欲色剧场暴露的全局函数）
+      refreshBtn.addEventListener('click', () => {
+        if (window.yuseTheaterApp && window.yuseTheaterApp.refreshContent) {
+          window.yuseTheaterApp.refreshContent();
+        } else {
+          MobilePhone.showToast('剧场刷新功能未就绪', 'warning');
+        }
+      });
+      headerRight.appendChild(refreshBtn);
     } else if (state.app === 'task') {
       // 任务应用：添加查看任务按钮
       const viewBtn = document.createElement('button');
