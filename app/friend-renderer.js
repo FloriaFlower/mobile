@@ -343,15 +343,32 @@ if (typeof window.FriendRenderer === 'undefined') {
           let match;
           while ((match = pattern.exec(cleanedText)) !== null) {
             if (match[1]) {
+              let content = match[1];
+              
+              // 检查是否包含HTML标签
+              if (content.includes('<img')) {
+                content = '[图片]';
+              } else if (content.includes('<video')) {
+                content = '[视频]';
+              } else if (content.includes('<audio')) {
+                content = '[音频]';
+              } else if (/<[^>]+>/.test(content)) {
+                // 移除其他HTML标签，只保留文本内容
+                content = content.replace(/<[^>]*>/g, '').trim();
+                if (!content) {
+                  content = '[富文本消息]';
+                }
+              }
+              
               // 对于红包，显示 "红包：金额"
               if (pattern.source.includes('红包')) {
-                extractedMessages.push(`红包：${match[1]}`);
+                extractedMessages.push(`红包：${content}`);
               } else if (pattern.source.includes('表情包')) {
                 extractedMessages.push('表情包');
               } else if (pattern.source.includes('语音')) {
-                extractedMessages.push(`语音：${match[1]}`);
+                extractedMessages.push(`语音：${content}`);
               } else {
-                extractedMessages.push(match[1]);
+                extractedMessages.push(content);
               }
             } else if (match[0]) {
               // 对于表情包这种没有提取内容的，直接显示类型
@@ -388,6 +405,15 @@ if (typeof window.FriendRenderer === 'undefined') {
     }
 
     /**
+     * HTML转义函数
+     */
+    escapeHtml(text) {
+      const div = document.createElement('div');
+      div.textContent = text;
+      return div.innerHTML;
+    }
+
+    /**
      * 渲染好友和群聊列表HTML
      */
     renderFriendsHTML() {
@@ -407,7 +433,7 @@ if (typeof window.FriendRenderer === 'undefined') {
       // 渲染联系人列表
       const contactsHTML = contacts
         .map(contact => {
-          const lastMessage = contact.lastMessage || '暂无消息';
+          const lastMessage = this.escapeHtml(contact.lastMessage || '暂无消息');
 
           if (contact.isGroup) {
             // 群聊条目
@@ -655,4 +681,4 @@ if (typeof window.FriendRenderer === 'undefined') {
   };
 
   console.log('[Friend Renderer] 好友渲染器模块加载完成');
-} // 结束 if (typeof window.FriendRenderer === 'undefined') 检查
+} 
