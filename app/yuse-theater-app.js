@@ -498,7 +498,16 @@ if (typeof window.YuseTheaterApp === 'undefined') {
       console.log('[YuseTheater] 销毁欲色剧场 App');
     }
   }
+  // 实例化App（确保全局函数已定义后再实例化）
   window.YuseTheaterApp = YuseTheaterApp;
   window.yuseTheaterApp = new YuseTheaterApp();
-  console.log('[YuseTheater] 欲色剧场 App 加载完成');
+  console.log('[YuseTheater] app 实例初始化完成（对齐原版）');
+  // 验证全局函数是否挂载成功
+  console.log('[YuseTheater] 全局函数状态:', {
+    getYuseTheaterAppContent: typeof window.getYuseTheaterAppContent,
+    bindYuseTheaterEvents: typeof window.bindYuseTheaterEvents,
+    refreshYuseTheaterPage: typeof window.refreshYuseTheaterPage
+  });
 }
+console.log('[YuseTheater] 欲色剧场 App 脚本加载完成');
+
