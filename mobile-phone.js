@@ -1046,7 +1046,7 @@ class MobilePhone {
       // 绑定点击事件（调用欲色剧场暴露的全局函数）
       refreshBtn.addEventListener('click', () => {
         if (window.yuseTheaterApp && window.yuseTheaterApp.sendRefreshRequest) {
-          window.yuseTheaterApp.sendRefreshRequest();
+          window.yuseTheaterApp.sendRefreshRequest(window.yuseTheaterApp.currentView);
         } else {
           MobilePhone.showToast('剧场刷新功能未就绪', 'warning');
         }
