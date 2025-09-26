@@ -5868,7 +5868,7 @@ class MobilePhone {
 async loadYuseTheaterApp() {
   console.log('[Mobile Phone] 开始加载欲色剧场应用模块...');
   // 检查是否已加载
-  if (window.getYuseTheaterAppContent && window.bindYuseTheaterAppEvents) {
+  if (window.getYuseTheaterAppContent && window.bindYuseTheaterEvents && window.yuseTheaterApp) {
     console.log('[Mobile Phone] 欲色剧场模块已存在，跳过加载');
     return Promise.resolve();
   }
@@ -5880,22 +5880,22 @@ async loadYuseTheaterApp() {
   // 标记正在加载
   window._yuseTheaterAppLoading = new Promise((resolve, reject) => {
     let loadedCount = 0;
-    const totalFiles = 2; // 对应 2 个文件（css + app.js）
+    const totalFiles = 2;
     const checkComplete = () => {
       loadedCount++;
       if (loadedCount === totalFiles) {
         setTimeout(() => {
           console.log('[YuseTheater Debug] 全局函数状态:', {
           getYuseTheaterAppContent: typeof window.getYuseTheaterAppContent, 
-          bindYuseTheaterEvents: typeof window.bindYuseTheaterEvents
+          bindYuseTheaterEvents: typeof window.bindYuseTheaterEvents,
+          yuseTheaterApp: typeof window.yuseTheaterApp, 
+          yuseTheaterApp_hasRefresh: window.yuseTheaterApp ? typeof window.yuseTheaterApp.refreshContent : 'undefined'
           });
-          console.log('[YuseTheater Debug] YuseTheaterDefaultData 状态:', typeof window.YuseTheaterDefaultData);
-          if (window.getYuseTheaterAppContent && window.bindYuseTheaterEvents) {
-            console.log('[Mobile Phone] ✅ 欲色剧场模块加载并初始化完成');
+          if (window.getYuseTheaterAppContent && window.bindYuseTheaterEvents && window.yuseTheaterApp && typeof window.yuseTheaterApp.refreshContent === 'function') {
+            console.log('[Mobile Phone] ✅ 欲色剧场模块加载并初始化完成（含全局对象）');
             window._yuseTheaterAppLoading = null;
-            resolve();
+            resolve();         
           } else {
-            // 明确提示缺失的函数
             const missing = [];
             if (typeof window.getYuseTheaterAppContent !== 'function') missing.push('getYuseTheaterAppContent');
             if (typeof window.bindYuseTheaterEvents !== 'function') missing.push('bindYuseTheaterEvents');
@@ -5909,7 +5909,7 @@ async loadYuseTheaterApp() {
       window._yuseTheaterAppLoading = null;
       reject(new Error(`${name} 加载失败`));
     };
-    // 1. 加载 CSS 文件（对应 styles 目录路径）
+    // 1. 加载 CSS 文件
     const cssLink = document.createElement('link');
     cssLink.rel = 'stylesheet';
     cssLink.href = '/scripts/extensions/third-party/mobile/styles/yuse-theater.css';
