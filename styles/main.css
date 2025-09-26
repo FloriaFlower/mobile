@@ -120,26 +120,15 @@ inputP {
 .mobile-phone-screen input,.mobile-phone-screen textarea,.mobile-phone-screen select{background:#eee !important;color:#333 !important}
 .unified-api-settings .toggle-label{background-color: unset;}
 .m-tab-content{background: #fff;}
-123
 .mobile-content input ,.mobile-content select,.mobile-content textarea{background: #f3f3f3 !important;}
-124
 .mobile-content .tab-btn{border-radius: 0;}
-125
 button.app-header-btn[title="保存"]{display: none;}
-126
 .mobile-content .tab-navigation{margin-bottom: 10px;}
-127
 .message-item{border-bottom:1px solid #f6f6f6}
-128
 .product-grid img,.backpack-grid img{margin-top: 10px;}
-129
 .product-name,.product-description{text-align: left;}
-130
 #test-api-connection{display: none !important;}
-131
 .config-list-actions{display: flex;margin-top: 10px;padding: 0 10px; box-sizing:border-box;}
-132
 .config-list-actions > button{width: 33.33%;}
-133
 .delete-group-content{padding-top: 10px;}
 .message-content img{width:100%}
