@@ -191,7 +191,7 @@ if (typeof window.WeiboStyles !== 'undefined') {
 🌟 完整示例格式：
 [热搜|1|港城暴雨预警|2341567]
 [热搜|2|某明星恋情曝光|1987654]
-[博文|天气播报员|h101|港城市民请注意防范，暴雨天气持续...\`\`\`<img src="https://image.pollinations.ai/prompt/Fried%20stinky%20tofu%20with%20chili%20sauce,%20food%20photography,%20hyper%20realistic" style="width: 100%; display: block; border-radius: 6px;" alt="暴雨">\`\`\`]
+\`\`\`[博文|天气播报员|h101|港城市民请注意防范，暴雨天气持续...<img src="https://image.pollinations.ai/prompt/Fried%20stinky%20tofu%20with%20chili%20sauce,%20food%20photography,%20hyper%20realistic" style="width: 100%; display: block; border-radius: 6px;" alt="暴雨">]\`\`\`
 [评论|市民张三|h101|已经在家囤好物资了]
 [回复|天气播报员|h101|回复市民张三：很好，安全第一]
 
@@ -278,10 +278,9 @@ ${allPagesRules}
 \`\`\`
 
 ### 5. 【重要禁令】
-
 **绝对禁止**在任何 \`\`\`<div>\`\`\`, \`\`\`<details>\`\`\`, \`\`\`<span>\`\`\` 等HTML标签内部，使用 \`\`\`![](图片链接)\`\`\` 的格式。这种格式在HTML中是无效的，会导致图片无法显示。
 
-生成的人物图片不要用写实风格，用日漫、韩漫、少女漫和中国漫画等风格
+生成的人物图片不要用写实风格，用日漫、韩漫、少女漫风格
 
 请基于以上规范和后续的聊天记录生成完整的微博内容。`;
     }
