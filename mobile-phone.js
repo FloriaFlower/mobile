@@ -1045,8 +1045,8 @@ class MobilePhone {
       refreshBtn.title = '刷新剧场内容';
       // 绑定点击事件（调用欲色剧场暴露的全局函数）
       refreshBtn.addEventListener('click', () => {
-        if (window.yuseTheaterApp && window.yuseTheaterApp.refreshContent) {
-          window.yuseTheaterApp.refreshContent();
+        if (window.yuseTheaterApp && window.yuseTheaterApp.sendRefreshRequest) {
+          window.yuseTheaterApp.sendRefreshRequest();
         } else {
           MobilePhone.showToast('剧场刷新功能未就绪', 'warning');
         }
@@ -5889,9 +5889,9 @@ async loadYuseTheaterApp() {
           getYuseTheaterAppContent: typeof window.getYuseTheaterAppContent, 
           bindYuseTheaterEvents: typeof window.bindYuseTheaterEvents,
           yuseTheaterApp: typeof window.yuseTheaterApp, 
-          yuseTheaterApp_hasRefresh: window.yuseTheaterApp ? typeof window.yuseTheaterApp.refreshContent : 'undefined'
+          yuseTheaterApp_hasRefresh: window.yuseTheaterApp ? typeof window.yuseTheaterApp.sendRefreshRequest : 'undefined'
           });
-          if (window.getYuseTheaterAppContent && window.bindYuseTheaterEvents && window.yuseTheaterApp && typeof window.yuseTheaterApp.refreshContent === 'function') {
+          if (window.getYuseTheaterAppContent && window.bindYuseTheaterEvents && window.yuseTheaterApp && typeof window.yuseTheaterApp.sendRefreshRequest === 'function') {
             console.log('[Mobile Phone] ✅ 欲色剧场模块加载并初始化完成（含全局对象）');
             window._yuseTheaterAppLoading = null;
             resolve();         
