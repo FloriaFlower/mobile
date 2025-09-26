@@ -1041,7 +1041,7 @@ class MobilePhone {
     } else if (state.app === 'yuse-theater') {
       const refreshBtn = document.createElement('button');
       refreshBtn.className = 'app-header-btn yuse-theater-refresh-btn';
-      refreshBtn.innerHTML = '<<i class="fas fa-sync-alt"></</i>';
+      refreshBtn.innerHTML = '<<i class="fas fa-sync-alt"></i>';
       refreshBtn.title = '刷新剧场内容';
       // 绑定点击事件（调用欲色剧场暴露的全局函数）
       refreshBtn.addEventListener('click', () => {
