@@ -5,21 +5,26 @@ if (typeof window.YuseApp === 'undefined') {
       this.init();
     }
 
-    // 初始化：渲染+绑定事件（支持重复调用）
+    // 初始化：确保DOM渲染后再绑定事件
     init() {
-      console.log('[欲色APP] 初始化主界面');
-      this.renderMainContent(); // 每次都重新渲染DOM
-      this.bindEntryEvents();
+      console.log('[欲色APP] 初始化主界面（进入init）');
+      this.renderMainContent();
+      // 关键：延迟100ms确保DOM完全挂载后再绑定事件（解决时序问题）
+      setTimeout(() => {
+        this.bindEntryEvents();
+      }, 100);
       this.addLocoDecoration();
     }
 
-    // 渲染主界面：返回HTML字符串（而非依赖现有DOM）
+    // 渲染主界面：明确打印DOM结构
     renderMainContent() {
       const appContent = document.getElementById('app-content');
-      if (!appContent) return ''; // 防止DOM不存在时报错
-      console.log('[欲色APP] 开始渲染主界面DOM');
+      if (!appContent) {
+        console.error('[欲色APP] 渲染失败：未找到app-content容器');
+        return '';
+      }
+      console.log('[欲色APP] 开始渲染主界面DOM（app-content存在）');
 
-      // 主界面HTML（直接返回字符串，供getYuseAppContent调用）
       const mainHtml = `
         <div class="yuse-container">
           <div class="yuse-top-decoration">
@@ -54,66 +59,94 @@ if (typeof window.YuseApp === 'undefined') {
       `;
 
       appContent.innerHTML = mainHtml;
-      console.log('[欲色APP] 主界面DOM渲染完成');
-      return mainHtml; // 返回HTML，供全局函数使用
+      // 渲染后打印DOM结构，确认卡片存在
+      const cards = document.querySelectorAll('.yuse-entry-card');
+      console.log(`[欲色APP] 主界面DOM渲染完成，卡片数量：${cards.length}，卡片HTML：`, appContent.innerHTML);
+      return mainHtml;
     }
 
-    // 绑定入口事件：强制触发加载+详细日志
+    // 绑定入口事件：全链路日志+确保每个卡片都绑定
     bindEntryEvents() {
+      console.log('[欲色APP] 开始绑定入口事件（进入bindEntryEvents）');
       const entryCards = document.querySelectorAll('.yuse-entry-card');
-      console.log('[欲色APP] 绑定入口事件，卡片数量：', entryCards.length);
+      
+      // 1. 先确认卡片是否获取到
+      if (entryCards.length === 0) {
+        console.error('[欲色APP] 绑定事件失败：未找到.yuse-entry-card元素');
+        // 紧急修复：重新查询一次（防止DOM查询时机问题）
+        const retryCards = document.querySelectorAll('.yuse-container .yuse-entry-grid .yuse-entry-card');
+        if (retryCards.length > 0) {
+          console.warn('[欲色APP] 重试查询后获取到卡片，数量：', retryCards.length);
+          this.bindCardEvents(retryCards); // 单独抽离绑定逻辑
+        }
+        return;
+      }
 
-      entryCards.forEach(card => {
+      // 2. 正常绑定事件
+      console.log(`[欲色APP] 成功获取到${entryCards.length}个卡片，开始逐个绑定事件`);
+      this.bindCardEvents(entryCards);
+    }
+
+    // 单独抽离卡片事件绑定逻辑（便于复用）
+    bindCardEvents(cards) {
+      cards.forEach((card, index) => {
+        const module = card.dataset.module;
+        console.log(`[欲色APP] 正在绑定第${index+1}个卡片：模块=${module}，卡片DOM：`, card);
+        
+        // 给卡片添加点击反馈样式（确认可点击）
+        card.style.cursor = 'pointer';
+        card.style.userSelect = 'none';
+        
+        // 绑定点击事件
         card.addEventListener('click', async (e) => {
-          const module = e.currentTarget.dataset.module;
-          this.currentActiveModule = module;
-          console.log('[欲色APP] 点击入口：', module);
+          // 阻止事件冒泡（防止父元素拦截）
+          e.stopPropagation();
+          console.log('[欲色APP] 卡片被点击！事件触发详情：', {
+            targetModule: module,
+            targetElement: e.target,
+            currentTarget: e.currentTarget,
+            isCard: e.currentTarget === card
+          });
 
-          // 激活当前卡片样式
-          entryCards.forEach(c => c.classList.remove('active'));
-          e.currentTarget.classList.add('active');
+          // 激活卡片样式
+          cards.forEach(c => c.classList.remove('active'));
+          card.classList.add('active');
 
           try {
-            // 关键：检查mobilePhone实例和加载方法是否存在
+            // 检查mobilePhone是否存在（核心依赖）
             if (!window.mobilePhone) {
-              throw new Error('window.mobilePhone 未找到（手机框架未初始化）');
+              throw new Error('window.mobilePhone 不存在（手机框架未初始化）');
             }
-            console.log('[欲色APP] window.mobilePhone 存在，检查加载方法');
+            console.log('[欲色APP] window.mobilePhone 存在，准备加载对应模块');
 
-            // 按模块触发加载（强制调用mobile-phone的加载方法）
+            // 按模块加载
             switch (module) {
               case 'theater':
-                console.log('[欲色APP] 开始加载「欲色剧场」脚本');
-                // 强制调用加载方法，打印路径日志
+                console.log('[欲色APP] 进入剧场模块加载流程');
                 await window.mobilePhone.loadYuseTheaterApp();
-                console.log('[欲色APP] 「欲色剧场」脚本加载完成，开始渲染');
+                console.log('[欲色APP] 剧场脚本加载完成，调用渲染方法');
                 await this.loadTheaterModule();
                 break;
-
               case 'live':
-                console.log('[欲色APP] 开始加载「直播」脚本');
-                // 强制调用加载方法，打印路径日志
+                console.log('[欲色APP] 进入直播模块加载流程');
                 await window.mobilePhone.loadLiveApp();
-                console.log('[欲色APP] 「直播」脚本加载完成，开始渲染');
+                console.log('[欲色APP] 直播脚本加载完成，调用渲染方法');
                 await this.loadLiveModule();
                 break;
-
               case 'aoka':
               case 'yucy':
                 this.showUnfinishedTip();
                 break;
+              default:
+                throw new Error(`未知模块：${module}`);
             }
           } catch (error) {
             console.error(`[欲色APP] ${module === 'theater' ? '剧场' : '直播'}加载失败：`, error);
-            // 显示明确的错误提示（含路径排查指引）
             document.getElementById('app-content').innerHTML = `
               <div class="yuse-error" style="height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 15px; padding: 20px;">
                 <div class="error-icon" style="font-size: 36px; color: #ff4757;">❌</div>
                 <p style="font-size: 16px; color: #2d3748;">${module === 'theater' ? '剧场' : '直播'}加载失败</p>
-                <p style="font-size: 12px; color: #718096; text-align: center;">
-                  原因：${error.message}<br>
-                  建议：检查 mobile-phone.js 中 load${module === 'theater' ? 'YuseTheater' : 'Live'}App 方法的脚本路径
-                </p>
+                <p style="font-size: 12px; color: #718096; text-align: center;">原因：${error.message}</p>
                 <button onclick="window.mobilePhone.handleYuseApp()" style="padding: 6px 12px; border: none; border-radius: 6px; background: #D4AF37; color: white; cursor: pointer;">返回主界面</button>
               </div>
             `;
@@ -122,7 +155,7 @@ if (typeof window.YuseApp === 'undefined') {
       });
     }
 
-    // 加载剧场模块：确保依赖函数存在+日志
+    // 加载剧场模块（保留原逻辑+日志）
     async loadTheaterModule() {
       const appContent = document.getElementById('app-content');
       appContent.innerHTML = `
@@ -132,12 +165,10 @@ if (typeof window.YuseApp === 'undefined') {
         </div>
       `;
 
-      // 检查全局函数是否存在（加载脚本后才会有）
       if (!window.getYuseTheaterAppContent || !window.bindYuseTheaterEvents) {
         throw new Error('未找到剧场全局函数（getYuseTheaterAppContent / bindYuseTheaterEvents）');
       }
       console.log('[欲色APP] 剧场全局函数存在，开始获取内容');
-
       const theaterContent = window.getYuseTheaterAppContent();
       if (!theaterContent || theaterContent.trim() === '') {
         throw new Error('剧场内容为空');
@@ -149,7 +180,7 @@ if (typeof window.YuseApp === 'undefined') {
       console.log('[欲色APP] 剧场模块渲染完成');
     }
 
-    // 加载直播模块：确保依赖函数存在+日志
+    // 加载直播模块（保留原逻辑+日志）
     async loadLiveModule() {
       const appContent = document.getElementById('app-content');
       appContent.innerHTML = `
@@ -159,12 +190,10 @@ if (typeof window.YuseApp === 'undefined') {
         </div>
       `;
 
-      // 检查全局函数是否存在（加载脚本后才会有）
       if (!window.getLiveAppContent || !window.bindLiveAppEvents) {
         throw new Error('未找到直播全局函数（getLiveAppContent / bindLiveAppEvents）');
       }
       console.log('[欲色APP] 直播全局函数存在，开始获取内容');
-
       const liveContent = window.getLiveAppContent();
       if (!liveContent || liveContent.trim() === '') {
         throw new Error('直播内容为空');
@@ -176,18 +205,20 @@ if (typeof window.YuseApp === 'undefined') {
       console.log('[欲色APP] 直播模块渲染完成');
     }
 
-    // 给子模块添加洛可可风边框
+    // 以下方法保持不变（仅加日志）
     addModuleDecoration(module) {
+      console.log('[欲色APP] 给模块添加装饰：', module);
       const container = document.querySelector('.yuse-theater-app, .live-app');
       if (container) {
         container.classList.add('loco-module-border');
         container.style.borderColor = module === 'theater' ? '#9370DB' : '#E0F7FA';
+      } else {
+        console.warn('[欲色APP] 未找到模块容器，无法添加装饰');
       }
     }
 
-    // 洛可可风动态装饰（顶部曲线摆动+底部花纹渐变）
     addLocoDecoration() {
-      // 顶部曲线左右摆动
+      console.log('[欲色APP] 初始化洛可可风装饰');
       const curves = document.querySelectorAll('.gold-curve');
       curves.forEach((curve, idx) => {
         setInterval(() => {
@@ -197,9 +228,12 @@ if (typeof window.YuseApp === 'undefined') {
         }, 100);
       });
 
-      // 底部花纹颜色流动
       const bottomPattern = document.querySelector('.yuse-bottom-pattern');
-      let hue = 30; // 暖金色调
+      if (!bottomPattern) {
+        console.warn('[欲色APP] 未找到底部花纹元素');
+        return;
+      }
+      let hue = 30;
       setInterval(() => {
         hue = (hue + 1) % 360;
         bottomPattern.style.background = `linear-gradient(45deg, 
@@ -208,8 +242,8 @@ if (typeof window.YuseApp === 'undefined') {
       }, 5000);
     }
 
-    // 待开发模块提示
     showUnfinishedTip() {
+      console.log('[欲色APP] 显示未完成提示');
       const tip = document.createElement('div');
       tip.className = 'yuse-tip';
       tip.innerHTML = `
@@ -223,15 +257,14 @@ if (typeof window.YuseApp === 'undefined') {
     }
   }
 
-  // 全局实例化（供外部调用）
+  // 全局实例化（加日志）
   window.YuseApp = new YuseApp();
   console.log('[欲色APP] 全局实例 YuseApp 挂载完成');
 }
 
-// 关键修复：每次调用都重新渲染，不依赖旧DOM
+// 全局函数（加日志）
 window.getYuseAppContent = () => {
   console.log('[欲色APP] 调用 getYuseAppContent，重新渲染主界面');
-  // 若实例已存在，重新初始化；若不存在，创建新实例
   if (window.YuseApp) {
     return window.YuseApp.renderMainContent();
   } else {
