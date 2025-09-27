@@ -2449,6 +2449,17 @@ class MobilePhone {
         throw new Error('获取的欲色界面内容为空');
       }
       appContentEl.innerHTML = appContent;
+      setTimeout(() => {
+        const yuseContainer = document.querySelector('.yuse-container');
+        if (yuseContainer) {
+          yuseContainer.addEventListener('click', (e) => {
+            e.stopPropagation(); // 阻止事件冒泡到app-screen或其他父元素
+            console.log('[Mobile Phone] 欲色容器点击事件已阻止冒泡，确保卡片点击有效');
+          });
+        } else {
+          console.warn('[Mobile Phone] 未找到欲色容器，无法阻止事件冒泡');
+        }
+      }, 200);
       console.log('[欲色APP] 主界面加载完成');
     } catch (error) {
       console.error('[欲色APP] 加载失败:', error);
