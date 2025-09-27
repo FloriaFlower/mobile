@@ -247,7 +247,7 @@
   cursor: pointer;
   transition: all 0.2s ease;
 }
-/* 弹窗样式：核心修正区域 */
+/* 弹窗样式：核心对齐区域 */
 .yuse-modal {
   position: fixed;
   top: 0;
@@ -257,7 +257,7 @@
   background: rgba(0, 0, 0, 0.6); /* 加深遮罩，增强弹窗对比度 */
   display: flex;
   justify-content: center;
-  align-items: center; /* 恢复居中，彻底解决靠下问题 */
+  align-items: center; /* 垂直居中逻辑 */
   padding-top: 0; /* 取消顶部冗余留白 */
   z-index: 9999;
 }
@@ -271,11 +271,11 @@
   animation: popIn 0.3s ease-out;
   box-shadow: 0 6px 25px rgba(0, 0, 0, 0.25); /* 加深阴影，增强层次感 */
   overflow: hidden; /* 避免内部元素溢出圆角 */
-  margin-top: -5vh; /* 微调垂直位置，让弹窗更居中舒适 */
+  margin-top: -8vh; /* 大幅上移弹窗，解决移动端靠下问题 */
 }
-/* 弹窗头部修正：完全对齐“通告拍摄”样式 */
+/* 弹窗头部对齐：完全匹配“通告拍摄” */
 .modal-header {
-  padding: 15px 18px !important; /* 增加内边距，让背景完全包裹标题 */
+  padding: 16px 20px !important; /* 增加内边距，让背景完全包裹标题 */
   border-bottom: 1px solid var(--border-color) !important;
   display: flex !important;
   justify-content: space-between !important;
@@ -288,6 +288,7 @@
   line-height: 1.5 !important; /* 换行后行高更舒适 */
   flex-wrap: wrap; /* 强制背景色包裹所有行 */
   width: 100%; /* 确保背景色全屏宽度 */
+  position: relative; /* 为关闭按钮绝对定位做准备 */
 }
 .close-btn {
   background: none;
@@ -301,26 +302,28 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  align-self: center; /* 与标题垂直居中 */
+  position: absolute; /* 绝对定位，避免被内容挤走 */
+  top: 16px;
+  right: 20px;
 }
 .close-btn:hover {
   color: var(--accent-color);
   background-color: rgba(211,140,157,0.1); /* hover 添加强调色背景，增强交互感 */
   border-radius: 50%;
 }
-/* 弹窗内容区：详情文字放大+彻底修正 */
+/* 弹窗内容区：详情文字与“通告拍摄”完全对齐 */
 .modal-body {
   flex: 1;
   overflow-y: auto;
-  padding: 15px 18px !important; /* 增加内边距，与“通告拍摄”对齐 */
+  padding: 16px 20px !important; /* 内边距与“通告拍摄”对齐 */
   line-height: 1.7; /* 增大行高，提升可读性 */
   color: var(--text-dark); /* 加深文本色，告别“白茫茫” */
   font-size: 1.05em !important; /* 详情描述文字明确放大，解决太小问题 */
   background: var(--modal-bg-texture); /* 添加淡渐变纹理，增强视觉层次 */
 }
-/* 弹窗底部修正：按钮操作舒适 */
+/* 弹窗底部对齐：按钮操作舒适 */
 .modal-footer {
-  padding: 12px 18px; /* 内边距与“通告拍摄”对齐 */
+  padding: 14px 20px; /* 内边距与“通告拍摄”对齐 */
   border-top: 1px solid var(--border-color);
   display: flex;
   justify-content: flex-end;
@@ -409,7 +412,7 @@
   opacity: 1;
   transform: translateX(-50%) translateY(0);
 }
-/* 响应式适配：同步优化弹窗样式 */
+/* 响应式适配：移动端最终对齐 */
 @media (max-width: 375px) {
   .app-header, #app-header, header {
     padding: 10px 12px !important;
@@ -420,7 +423,7 @@
   .list-item {
     padding: 10px 12px;
   }
-  /* 小屏弹窗优化：与“通告拍摄”移动端样式完全对齐 */
+  /* 移动端弹窗大幅上移+按钮操作优化 */
   .yuse-modal {
     align-items: center; /* 移动端居中逻辑 */
     padding-top: 0;
@@ -428,14 +431,21 @@
   .modal-content {
     width: 95%;
     max-height: 82%; /* 适配移动端屏幕，确保按钮可操作 */
-    margin-top: -3vh; /* 微调移动端垂直位置 */
+    margin-top: -12vh; /* 移动端进一步上移，解决靠下问题 */
   }
   .modal-header {
     font-size: 1.05em !important;
-    padding: 12px 15px !important;
+    padding: 14px 16px !important;
+  }
+  .close-btn {
+    top: 14px;
+    right: 16px;
+    font-size: 20px;
+    width: 28px;
+    height: 28px;
   }
   .modal-body {
-    padding: 12px 15px !important;
+    padding: 14px 16px !important;
     font-size: 1.0em !important; /* 移动端描述文字大小 */
     line-height: 1.6;
   }
