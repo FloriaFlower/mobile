@@ -13,22 +13,19 @@ if (typeof window.YuseApp === 'undefined') {
       this.addLocoDecoration();
     }
 
-    // 渲染主界面：返回HTML字符串（而非依赖现有DOM）
+    // 渲染主界面：返回HTML字符串（确保DOM正确挂载）
     renderMainContent() {
       const appContentEl = document.getElementById('app-content');
-      if (!appContentEl) return ''; // 防止DOM不存在时报错
+      if (!appContentEl) return '';
 
       // 主界面HTML（2×2入口网格，洛可可风）
       const mainHtml = `
         <div class="yuse-container">
-          <!-- 顶部金色曲线装饰 -->
           <div class="yuse-top-decoration">
             <div class="gold-curve left"></div>
             <h1 class="yuse-title">欲色</h1>
             <div class="gold-curve right"></div>
           </div>
-
-          <!-- 功能入口网格 -->
           <div class="yuse-entry-grid">
             <div class="yuse-entry-card" data-module="aoka">
               <div class="entry-icon">🎀</div>
@@ -51,8 +48,6 @@ if (typeof window.YuseApp === 'undefined') {
               <div class="loco-border"></div>
             </div>
           </div>
-
-          <!-- 底部流动花纹 -->
           <div class="yuse-bottom-pattern"></div>
         </div>
       `;
@@ -61,7 +56,7 @@ if (typeof window.YuseApp === 'undefined') {
       return mainHtml;
     }
 
-    // 绑定入口点击事件：直接调用 mobile-phone.js 的处理方法（核心修复）
+    // 绑定入口点击事件：调用 mobile-phone.js 正规的 openApp() 方法（核心修复）
     bindEntryEvents() {
       const entryCards = document.querySelectorAll('.yuse-entry-card');
       entryCards.forEach(card => {
@@ -74,49 +69,48 @@ if (typeof window.YuseApp === 'undefined') {
           e.currentTarget.classList.add('active');
 
           try {
-            // 关键：加载脚本后，直接调用 mobile-phone.js 的对应处理器（复用正规流程）
-            switch (module) {
-              case 'theater':
-                // 1. 先加载欲色剧场脚本（确保依赖就绪）
-                await window.mobilePhone.loadYuseTheaterApp();
-                // 2. 调用 mobile-phone 的剧场处理器（渲染页面+更新状态+更新Header）
-                window.mobilePhone.handleYuseTheaterApp();
-                console.log('[欲色APP] 触发剧场页面加载');
-                break;
-
-              case 'live':
-                // 1. 先加载直播脚本
-                await window.mobilePhone.loadLiveApp();
-                // 2. 调用 mobile-phone 的直播处理器
-                window.mobilePhone.handleLiveApp();
-                console.log('[欲色APP] 触发直播页面加载');
-                break;
-
-              case 'aoka':
-              case 'yucy':
-                this.showUnfinishedTip();
-                break;
+            // 关键：按模块映射到正确的APP名称（对应 mobile-phone.js 里注册的APP名）
+            const appMap = {
+              theater: 'yuse-theater', // mobile-phone.js 里注册的剧场APP名
+              live: 'live' // mobile-phone.js 里注册的直播APP名
+            };
+            const targetApp = appMap[module];
+            if (!targetApp) {
+              this.showUnfinishedTip();
+              return;
             }
+
+            // 1. 加载对应APP的脚本（确保依赖就绪）
+            if (module === 'theater') {
+              await window.mobilePhone.loadYuseTheaterApp();
+            } else if (module === 'live') {
+              await window.mobilePhone.loadLiveApp();
+            }
+
+            // 2. 调用 mobile-phone.js 正规的 openApp() 方法（触发完整跳转流程）
+            // 这个方法会自动清空应用栈、设置 currentApp、更新Header、渲染页面
+            window.mobilePhone.openApp(targetApp);
+            console.log(`[欲色APP] 触发跳转：${targetApp}（通过openApp正规流程）`);
+
           } catch (error) {
             // 加载失败提示（显示在应用容器内）
             const appContentEl = document.getElementById('app-content');
             appContentEl.innerHTML = `
               <div class="yuse-error" style="height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 15px; padding: 20px;">
                 <div class="error-icon" style="font-size: 36px; color: #ff4757;">❌</div>
-                <p style="font-size: 16px; color: #2d3748;">${module === 'theater' ? '剧场' : '直播'}加载失败</p>
+                <p style="font-size: 16px; color: #2d3748;">${module === 'theater' ? '剧场' : '直播'}跳转失败</p>
                 <p style="font-size: 12px; color: #718096;">${error.message}</p>
-                <button onclick="window.mobilePhone.handleYuseApp()" style="padding: 6px 12px; border: none; border-radius: 6px; background: #D4AF37; color: white; cursor: pointer;">返回主界面</button>
+                <button onclick="window.mobilePhone.handleYuseApp()" style="padding: 6px 12px; border: none; border-radius: 6px; background: #D4AF37; color: white; cursor: pointer;">返回欲色主界面</button>
               </div>
             `;
-            console.error(`[欲色APP] ${module}加载失败:`, error);
+            console.error(`[欲色APP] ${module}跳转失败:`, error);
           }
         });
       });
     }
 
-    // 洛可可风动态装饰（顶部曲线摆动+底部花纹渐变）
+    // 洛可可风动态装饰
     addLocoDecoration() {
-      // 顶部曲线左右摆动
       const curves = document.querySelectorAll('.gold-curve');
       curves.forEach((curve, idx) => {
         setInterval(() => {
@@ -126,9 +120,8 @@ if (typeof window.YuseApp === 'undefined') {
         }, 100);
       });
 
-      // 底部花纹颜色流动
       const bottomPattern = document.querySelector('.yuse-bottom-pattern');
-      let hue = 30; // 暖金色调
+      let hue = 30;
       setInterval(() => {
         hue = (hue + 1) % 360;
         bottomPattern.style.background = `linear-gradient(45deg, 
@@ -152,17 +145,15 @@ if (typeof window.YuseApp === 'undefined') {
     }
   }
 
-  // 全局实例化（供外部调用）
+  // 全局实例化
   window.YuseApp = new YuseApp();
 }
 
-// 全局函数：供 mobile-phone.js 调用，每次都重新渲染主界面
+// 全局函数：供 mobile-phone.js 调用，每次重新渲染主界面
 window.getYuseAppContent = () => {
   if (window.YuseApp) {
-    // 已存在实例：重新初始化（避免DOM残留问题）
     return window.YuseApp.renderMainContent();
   } else {
-    // 不存在实例：创建新实例
     window.YuseApp = new YuseApp();
     return window.YuseApp.renderMainContent();
   }
