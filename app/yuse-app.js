@@ -1,24 +1,24 @@
 if (typeof window.YuseApp === 'undefined') {
   class YuseApp {
     constructor() {
-      this.currentActiveModule = null; // 记录当前激活模块
+      this.currentActiveModule = null;
       this.init();
     }
 
-    // 初始化：每次调用都重新渲染DOM+绑定事件（支持重复进入）
+    // 初始化：渲染+绑定事件（支持重复调用）
     init() {
       console.log('[欲色APP] 初始化主界面');
-      this.renderMainContent();
+      this.renderMainContent(); // 每次都重新渲染DOM
       this.bindEntryEvents();
       this.addLocoDecoration();
     }
 
-    // 渲染主界面：直接生成HTML，不依赖残留DOM
+    // 渲染主界面：返回HTML字符串（而非依赖现有DOM）
     renderMainContent() {
-      const appContent = document.getElementById('app-content');
-      if (!appContent) return '';
+      const appContentEl = document.getElementById('app-content');
+      if (!appContentEl) return ''; // 防止DOM不存在时报错
 
-      // 洛可可风主界面HTML（2×2入口网格）
+      // 主界面HTML（2×2入口网格，洛可可风）
       const mainHtml = `
         <div class="yuse-container">
           <!-- 顶部金色曲线装饰 -->
@@ -57,11 +57,11 @@ if (typeof window.YuseApp === 'undefined') {
         </div>
       `;
 
-      appContent.innerHTML = mainHtml;
-      return mainHtml; // 供全局函数调用返回
+      appContentEl.innerHTML = mainHtml;
+      return mainHtml;
     }
 
-    // 绑定入口点击事件：加载脚本+调用mobile-phone.js的处理器
+    // 绑定入口点击事件：直接调用 mobile-phone.js 的处理方法（核心修复）
     bindEntryEvents() {
       const entryCards = document.querySelectorAll('.yuse-entry-card');
       entryCards.forEach(card => {
@@ -74,20 +74,22 @@ if (typeof window.YuseApp === 'undefined') {
           e.currentTarget.classList.add('active');
 
           try {
-            // 关键：调用mobile-phone.js的对应模块处理器（复用现有逻辑）
+            // 关键：加载脚本后，直接调用 mobile-phone.js 的对应处理器（复用正规流程）
             switch (module) {
               case 'theater':
-                // 1. 加载欲色剧场脚本
+                // 1. 先加载欲色剧场脚本（确保依赖就绪）
                 await window.mobilePhone.loadYuseTheaterApp();
-                // 2. 调用剧场处理器（渲染剧场页面）
+                // 2. 调用 mobile-phone 的剧场处理器（渲染页面+更新状态+更新Header）
                 window.mobilePhone.handleYuseTheaterApp();
+                console.log('[欲色APP] 触发剧场页面加载');
                 break;
 
               case 'live':
-                // 1. 加载直播脚本
+                // 1. 先加载直播脚本
                 await window.mobilePhone.loadLiveApp();
-                // 2. 调用直播处理器（渲染直播页面）
+                // 2. 调用 mobile-phone 的直播处理器
                 window.mobilePhone.handleLiveApp();
+                console.log('[欲色APP] 触发直播页面加载');
                 break;
 
               case 'aoka':
@@ -96,9 +98,9 @@ if (typeof window.YuseApp === 'undefined') {
                 break;
             }
           } catch (error) {
-            // 加载失败提示
-            const appContent = document.getElementById('app-content');
-            appContent.innerHTML = `
+            // 加载失败提示（显示在应用容器内）
+            const appContentEl = document.getElementById('app-content');
+            appContentEl.innerHTML = `
               <div class="yuse-error" style="height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 15px; padding: 20px;">
                 <div class="error-icon" style="font-size: 36px; color: #ff4757;">❌</div>
                 <p style="font-size: 16px; color: #2d3748;">${module === 'theater' ? '剧场' : '直播'}加载失败</p>
@@ -110,15 +112,6 @@ if (typeof window.YuseApp === 'undefined') {
           }
         });
       });
-    }
-
-    // 给子模块添加洛可可风边框
-    addModuleDecoration(module) {
-      const container = document.querySelector('.yuse-theater-app, .live-app');
-      if (container) {
-        container.classList.add('loco-module-border');
-        container.style.borderColor = module === 'theater' ? '#9370DB' : '#E0F7FA';
-      }
     }
 
     // 洛可可风动态装饰（顶部曲线摆动+底部花纹渐变）
@@ -163,7 +156,7 @@ if (typeof window.YuseApp === 'undefined') {
   window.YuseApp = new YuseApp();
 }
 
-// 全局函数：供mobile-phone.js调用，每次都重新渲染主界面
+// 全局函数：供 mobile-phone.js 调用，每次都重新渲染主界面
 window.getYuseAppContent = () => {
   if (window.YuseApp) {
     // 已存在实例：重新初始化（避免DOM残留问题）
