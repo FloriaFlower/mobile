@@ -1,5 +1,5 @@
-if (typeof window.YuseMainApp === 'undefined') {
-  class YuseMainApp {
+if (typeof window.YuseApp === 'undefined') {
+  class YuseApp {
     constructor() {
       this.currentActiveModule = null; // 记录当前激活的子模块（剧场/直播等）
       this.init();
@@ -10,7 +10,7 @@ if (typeof window.YuseMainApp === 'undefined') {
       console.log('[欲色APP] 初始化主界面');
       this.renderMainContent();
       this.bindEntryEvents();
-      this.addLocoDecoration(); // 添加洛可可风动态装饰
+      this.addLocoDecoration(); // 添加Rococo风动态装饰
     }
 
     // 渲染主界面（2×2网格入口）
@@ -18,10 +18,10 @@ if (typeof window.YuseMainApp === 'undefined') {
       const appContent = document.getElementById('app-content');
       if (!appContent) return;
 
-      // 主界面HTML：带洛可可风容器与卡片
+      // 主界面HTML：带Rococo风容器与卡片
       appContent.innerHTML = `
-        <div class="yuse-main-container">
-          <!-- 洛可可风顶部装饰 -->
+        <div class="yuse-container">
+          <!-- Rococo风顶部装饰 -->
           <div class="yuse-top-decoration">
             <div class="gold-curve left"></div>
             <h1 class="yuse-title">欲色</h1>
@@ -59,7 +59,7 @@ if (typeof window.YuseMainApp === 'undefined') {
             </div>
           </div>
 
-          <!-- 洛可可风底部花纹 -->
+          <!-- Rococo风底部花纹 -->
           <div class="yuse-bottom-pattern"></div>
         </div>
       `;
@@ -97,7 +97,7 @@ if (typeof window.YuseMainApp === 'undefined') {
     // 加载剧场模块：调用yuse-theater-app.js的全局方法
     async loadTheaterModule() {
       const appContent = document.getElementById('app-content');
-      // 显示加载中（带洛可可风加载动画）
+      // 显示加载中（带Rococo风加载动画）
       appContent.innerHTML = `
         <div class="yuse-loading">
           <div class="gold-spinner"></div>
@@ -111,7 +111,7 @@ if (typeof window.YuseMainApp === 'undefined') {
           const theaterContent = window.getYuseTheaterAppContent();
           appContent.innerHTML = theaterContent;
           window.bindYuseTheaterEvents(); // 绑定剧场原事件
-          this.addModuleDecoration('theater'); // 给剧场加洛可可边框
+          this.addModuleDecoration('theater'); // 给剧场加Rococo边框
           console.log('[欲色APP] 剧场模块加载完成');
         } else {
           throw new Error('剧场功能未就绪');
@@ -143,7 +143,7 @@ if (typeof window.YuseMainApp === 'undefined') {
           const liveContent = window.getLiveAppContent();
           appContent.innerHTML = liveContent;
           window.bindLiveAppEvents(); // 绑定直播原事件
-          this.addModuleDecoration('live'); // 给直播加洛可可边框
+          this.addModuleDecoration('live'); // 给直播加Rococo边框
           console.log('[欲色APP] 直播模块加载完成');
         } else {
           throw new Error('直播功能未就绪');
@@ -158,7 +158,7 @@ if (typeof window.YuseMainApp === 'undefined') {
       }
     }
 
-    // 给子模块添加洛可可风装饰边框
+    // 给子模块添加Rococo风装饰边框
     addModuleDecoration(module) {
       const container = document.querySelector('.yuse-theater-app, .live-app');
       if (container) {
@@ -169,7 +169,7 @@ if (typeof window.YuseMainApp === 'undefined') {
       }
     }
 
-    // 添加洛可可风动态装饰（顶部卷草纹、底部花纹动画）
+    // 添加Rococo风动态装饰（顶部卷草纹、底部花纹动画）
     addLocoDecoration() {
       // 顶部卷草纹左右摆动
       const curves = document.querySelectorAll('.gold-curve');
@@ -208,11 +208,11 @@ if (typeof window.YuseMainApp === 'undefined') {
   }
 
   // 全局实例化，挂载到window供调用
-  window.YuseMainApp = YuseMainApp;
-  window.yuseMainApp = new YuseMainApp();
+  window.YuseApp = YuseApp;
+  window.YuseApp = new YuseApp();
 
   // 全局函数：供mobile-phone.js调用，获取主界面内容
-  window.getYuseMainAppContent = () => {
-    return document.querySelector('.yuse-main-container')?.outerHTML || '<div class="yuse-error">欲色APP加载失败</div>';
+  window.getYuseAppContent = () => {
+    return document.querySelector('.yuse-container')?.outerHTML || '<div class="yuse-error">欲色APP加载失败</div>';
   };
 }
