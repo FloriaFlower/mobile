@@ -2423,8 +2423,44 @@ class MobilePhone {
   }
   // 处理欲色APP
   handleYuseMainApp() {
-    const appContent = window.getYuseMainAppContent();
-    document.getElementById('app-content').innerHTML = appContent;
+    try {
+      // 检查全局函数是否存在，不存在则用默认内容
+      let appContent;
+      if (window.getYuseMainAppContent && typeof window.getYuseMainAppContent === 'function') {
+        appContent = window.getYuseMainAppContent();
+      } else {
+        // 兜底默认内容（避免空白）
+        appContent = `
+          <div class="yuse-main-app" style="height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 20px; padding: 20px;">
+            <div style="font-size: 48px; color: #D4AF37;">🍷</div>
+            <div style="font-size: 18px; font-weight: 600; color: #2d3748;">欲色APP</div>
+            <div style="font-size: 14px; color: #718096; text-align: center;">🥂主界面加载中<br>（可自定义替换内容）</div>
+          </div>
+        `;
+        console.warn('[欲色APP] 全局函数 getYuseMainAppContent 未定义，使用默认内容');
+      }
+      // 渲染APP内容
+      const appContentEl = document.getElementById('app-content');
+      if (appContentEl) {
+        appContentEl.innerHTML = appContent;
+      } else {
+        throw new Error('APP内容容器 #app-content 未找到');
+      }
+    } catch (error) {
+      console.error('[欲色APP] 加载失败:', error);
+      // 错误状态显示
+      const appContentEl = document.getElementById('app-content');
+      if (appContentEl) {
+        appContentEl.innerHTML = `
+          <div style="height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; color: #ff4757; gap: 15px; padding: 20px;">
+            <div style="font-size: 24px;">❌</div>
+            <div style="font-size: 16px; font-weight: 600;">加载失败</div>
+            <div style="font-size: 12px; text-align: center;">${error.message}</div>
+            <button onclick="window.mobilePhone.handleYuseMainApp()" style="margin-top: 10px; padding: 6px 12px; border: none; border-radius: 6px; background: #D4AF37; color: white; cursor: pointer;">重试</button>
+          </div>
+        `;
+      }
+    }
   }
   // 处理欲色剧场应用
   async handleYuseTheaterApp() {
