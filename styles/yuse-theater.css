@@ -13,6 +13,7 @@
   --accent-color: #D38C9D; 
   --modal-bg-texture: linear-gradient(0deg, rgba(255,240,243,0.3) 0%, rgba(255,255,255,0.5) 100%); /* 弹窗内容区渐变 */
 }
+
 /* 应用容器 */
 .yuse-theater-app {
   position: relative;
@@ -21,10 +22,12 @@
   background: linear-gradient(120deg, #EA889D 0%, #C4DDC5 50%, #E2DCBB 100%);
   background-attachment: fixed; /* 固定背景，滚动不重复 */
 }
+
 /* 合并页眉 */
 .yuse-page-header {
   display: none !important;
 }
+
 /* 原生页眉样式优化 */
 .app-header, #app-header, header {
   display: flex !important;
@@ -35,6 +38,7 @@
   border-bottom: 1px solid var(--border-color) !important;
   z-index: 999 !important;
 }
+
 /* 刷新按钮样式调整 */
 .refresh-btn {
   background: var(--accent-color);
@@ -52,6 +56,7 @@
 .refresh-btn:hover {
   background: #b87a8b; /* 主色加深色，匹配新主色 */
 }
+
 /* 内容区域调整：顶部避开原生页眉，底部避开导航栏 */
 .yuse-content-area {
   padding: 16px 16px 60px !important; /* 顶部16px避开原生页眉 */
@@ -60,6 +65,7 @@
   box-sizing: border-box;
   -webkit-overflow-scrolling: touch;
 }
+
 /* 仅欲色剧场生效：页眉按钮样式隔离 */
 .yuse-theater-active .app-header,
 .yuse-theater-active #app-header,
@@ -68,6 +74,7 @@
   justify-content: space-between !important;
   align-items: center !important;
 }
+
 /* 仅欲色剧场的刷新按钮显示，其他APP隐藏 */
 .yuse-theater-refresh-btn {
   display: none !important; /* 默认隐藏 */
@@ -84,6 +91,7 @@
 .yuse-theater-active .yuse-theater-refresh-btn:hover {
   background: #b87a8b !important;
 }
+
 /* 主色相关样式 */
 /* 标题颜色 */
 .yuse-nav-btn.active,
@@ -108,16 +116,19 @@
 .accept-btn:hover {
   color: var(--accent-color) !important;
 }
+
 /* 弹窗弹出动画（原版popIn） */
 @keyframes popIn {
   from { opacity: 0; transform: scale(0.9); }
   to { opacity: 1; transform: scale(1); }
 }
+
 /* 列表项淡入动画（原版fadeIn） */
 @keyframes fadeIn {
   from { opacity: 0; transform: translateY(10px); }
   to { opacity: 1; transform: translateY(0); }
 }
+
 /* 导航栏样式 */
 .yuse-nav-bar {
   position: absolute !important;
@@ -155,6 +166,7 @@
 .yuse-nav-btn .icon {
   font-size: 20px;
 }
+
 /* 列表容器通用样式 */
 .yuse-announcement-list,
 .yuse-customization-list,
@@ -164,6 +176,7 @@
   flex-direction: column;
   gap: 10px;
 }
+
 /* 列表项样式 */
 .list-item {
   background: #fff;
@@ -203,6 +216,7 @@
   font-weight: 500;
   font-size: 11px;
 }
+
 /* 操作按钮样式 */
 .item-actions {
   margin-top: 12px;
@@ -231,6 +245,7 @@
 .reject-btn:hover {
   background-color: #f0f0f0;
 }
+
 /* 剧场筛选栏 */
 .theater-filters {
   display: flex;
@@ -247,7 +262,8 @@
   cursor: pointer;
   transition: all 0.2s ease;
 }
-/* 弹窗样式：核心对齐区域 */
+
+/* 弹窗样式：彻底对齐“通告拍摄” */
 .yuse-modal {
   position: fixed;
   top: 0;
@@ -271,11 +287,11 @@
   animation: popIn 0.3s ease-out;
   box-shadow: 0 6px 25px rgba(0, 0, 0, 0.25); /* 加深阴影，增强层次感 */
   overflow: hidden; /* 避免内部元素溢出圆角 */
-  margin-top: -8vh; /* 大幅上移弹窗，解决移动端靠下问题 */
 }
-/* 弹窗头部对齐：完全匹配“通告拍摄” */
+
+/* 弹窗头部：完全复用“通告拍摄”样式 */
 .modal-header {
-  padding: 16px 20px !important; /* 增加内边距，让背景完全包裹标题 */
+  padding: 18px 24px !important; /* 加宽内边距，确保两行标题背景覆盖 */
   border-bottom: 1px solid var(--border-color) !important;
   display: flex !important;
   justify-content: space-between !important;
@@ -283,45 +299,60 @@
   font-size: 1.1em !important; /* 标题字体大小与“通告拍摄”对齐 */
   font-weight: bold !important;
   color: var(--accent-color) !important;
-  background-color: var(--light-pink-deep); /* 头部背景色与“通告拍摄”一致 */
+  background-color: var(--light-pink-deep) !important; /* 头部背景色完全一致 */
   white-space: normal !important; /* 允许长标题自动换行 */
-  line-height: 1.5 !important; /* 换行后行高更舒适 */
-  flex-wrap: wrap; /* 强制背景色包裹所有行 */
-  width: 100%; /* 确保背景色全屏宽度 */
-  position: relative; /* 为关闭按钮绝对定位做准备 */
+  line-height: 1.4 !important; /* 换行后行高更舒适 */
+  flex-wrap: wrap !important; /* 强制背景色包裹所有行 */
+  width: 100% !important; /* 确保背景色全屏宽度 */
+  border-radius: 18px 18px 0 0 !important; /* 顶部圆角，视觉统一 */
+  min-height: 64px !important; /* 固定最小高度，确保两行文字空间 */
+  gap: 8px !important; /* 行间距优化 */
 }
+
+/* 关闭按钮：绝对定位，彻底解决“被挤走”问题 */
 .close-btn {
-  background: none;
-  border: none;
-  font-size: 22px; /* 关闭按钮大小与“通告拍摄”对齐 */
-  color: var(--text-light);
-  cursor: pointer;
-  transition: color 0.2s ease;
-  width: 32px;
-  height: 32px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  position: absolute; /* 绝对定位，避免被内容挤走 */
-  top: 16px;
-  right: 20px;
+  position: absolute !important;
+  top: 18px !important;
+  right: 18px !important;
+  width: 36px !important;
+  height: 36px !important;
+  font-size: 24px !important;
+  color: var(--text-light) !important;
+  cursor: pointer !important;
+  transition: color 0.2s ease !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  z-index: 10 !important; /* 确保层级最高，点击优先 */
 }
 .close-btn:hover {
-  color: var(--accent-color);
-  background-color: rgba(211,140,157,0.1); /* hover 添加强调色背景，增强交互感 */
-  border-radius: 50%;
+  color: var(--accent-color) !important;
+  background-color: rgba(211,140,157,0.1) !important;
+  border-radius: 50% !important;
 }
-/* 弹窗内容区：详情文字与“通告拍摄”完全对齐 */
+
+/* 弹窗内容区：详情文字放大+视觉对齐 */
 .modal-body {
   flex: 1;
   overflow-y: auto;
   padding: 16px 20px !important; /* 内边距与“通告拍摄”对齐 */
-  line-height: 1.7; /* 增大行高，提升可读性 */
-  color: var(--text-dark); /* 加深文本色，告别“白茫茫” */
-  font-size: 1.05em !important; /* 详情描述文字明确放大，解决太小问题 */
-  background: var(--modal-bg-texture); /* 添加淡渐变纹理，增强视觉层次 */
+  line-height: 1.7 !important; /* 增大行高，提升可读性 */
+  color: var(--text-dark) !important; /* 加深文本色，告别“白茫茫” */
+  font-size: 1.1em !important; /* 详情描述文字明确放大，解决太小问题 */
+  background: var(--modal-bg-texture) !important; /* 添加淡渐变纹理，增强视觉层次 */
 }
-/* 弹窗底部对齐：按钮操作舒适 */
+/* 精准定位详情描述文字，确保放大生效 */
+.modal-body p,
+.detail-section > p {
+  font-size: 1.1em !important;
+  line-height: 1.7 !important;
+  color: var(--text-dark) !important;
+  border-left: 4px solid var(--accent-color) !important; /* 左侧色条，与通告拍摄内容区对齐 */
+  padding-left: 12px !important; /* 配合色条增加内边距 */
+  margin: 0 !important; /* 清除默认margin */
+}
+
+/* 弹窗底部：按钮操作舒适 */
 .modal-footer {
   padding: 14px 20px; /* 内边距与“通告拍摄”对齐 */
   border-top: 1px solid var(--border-color);
@@ -330,30 +361,32 @@
   gap: 10px;
   background-color: var(--light-pink-deep); /* 底部背景色与头部呼应 */
 }
+
 /* 详情页组件：标题样式与“通告拍摄”对齐 */
 .detail-section {
-  margin-bottom: 16px; /* 间距与“通告拍摄”对齐 */
-  padding-bottom: 6px; /* 增加底部内边距，增强区域感 */
+  margin-bottom: 20px !important; /* 间距与“通告拍摄”对齐 */
+  padding-bottom: 12px !important; /* 增加底部内边距，增强区域感 */
   border-bottom: 1px dashed rgba(211,140,157,0.15); /* 添加虚线分隔，增强层次 */
 }
 .detail-section:last-child {
-  border-bottom: none; /* 最后一个区域去掉分隔线 */
-  margin-bottom: 10px; /* 最后一个区域减少底部间距 */
+  border-bottom: none !important; /* 最后一个区域去掉分隔线 */
+  margin-bottom: 10px !important; /* 最后一个区域减少底部间距 */
 }
 .detail-section h4 {
-  margin: 0 0 8px 0; /* 间距与“通告拍摄”对齐 */
-  font-size: 1.0em !important; /* 详情标题保持合理大小 */
-  color: var(--text-dark-deep); /* 加深标题色，提升对比 */
-  font-weight: 600;
-  display: flex;
-  align-items: center;
+  margin: 0 0 10px 0 !important; /* 间距与“通告拍摄”对齐 */
+  font-size: 1.1em !important; /* 详情标题保持合理大小 */
+  color: var(--accent-color) !important; /* 标题改用主色，更醒目 */
+  font-weight: 600 !important;
+  display: flex !important;
+  align-items: center !important;
 }
 .detail-section h4::before {
-  content: "•"; /* 添加小原点前缀，增强标题识别度 */
-  color: var(--accent-color);
-  margin-right: 6px;
-  font-size: 1.2em;
+  content: "•" !important; /* 添加小原点前缀，增强标题识别度 */
+  color: var(--accent-color) !important;
+  margin-right: 6px !important;
+  font-size: 1.2em !important;
 }
+
 /* 封面图优化：增强视觉冲击 */
 .cover-image {
   width: 100%;
@@ -365,6 +398,7 @@
   margin-bottom: 12px;
   box-shadow: 0 3px 8px rgba(0,0,0,0.12); /* 给封面图加阴影，增强立体感 */
 }
+
 /* 评论区优化：与“通告拍摄”样式完全对齐 */
 .comment {
   background: #fff; /* 纯白背景，突出评论内容 */
@@ -380,6 +414,7 @@
   margin-right: 6px;
   color: var(--accent-color) !important;
 }
+
 /* 空状态与加载状态 */
 .empty-state {
   text-align: center;
@@ -393,6 +428,7 @@
   color: var(--text-light);
   font-size: 14px;
 }
+
 /* 提示框 */
 .yuse-toast {
   position: fixed;
@@ -412,7 +448,8 @@
   opacity: 1;
   transform: translateX(-50%) translateY(0);
 }
-/* 响应式适配：移动端最终对齐 */
+
+/* 响应式适配：移动端最终对齐（与“通告拍摄”完全一致） */
 @media (max-width: 375px) {
   .app-header, #app-header, header {
     padding: 10px 12px !important;
@@ -423,38 +460,52 @@
   .list-item {
     padding: 10px 12px;
   }
-  /* 移动端弹窗大幅上移+按钮操作优化 */
+  
+  /* 移动端弹窗：强制顶部对齐+大留白 */
   .yuse-modal {
-    align-items: center; /* 移动端居中逻辑 */
-    padding-top: 0;
+    align-items: flex-start !important; /* 顶部对齐，彻底解决靠下问题 */
+    padding-top: 12vh !important; /* 顶部预留12%高度，操作更舒适 */
   }
   .modal-content {
     width: 95%;
-    max-height: 82%; /* 适配移动端屏幕，确保按钮可操作 */
-    margin-top: -12vh; /* 移动端进一步上移，解决靠下问题 */
+    max-height: 85vh !important; /* 最大化可用高度，适配移动端屏幕 */
+    margin-top: 0 !important; /* 取消多余margin */
+    border-radius: 24px !important; /* 增大圆角，更适配移动端视觉 */
   }
+  
+  /* 移动端弹窗头部：内边距适配 */
   .modal-header {
+    padding: 14px 16px !important;
     font-size: 1.05em !important;
-    padding: 14px 16px !important;
+    min-height: 56px !important;
   }
+  
+  /* 移动端关闭按钮：尺寸适配 */
   .close-btn {
-    top: 14px;
-    right: 16px;
-    font-size: 20px;
-    width: 28px;
-    height: 28px;
+    top: 14px !important;
+    right: 16px !important;
+    width: 28px !important;
+    height: 28px !important;
+    font-size: 20px !important;
   }
-  .modal-body {
+  
+  /* 移动端内容区：文字大小适配 */
+  .modal-body,
+  .modal-body p,
+  .detail-section > p {
     padding: 14px 16px !important;
-    font-size: 1.0em !important; /* 移动端描述文字大小 */
-    line-height: 1.6;
+    font-size: 1.0em !important;
+    line-height: 1.6 !important;
   }
+  
   .comment {
     font-size: 0.9em !important; /* 移动端评论字体大小 */
   }
+  
   .detail-section h4 {
     font-size: 0.98em !important;
   }
+  
   .cover-image {
     height: 140px;
   }
