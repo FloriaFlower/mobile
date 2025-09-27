@@ -2124,26 +2124,6 @@
 }
 
 /* 5. "直播"图标 */
-.app-icon[data-app='live'] .app-icon-bg::before,
-.app-icon[data-app='live'] .app-icon-bg::after {
-  content: '♪' !important;
-  position: absolute !important;
-  font-weight: bold;
-  line-height: 1;
-  color: rgba(0, 0, 0, 0.5);
-  text-shadow: 0 1px 1px rgba(255, 255, 255, 0.05);
-}
-
-.app-icon[data-app='live'] .app-icon-bg::before {
-  font-size: 32px;
-  transform: translate(-6px, 6px) rotate(-15deg);
-  opacity: 0.8;
-}
-
-.app-icon[data-app='live'] .app-icon-bg::after {
-  font-size: 40px;
-  transform: translate(6px, -4px) rotate(10deg);
-}
 
 /* 6. "背包"图标 */
 .app-icon[data-app='backpack'] .app-icon-bg::before,
@@ -2220,38 +2200,20 @@
   content:''
 }
 
-/* 9. "API"图标 */
-.app-icon[data-app='api'] .app-icon-bg::before {
-  content: '\f1e6';
-  font-family: 'Font Awesome 5 Free';
-  font-weight: 900;
-  position: absolute;
-  font-size: 28px;
-  color: rgba(0, 0, 0, 0.3);
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
-  transition: all 0.2s ease;
-  content:''
+/* 9. "小红书"图标 */
+
+/* 10. "欲色"图标 */
+.app-icon-bg.yuse-gold {
+  background-color: #D4AF37; 
+  color: #FFF8E1; 
+  box-shadow: 0 2px 4px rgba(0,0,0,0.15); 
+  border: 1px solid rgba(255,248,225,0.5); 
 }
-
-
-/* 10. "欲色剧场"图标 */
-.app-icon[data-app='yuse-theater'] .app-icon-bg::before {
-  content: '\f008'; /* film icon */
-  font-family: 'Font Awesome 5 Free';
-  font-weight: 900;
-  position: absolute;
-  font-size: 28px;
-  color: rgba(214, 51, 132, 0.7); /* d63384 with opacity */
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
-  transition: all 0.2s ease;
+.app-icon[data-app="yuse-main"]:hover .app-icon-bg.yuse-gold {
+  transform: scale(1.05); 
+  box-shadow: 0 4px 8px rgba(212, 175, 55, 0.3); 
+  transition: all 0.3s ease;
 }
-
 
 .config-section {
   padding: 10px !important;
