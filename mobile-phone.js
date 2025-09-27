@@ -249,7 +249,7 @@ class MobilePhone {
                                             <div class="app-icon-bg orange" style="font-size: 22px;color:rgba(0,0,0,0.4)">微</div>
                                             <span class="app-label">微博</span>
                                         </div>
-                                        <div class="app-icon" data-app="yuse-main">
+                                        <div class="app-icon" data-app="yuse">
                                             <div class="app-icon-bg yuse-gold">🍷</div>
                                             <span class="app-label">欲色</span>
                                         </div>                                     
@@ -1394,7 +1394,7 @@ class MobilePhone {
         isCustomApp: true,
         customHandler: this.handleLiveApp.bind(this),
       },
-      'yuse-main': {
+      'yuse': {
         name: "欲色",
         content: null,
         isCustomApp: true,
@@ -2460,7 +2460,7 @@ class MobilePhone {
       // 5. 加载失败时显示默认内容（兜底）
       console.error('[欲色APP] 加载失败:', error);
       appContentEl.innerHTML = `
-        <div class="yuse-main-app" style="height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 20px; padding: 20px;">
+        <div class="yuse-app" style="height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 20px; padding: 20px;">
            <div style="font-size: 48px; color: #D4AF37;">🍷</div>
            <div style="font-size: 18px; font-weight: 600; color: #2d3748;">欲色APP</div>
            <div style="font-size: 14px; color: #718096; text-align: center;">🥂主界面加载中<br></div>
@@ -6396,12 +6396,12 @@ class MobilePhone {
       // 1. 加载欲色主APP的CSS（可选，若有单独样式文件）
       const cssLink = document.createElement('link');
       cssLink.rel = 'stylesheet';
-      cssLink.href = '/scripts/extensions/third-party/mobile/styles/yuse-main.css'; 
+      cssLink.href = '/scripts/extensions/third-party/mobile/styles/yuse-app.css'; 
       cssLink.onload = () => {
-        console.log('[Mobile Phone] yuse-main.css 加载完成');
+        console.log('[Mobile Phone] yuse-app.css 加载完成');
         checkComplete();
       };
-      cssLink.onerror = () => handleError('yuse-main.css');
+      cssLink.onerror = () => handleError('yuse-app.css');
       document.head.appendChild(cssLink);
       // 2. 加载欲色主APP的JS
       const appScript = document.createElement('script');
