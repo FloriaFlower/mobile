@@ -2422,46 +2422,53 @@ class MobilePhone {
     }
   }
   // 处理欲色APP
-  handleYuseMainApp() {
+  async handleYuseMainApp() {
+    const appContentEl = document.getElementById('app-content');
+    if (!appContentEl) return;
+    // 1. 显示加载状态（洛可可风加载动画，与欲色风格统一）
+    appContentEl.innerHTML = `
+      <div class="yuse-loading" style="height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 15px;">
+        <div style="width: 40px; height: 40px; border: 3px solid #D4AF37; border-top-color: transparent; border-radius: 50%; animation: spin 1s linear infinite;"></div>
+        <div style="font-size: 16px; color: #2d3748;">加载欲色主界面...</div>
+      </div>
+      <style>
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+      </style>
+    `;
+
     try {
-      // 检查全局函数是否存在，不存在则用默认内容
+      // 2. 先加载欲色主APP脚本（关键：确保全局函数定义）
+      await this.loadYuseMainApp();
+
+      // 3. 调用全局函数获取真正的欲色主界面内容
       let appContent;
       if (window.getYuseMainAppContent && typeof window.getYuseMainAppContent === 'function') {
         appContent = window.getYuseMainAppContent();
+        // 检查内容是否有效（避免空内容）
+        if (!appContent || appContent.trim() === '') {
+          throw new Error('获取的欲色主界面内容为空');
+        }
       } else {
-        // 兜底默认内容（避免空白）
-        appContent = `
-          <div class="yuse-main-app" style="height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 20px; padding: 20px;">
-            <div style="font-size: 48px; color: #D4AF37;">🍷</div>
-            <div style="font-size: 18px; font-weight: 600; color: #2d3748;">欲色APP</div>
-            <div style="font-size: 14px; color: #718096; text-align: center;">🥂主界面加载中<br>（可自定义替换内容）</div>
-          </div>
-        `;
-        console.warn('[欲色APP] 全局函数 getYuseMainAppContent 未定义，使用默认内容');
+        throw new Error('全局函数 getYuseMainAppContent 未定义（加载脚本失败）');
       }
-      // 渲染APP内容
-      const appContentEl = document.getElementById('app-content');
-      if (appContentEl) {
-        appContentEl.innerHTML = appContent;
-      } else {
-        throw new Error('APP内容容器 #app-content 未找到');
-      }
+
+      // 4. 渲染真正的欲色主界面
+      appContentEl.innerHTML = appContent;
+      console.log('[欲色APP] 主界面加载完成');
+
     } catch (error) {
+      // 5. 加载失败时显示默认内容（兜底）
       console.error('[欲色APP] 加载失败:', error);
-      // 错误状态显示
-      const appContentEl = document.getElementById('app-content');
-      if (appContentEl) {
-        appContentEl.innerHTML = `
-          <div style="height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; color: #ff4757; gap: 15px; padding: 20px;">
-            <div style="font-size: 24px;">❌</div>
-            <div style="font-size: 16px; font-weight: 600;">加载失败</div>
-            <div style="font-size: 12px; text-align: center;">${error.message}</div>
-            <button onclick="window.mobilePhone.handleYuseMainApp()" style="margin-top: 10px; padding: 6px 12px; border: none; border-radius: 6px; background: #D4AF37; color: white; cursor: pointer;">重试</button>
-          </div>
-        `;
-      }
+      appContentEl.innerHTML = `
+        <div class="yuse-main-app" style="height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 20px; padding: 20px;">
+           <div style="font-size: 48px; color: #D4AF37;">🍷</div>
+           <div style="font-size: 18px; font-weight: 600; color: #2d3748;">欲色APP</div>
+           <div style="font-size: 14px; color: #718096; text-align: center;">🥂主界面加载中<br></div>
+        </div>
+      `;
     }
   }
+
   // 处理欲色剧场应用
   async handleYuseTheaterApp() {
     try {
@@ -6347,6 +6354,68 @@ class MobilePhone {
 
     return window._watchLiveAppLoading;
   }
+  // 加载欲色主APP
+  async loadYuseMainApp() {
+    console.log('[Mobile Phone] 开始加载欲色主APP模块...');
+    // 检查是否已加载（确保全局函数和实例存在）
+    if (window.getYuseMainAppContent && window.yuseMainApp) {
+      console.log('[Mobile Phone] 欲色主APP模块已存在，跳过加载');
+      return Promise.resolve();
+    }
+    // 检查是否正在加载
+    if (window._yuseMainAppLoading) {
+      console.log('[Mobile Phone] 欲色主APP正在加载中，等待完成');
+      return window._yuseMainAppLoading;
+    }
+    // 标记正在加载
+    window._yuseMainAppLoading = new Promise((resolve, reject) => {
+      let loadedCount = 0;
+      const totalFiles = 2; 
+      const checkComplete = () => {
+        loadedCount++;
+        if (loadedCount === totalFiles) {
+          // 等待脚本初始化全局函数和实例
+          setTimeout(() => {
+            if (window.getYuseMainAppContent && window.yuseMainApp) {
+              console.log('[Mobile Phone] ✅ 欲色主APP模块加载并初始化完成');
+              window._yuseMainAppLoading = null;
+              resolve();
+            } else {
+              console.error('[Mobile Phone] ❌ 欲色主APP加载完成但全局函数未定义');
+              window._yuseMainAppLoading = null;
+              reject(new Error('未找到 getYuseMainAppContent 全局函数'));
+            }
+          }, 500); // 等待0.5秒确保脚本执行完成
+        }
+      };
+      const handleError = (name) => {
+        console.error(`[Mobile Phone] ${name} 加载失败`);
+        window._yuseMainAppLoading = null;
+        reject(new Error(`${name} 加载失败`));
+      };
+      // 1. 加载欲色主APP的CSS（可选，若有单独样式文件）
+      const cssLink = document.createElement('link');
+      cssLink.rel = 'stylesheet';
+      cssLink.href = '/scripts/extensions/third-party/mobile/styles/yuse-main.css'; 
+      cssLink.onload = () => {
+        console.log('[Mobile Phone] yuse-main.css 加载完成');
+        checkComplete();
+      };
+      cssLink.onerror = () => handleError('yuse-main.css');
+      document.head.appendChild(cssLink);
+      // 2. 加载欲色主APP的JS
+      const appScript = document.createElement('script');
+      appScript.src = '/scripts/extensions/third-party/mobile/app/yuse-app.js'; 
+      appScript.onload = () => {
+        console.log('[Mobile Phone] yuse-app.js 加载完成');
+        checkComplete();
+      };
+      appScript.onerror = () => handleError('yuse-app.js');
+      document.head.appendChild(appScript);
+    });
+    return window._yuseMainAppLoading;
+  }
+
   // 加载欲色剧场应用
   async loadYuseTheaterApp() {
     console.log('[Mobile Phone] 开始加载欲色剧场应用模块...');
