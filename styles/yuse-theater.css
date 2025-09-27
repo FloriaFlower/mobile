@@ -466,11 +466,12 @@
     align-items: flex-start !important; /* 顶部对齐，彻底解决靠下问题 */
     padding-top: 12vh !important; /* 顶部预留12%高度，操作更舒适 */
   }
+  
   .modal-content {
     width: 95%;
-    max-height: 85vh !important; /* 最大化可用高度，适配移动端屏幕 */
-    margin-top: -10 !important; /* 取消多余margin */
-    border-radius: 24px !important; /* 增大圆角，更适配移动端视觉 */
+    max-height: 82%; 
+    margin-top: -10vh; 
+    border-radius: 24px; 
   }
   
   /* 移动端弹窗头部：内边距适配 */
