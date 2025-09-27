@@ -2449,17 +2449,6 @@ class MobilePhone {
         throw new Error('获取的欲色界面内容为空');
       }
       appContentEl.innerHTML = appContent;
-      setTimeout(() => {
-        const yuseContainer = document.querySelector('.yuse-container');
-        if (yuseContainer) {
-          yuseContainer.addEventListener('click', (e) => {
-            e.stopPropagation(); // 阻止事件冒泡到app-screen或其他父元素
-            console.log('[Mobile Phone] 欲色容器点击事件已阻止冒泡，确保卡片点击有效');
-          });
-        } else {
-          console.warn('[Mobile Phone] 未找到欲色容器，无法阻止事件冒泡');
-        }
-      }, 200);
       console.log('[欲色APP] 主界面加载完成');
     } catch (error) {
       console.error('[欲色APP] 加载失败:', error);
@@ -6420,16 +6409,17 @@ class MobilePhone {
     return window._YuseAppLoading;
   }
 
+  // 加载欲色剧场应用
   async loadYuseTheaterApp() {
-    console.log('[Mobile Phone] 【剧场加载】开始加载欲色剧场应用模块...');
-  // 检查是否已加载
+    console.log('[Mobile Phone] 开始加载欲色剧场应用模块...');
+    // 检查是否已加载
     if (window.getYuseTheaterAppContent && window.bindYuseTheaterEvents && window.yuseTheaterApp) {
-      console.log('[Mobile Phone] 【剧场加载】欲色剧场模块已存在，跳过加载');
+      console.log('[Mobile Phone] 欲色剧场模块已存在，跳过加载');
       return Promise.resolve();
     }
     // 检查是否正在加载
     if (window._yuseTheaterAppLoading) {
-      console.log('[Mobile Phone] 【剧场加载】欲色剧场正在加载中，等待完成');
+      console.log('[Mobile Phone] 欲色剧场正在加载中，等待完成');
       return window._yuseTheaterAppLoading;
     }
     // 标记正在加载
@@ -6438,17 +6428,16 @@ class MobilePhone {
       const totalFiles = 2;
       const checkComplete = () => {
         loadedCount++;
-        console.log(`[Mobile Phone] 【剧场加载】已加载 ${loadedCount}/${totalFiles} 个文件`);
         if (loadedCount === totalFiles) {
           setTimeout(() => {
-            console.log('[YuseTheater Debug] 【剧场加载】全局函数状态:', {
-              getYuseTheaterAppContent: typeof window.getYuseTheaterAppContent, 
-              bindYuseTheaterEvents: typeof window.bindYuseTheaterEvents,
-              yuseTheaterApp: typeof window.yuseTheaterApp, 
-              yuseTheaterApp_hasRefresh: window.yuseTheaterApp ? typeof window.yuseTheaterApp.sendRefreshRequest : 'undefined'
+            console.log('[YuseTheater Debug] 全局函数状态:', {
+            getYuseTheaterAppContent: typeof window.getYuseTheaterAppContent, 
+            bindYuseTheaterEvents: typeof window.bindYuseTheaterEvents,
+            yuseTheaterApp: typeof window.yuseTheaterApp, 
+            yuseTheaterApp_hasRefresh: window.yuseTheaterApp ? typeof window.yuseTheaterApp.sendRefreshRequest : 'undefined'
             });
             if (window.getYuseTheaterAppContent && window.bindYuseTheaterEvents && window.yuseTheaterApp && typeof window.yuseTheaterApp.sendRefreshRequest === 'function') {
-              console.log('[Mobile Phone] 【剧场加载】✅ 欲色剧场模块加载完成（含全局对象）');
+              console.log('[Mobile Phone] ✅ 欲色剧场模块加载并初始化完成（含全局对象）');
               window._yuseTheaterAppLoading = null;
               resolve();         
             } else {
@@ -6461,27 +6450,26 @@ class MobilePhone {
         }
       };
       const handleError = (name) => {
-        console.error(`[Mobile Phone] 【剧场加载】${name} 加载失败，路径：${name === 'yuse-theater.css' ? '/scripts/extensions/third-party/mobile/styles/yuse-theater.css' : '/scripts/extensions/third-party/mobile/app/yuse-theater-app.js'}`);
+        console.error(`[Mobile Phone] ${name} 加载失败`);
         window._yuseTheaterAppLoading = null;
-        reject(new Error(`${name} 加载失败（请检查路径是否正确）`));
+        reject(new Error(`${name} 加载失败`));
       };
-      // 1. 加载 CSS 文件（打印路径）
+      // 1. 加载 CSS 文件
       const cssLink = document.createElement('link');
       cssLink.rel = 'stylesheet';
       cssLink.href = '/scripts/extensions/third-party/mobile/styles/yuse-theater.css';
-      console.log('[Mobile Phone] 【剧场加载】开始加载 CSS：', cssLink.href);
       cssLink.onload = () => {
-        console.log('[Mobile Phone] 【剧场加载】yuse-theater.css 加载完成');
+        console.log('[Mobile Phone] yuse-theater.css 加载完成');
         checkComplete();
       };
       cssLink.onerror = () => handleError('yuse-theater.css');
       document.head.appendChild(cssLink);
-      // 2. 加载应用逻辑文件（打印路径）
+
+      // 2. 加载应用逻辑文件（yuse-theater-app.js）
       const appScript = document.createElement('script');
       appScript.src = '/scripts/extensions/third-party/mobile/app/yuse-theater-app.js';
-      console.log('[Mobile Phone] 【剧场加载】开始加载 JS：', appScript.src);
       appScript.onload = () => {
-        console.log('[Mobile Phone] 【剧场加载】yuse-theater-app.js 加载完成');
+        console.log('[Mobile Phone] yuse-theater-app.js 加载完成');
         checkComplete();
       };
       appScript.onerror = () => handleError('yuse-theater-app.js');
@@ -6489,7 +6477,6 @@ class MobilePhone {
     });
     return window._yuseTheaterAppLoading;
   }
-
   // 加载平行事件应用
   async loadParallelEventsApp() {
     console.log('[Mobile Phone] 开始加载平行事件应用模块...');
