@@ -8,10 +8,10 @@ class MobilePhone {
     this.isVisible = false;
     this.currentApp = null;
     this.apps = {};
-    this.appStack = []; // 添加应用栈来管理页面导航
-    this.currentAppState = null; // 当前应用状态
-    this.dragHelper = null; // 拖拽辅助器（按钮）
-    this.frameDragHelper = null; // 框架拖拽辅助器
+    this.appStack = []; 
+    this.currentAppState = null; 
+    this.dragHelper = null; 
+    this.frameDragHelper = null; 
 
     // 防抖相关标记
     this._openingApp = null;
@@ -21,16 +21,16 @@ class MobilePhone {
     this._lastBackButtonClick = 0;
 
     // 应用加载状态管理
-    this._loadingApps = new Set(); // 正在加载的应用
-    this._userNavigationIntent = null; // 用户导航意图
-    this._loadingStartTime = {}; // 应用加载开始时间
+    this._loadingApps = new Set(); 
+    this._userNavigationIntent = null; 
+    this._loadingStartTime = {}; 
 
     this.init();
   }
 
   init() {
     this.loadDragHelper();
-    this.clearPositionCache(); // 清理位置缓存
+    this.clearPositionCache(); 
     this.createPhoneButton();
     this.createPhoneContainer();
     this.registerApps();
@@ -39,7 +39,7 @@ class MobilePhone {
     // 初始化文字颜色设置
     setTimeout(() => {
       this.initTextColor();
-    }, 1000); // 延迟初始化，确保页面加载完成
+    }, 1000); 
   }
 
   // 加载拖拽辅助插件
@@ -112,9 +112,9 @@ class MobilePhone {
         // 创建新的拖拽实例
         this.dragHelper = new DragHelper(button, {
           boundary: document.body,
-          clickThreshold: 8, // 稍微增加点击阈值确保点击功能正常
+          clickThreshold: 8, 
           dragClass: 'mobile-phone-trigger-dragging',
-          savePosition: false, // 不保存位置
+          savePosition: false, 
           storageKey: 'mobile-phone-trigger-position',
         });
 
@@ -156,12 +156,12 @@ class MobilePhone {
           // 创建新的拖拽实例
           this.frameDragHelper = new DragHelper(phoneFrame, {
             boundary: document.body,
-            clickThreshold: 10, // 增加阈值避免误触
+            clickThreshold: 10, 
             dragClass: 'mobile-phone-frame-dragging',
-            savePosition: false, // 不保存位置
+            savePosition: false, 
             storageKey: 'mobile-phone-frame-position',
-            touchTimeout: 300, // 增加触摸超时时间
-            dragHandle: '.mobile-status-bar', // 指定拖拽手柄为状态栏
+            touchTimeout: 300, 
+            dragHandle: '.mobile-status-bar', 
           });
 
           console.log('[Mobile Phone] 框架拖拽功能初始化成功');
@@ -228,45 +228,45 @@ class MobilePhone {
 
                                 <!-- 应用图标网格 -->
                                 <div class="app-grid">
-                                    <!-- 第一行：信息，购物，任务 -->
+                                    <!-- 第一行：通告，背包，信息 -->
                                     <div class="app-row">
+                                        <div class="app-icon" data-app="task">
+                                            <div class="app-icon-bg purple">📰</div>
+                                            <span class="app-label">通告</span>
+                                        </div> 
+                                        <div class="app-icon" data-app="backpack">
+                                            <div class="app-icon-bg orange">🎒</div>
+                                            <span class="app-label">背包</span>
+                                        </div>                                                                                                                   
                                         <div class="app-icon" data-app="messages">
                                             <div class="app-icon-bg pink">💬</div>
                                             <span class="app-label">信息</span>
                                         </div>
-                                        <div class="app-icon" data-app="shop">
-                                            <div class="app-icon-bg purple">购</div>
-                                            <span class="app-label">购物</span>
-                                        </div>
-                                        <div class="app-icon" data-app="task">
-                                            <div class="app-icon-bg purple">📰</div>
-                                            <span class="app-label">任务</span>
-                                        </div>
                                     </div>
-                                    <!-- 第二行：论坛，微博，直播 -->
+                                    <!-- 第二行：微博，欲色，小红书 -->
                                     <div class="app-row">
-                                        <div class="app-icon" data-app="forum">
-                                            <div class="app-icon-bg red">📰</div>
-                                            <span class="app-label">论坛</span>
-                                        </div>
                                         <div class="app-icon" data-app="weibo">
                                             <div class="app-icon-bg orange" style="font-size: 22px;color:rgba(0,0,0,0.4)">微</div>
                                             <span class="app-label">微博</span>
                                         </div>
-                                        <div class="app-icon" data-app="live">
-                                            <div class="app-icon-bg red">🎬</div>
-                                            <span class="app-label">直播</span>
+                                        <div class="app-icon" data-app="yuse-theater">
+                                            <div class="app-icon-bg pink">🍷</div>
+                                            <span class="app-label">欲色</span>
+                                        </div>                                        
+                                        <div class="app-icon" data-app="redbook">
+                                            <div class="app-icon-bg red">📕</div>
+                                            <span class="app-label">小红书</span>
                                         </div>
                                     </div>
-                                    <!-- 第三行：背包，API，设置 -->
+                                    <!-- 第三行：购物，论坛，设置 -->
                                     <div class="app-row">
-                                        <div class="app-icon" data-app="backpack">
-                                            <div class="app-icon-bg orange">🎒</div>
-                                            <span class="app-label">背包</span>
+                                        <div class="app-icon" data-app="shop">
+                                            <div class="app-icon-bg purple">购</div>
+                                            <span class="app-label">购物</span>
                                         </div>
-                                        <div class="app-icon" data-app="api">
-                                            <div class="app-icon-bg orange" style="font-size: 22px;color:rgba(0,0,0,0.4)">AI</div>
-                                            <span class="app-label">API</span>
+                                        <div class="app-icon" data-app="forum">
+                                            <div class="app-icon-bg red">📰</div>
+                                            <span class="app-label">论坛</span>
                                         </div>
                                         <div class="app-icon" data-app="settings">
                                             <div class="app-icon-bg purple">⚙️</div>
@@ -283,6 +283,10 @@ class MobilePhone {
                                             <div class="app-icon-bg orange">✉️</div>
                                             <span class="app-label">邮件</span>
                                         </div>
+                                        <div class="app-icon" data-app="live">
+                                            <div class="app-icon-bg red">🎬</div>
+                                            <span class="app-label">直播</span>
+                                        </div>                                        
                                     </div>
                                 </div>
                                 <!-- 底部小动物装饰 -->
