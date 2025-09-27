@@ -249,10 +249,10 @@ class MobilePhone {
                                             <div class="app-icon-bg orange" style="font-size: 22px;color:rgba(0,0,0,0.4)">微</div>
                                             <span class="app-label">微博</span>
                                         </div>
-                                        <div class="app-icon" data-app="yuse-theater">
-                                            <div class="app-icon-bg pink">🍷</div>
+                                        <div class="app-icon" data-app="yuse-main">
+                                            <div class="app-icon-bg yuse-gold">🍷</div>
                                             <span class="app-label">欲色</span>
-                                        </div>                                        
+                                        </div>                                     
                                         <div class="app-icon" data-app="redbook">
                                             <div class="app-icon-bg red">📕</div>
                                             <span class="app-label">小红书</span>
@@ -282,10 +282,6 @@ class MobilePhone {
                                         <div class="app-icon" data-app="mail">
                                             <div class="app-icon-bg orange">✉️</div>
                                             <span class="app-label">邮件</span>
-                                        </div>
-                                        <div class="app-icon" data-app="live">
-                                            <div class="app-icon-bg red">🎬</div>
-                                            <span class="app-label">直播</span>
                                         </div>                                        
                                     </div>
                                 </div>
@@ -1398,6 +1394,12 @@ class MobilePhone {
         isCustomApp: true,
         customHandler: this.handleLiveApp.bind(this),
       },
+      "yuse-main": {
+        name: "欲色",
+        content: null,
+        isCustomApp: true,
+        customHandler: this.handleYuseMainApp.bind(this)
+      },
       'yuse-theater': {
         name: '欲色剧场',
         content: null,
@@ -2418,6 +2420,11 @@ class MobilePhone {
                 </div>
             `;
     }
+  }
+  // 处理欲色APP
+  handleYuseMainApp() {
+    const appContent = window.getYuseMainAppContent();
+    document.getElementById('app-content').innerHTML = appContent;
   }
   // 处理欲色剧场应用
   async handleYuseTheaterApp() {
