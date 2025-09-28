@@ -2425,12 +2425,10 @@ class MobilePhone {
   async handleYuseApp() {
     const appContentEl = document.getElementById('app-content');
     if (!appContentEl) return;
-
-    // 清除旧的YuseApp实例
+    // 清除旧的YuseApp实例（避免重复）
     if (window.YuseApp && window.YuseApp.currentActiveModule) {
       window.YuseApp.currentActiveModule = null;
     }
-
     // 显示加载状态
     appContentEl.innerHTML = `
       <div class="yuse-loading" style="height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 15px;">
@@ -2439,17 +2437,24 @@ class MobilePhone {
       </div>
       <style>@keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }</style>
     `;
-
     try {
-      // 加载欲色APP脚本
+      // 核心修改：不再用innerHTML覆盖，而是让YuseApp自己执行init（渲染+绑定事件）
       await this.loadYuseApp();
-      // 调用全局函数获取内容（此时会重新渲染）
-      let appContent = window.getYuseAppContent();
-      if (!appContent || appContent.trim() === '') {
-        throw new Error('获取的欲色界面内容为空');
+      if (window.YuseApp) {
+        // 确保DOM就绪后，让YuseApp自己管理界面
+        if (window.YuseApp.isDomReady) {
+          window.YuseApp.init(); 
+          console.log('[欲色APP] 主界面由YuseApp自主渲染，事件已绑定');
+        } else {
+          // 等待DOM就绪后再触发
+          setTimeout(() => {
+            window.YuseApp.init();
+            console.log('[欲色APP] 延迟触发YuseApp.init，自主渲染界面');
+          }, 300);
+        }
+      } else {
+        throw new Error('YuseApp实例未创建');
       }
-      appContentEl.innerHTML = appContent;
-      console.log('[欲色APP] 主界面加载完成');
     } catch (error) {
       console.error('[欲色APP] 加载失败:', error);
       appContentEl.innerHTML = `
@@ -2461,6 +2466,7 @@ class MobilePhone {
       `;
     }
   }
+
 
   // 处理欲色剧场应用
   async handleYuseTheaterApp() {
