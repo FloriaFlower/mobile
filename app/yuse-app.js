@@ -4,17 +4,34 @@ if (typeof window.YuseApp === 'undefined') {
       this.currentActiveModule = null;
       this.init();
     }
-    // 初始化：渲染+绑定事件（支持重复调用）
+
+    // 初始化：确保DOM和事件都生效（对齐论坛APP的初始化逻辑）
     init() {
       console.log('[欲色APP] 初始化主界面');
-      this.renderMainContent(); // 每次都重新生成DOM，避免依赖旧元素
+      this.renderMainContent();
       this.bindEntryEvents();
       this.addLocoDecoration();
+      // 初始化时检查mobilePhone实例（关键：论坛APP会提前确保实例存在）
+      this.checkMobilePhoneInstance();
     }
-    // 渲染主界面：返回HTML字符串（确保DOM完全重建）
+
+    // 检查window.mobilePhone是否存在（核心修复：避免调用不存在的实例）
+    checkMobilePhoneInstance() {
+      if (!window.mobilePhone) {
+        console.error('[欲色APP] 严重错误：window.mobilePhone实例未找到！');
+        this.showError('手机模拟器核心未加载，请刷新页面重试');
+      } else {
+        console.log('[欲色APP] ✅ 检测到window.mobilePhone实例');
+      }
+    }
+
+    // 渲染主界面：确保DOM结构正确（参考论坛APP的容器挂载）
     renderMainContent() {
       const appContent = document.getElementById('app-content');
-      if (!appContent) return ''; // 防止DOM不存在时报错
+      if (!appContent) {
+        console.error('[欲色APP] app-content容器未找到');
+        return '';
+      }
       const mainHtml = `
         <div class="yuse-container">
           <div class="yuse-top-decoration">
@@ -50,32 +67,39 @@ if (typeof window.YuseApp === 'undefined') {
       appContent.innerHTML = mainHtml;
       return mainHtml;
     }
-    // 绑定入口事件：对齐mobile-phone.js的嵌套APP逻辑（参考论坛→API的跳转）
+
+    // 绑定入口事件（参考论坛APP的事件绑定：先检查实例，再执行逻辑）
     bindEntryEvents() {
       const entryCards = document.querySelectorAll('.yuse-entry-card');
+      if (entryCards.length === 0) {
+        console.error('[欲色APP] 未找到任何卡片元素，事件绑定失败');
+        return;
+      }
+
       entryCards.forEach(card => {
         card.addEventListener('click', async (e) => {
           const module = e.currentTarget.dataset.module;
           this.currentActiveModule = module;
-          // 激活当前卡片样式
+          // 激活卡片样式（有特效说明这步生效）
           entryCards.forEach(c => c.classList.remove('active'));
           e.currentTarget.classList.add('active');
 
-          // 核心修复：1. 确保mobilePhone实例存在 2. 加载脚本后调用对应handle方法（复用已有逻辑）
+          // 1. 优先检查mobilePhone实例（论坛APP会先确保实例存在）
           if (!window.mobilePhone) {
-            this.showError('手机模拟器核心实例未找到，请刷新页面');
+            this.showError('手机核心实例未加载，无法跳转');
             return;
           }
 
           try {
+            console.log(`[欲色APP] 触发模块：${module}，开始执行逻辑`);
             switch (module) {
               case 'theater':
-                // 步骤1：加载剧场脚本（对齐mobile-phone.js的loadYuseTheaterApp路径）
-                console.log('[欲色APP] 触发加载剧场脚本');
+                // 2. 对齐论坛APP的嵌套逻辑：先加载脚本，再调用渲染（关键）
+                console.log('[欲色APP] 调用mobilePhone.loadYuseTheaterApp()');
                 await window.mobilePhone.loadYuseTheaterApp();
-                // 步骤2：调用mobile-phone.js中已有的剧场渲染逻辑（避免重复造轮子）
+                console.log('[欲色APP] 调用mobilePhone.handleYuseTheaterApp()');
                 await window.mobilePhone.handleYuseTheaterApp();
-                // 步骤3：更新APP头部标题（对齐整体风格）
+                // 更新头部标题（参考论坛APP的header同步）
                 window.mobilePhone.updateAppHeader({
                   app: 'yuse-theater',
                   title: '欲色剧场',
@@ -84,12 +108,10 @@ if (typeof window.YuseApp === 'undefined') {
                 break;
 
               case 'live':
-                // 步骤1：加载直播脚本（对齐mobile-phone.js的loadLiveApp路径）
-                console.log('[欲色APP] 触发加载直播脚本');
+                console.log('[欲色APP] 调用mobilePhone.loadLiveApp()');
                 await window.mobilePhone.loadLiveApp();
-                // 步骤2：调用mobile-phone.js中已有的直播渲染逻辑
+                console.log('[欲色APP] 调用mobilePhone.handleLiveApp()');
                 await window.mobilePhone.handleLiveApp();
-                // 步骤3：更新APP头部标题
                 window.mobilePhone.updateAppHeader({
                   app: 'live',
                   title: '直播',
@@ -99,19 +121,96 @@ if (typeof window.YuseApp === 'undefined') {
 
               case 'aoka':
               case 'yucy':
-                this.showUnfinishedTip();
+                // 3. 修复嗷咔/欲次元的提示不显示问题：挂载到手机容器内，避免被遮挡
+                this.showUnfinishedTip(module);
                 break;
+
+              default:
+                this.showError(`未知模块：${module}`);
             }
           } catch (error) {
-            // 错误捕获：明确提示脚本加载失败（便于排查路径问题）
-            this.showError(`${module === 'theater' ? '剧场' : '直播'}加载失败：${error.message}\n请检查脚本路径是否正确`);
-            console.error(`[欲色APP] ${module}加载错误:`, error);
+            // 4. 暴露错误（之前隐藏了错误，导致不知道没加载脚本）
+            console.error(`[欲色APP] 模块${module}加载错误:`, error);
+            this.showError(`${module === 'theater' ? '剧场' : '直播'}加载失败：${error.message}`);
           }
         });
       });
     }
-    // 加载剧场模块（备用：若需直接调用，确保依赖加载完成）
-    async loadTheaterModule() {
+
+    // 修复：嗷咔提示不显示（挂载到手机容器，调整样式确保可见）
+    showUnfinishedTip(module) {
+      const tipText = module === 'aoka' ? '嗷咔模块开发中ദ്ദി(˵ •̀ ᴗ - ˵ ) ✧～' : '欲次元模块开发中ദ്ദി(˵ •̀ ᴗ - ˵ ) ✧～';
+      // 找到手机容器（参考论坛APP的弹窗挂载）
+      const phoneContainer = document.querySelector('.mobile-phone-container') || document.body;
+      // 移除旧提示
+      const oldTip = document.querySelector('.yuse-tip');
+      if (oldTip) oldTip.remove();
+
+      const tip = document.createElement('div');
+      tip.className = 'yuse-tip';
+      // 样式调整：确保在手机界面内居中显示，不被遮挡
+      tip.style.cssText = `
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        background: rgba(0,0,0,0.8);
+        color: white;
+        padding: 16px 24px;
+        border-radius: 12px;
+        z-index: 99999;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        font-size: 16px;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+      `;
+      tip.innerHTML = `
+        <div class="tip-icon">🎀</div>
+        <p>${tipText}</p>
+      `;
+      // 挂载到手机容器内（避免被body的overflow隐藏）
+      phoneContainer.appendChild(tip);
+      // 2秒后移除
+      setTimeout(() => {
+        tip.style.opacity = '0';
+        tip.style.transition = 'opacity 0.3s ease';
+        setTimeout(() => tip.remove(), 300);
+      }, 2000);
+    }
+
+    // 错误提示（参考论坛APP的toast样式）
+    showError(message) {
+      const appContent = document.getElementById('app-content');
+      if (!appContent) return;
+
+      const errorEl = document.createElement('div');
+      errorEl.className = 'yuse-error';
+      errorEl.style.cssText = `
+        position: fixed;
+        top: 20px;
+        left: 50%;
+        transform: translateX(-50%);
+        background: rgba(231,76,60,0.9);
+        color: white;
+        padding: 12px 20px;
+        border-radius: 8px;
+        z-index: 99999;
+        font-size: 14px;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+      `;
+      errorEl.textContent = `❌ ${message}`;
+      appContent.appendChild(errorEl);
+
+      setTimeout(() => {
+        errorEl.style.opacity = '0';
+        errorEl.style.transition = 'opacity 0.3s ease';
+        setTimeout(() => errorEl.remove(), 300);
+      }, 3000);
+    }
+
+    // 以下方法保持不变（装饰、模块加载备用逻辑）
+    loadTheaterModule() {
       const appContent = document.getElementById('app-content');
       appContent.innerHTML = `
         <div class="yuse-loading">
@@ -119,18 +218,16 @@ if (typeof window.YuseApp === 'undefined') {
           <p>加载剧场内容...</p>
         </div>
       `;
-      // 检查全局函数（确保脚本已加载）
       if (!window.getYuseTheaterAppContent || !window.bindYuseTheaterEvents) {
-        throw new Error('yuse-theater-app.js 未加载或全局函数缺失');
+        throw new Error('yuse-theater-app.js 未加载');
       }
       const theaterContent = window.getYuseTheaterAppContent();
       appContent.innerHTML = theaterContent;
       window.bindYuseTheaterEvents();
       this.addModuleDecoration('theater');
-      console.log('[欲色APP] 剧场模块渲染完成');
     }
-    // 加载直播模块（备用：同上）
-    async loadLiveModule() {
+
+    loadLiveModule() {
       const appContent = document.getElementById('app-content');
       appContent.innerHTML = `
         <div class="yuse-loading">
@@ -139,15 +236,14 @@ if (typeof window.YuseApp === 'undefined') {
         </div>
       `;
       if (!window.getLiveAppContent || !window.bindLiveAppEvents) {
-        throw new Error('live-app.js 未加载或全局函数缺失');
+        throw new Error('live-app.js 未加载');
       }
       const liveContent = window.getLiveAppContent();
       appContent.innerHTML = liveContent;
       window.bindLiveAppEvents();
       this.addModuleDecoration('live');
-      console.log('[欲色APP] 直播模块渲染完成');
     }
-    // 模块装饰样式
+
     addModuleDecoration(module) {
       const container = document.querySelector('.yuse-theater-app, .live-app');
       if (container) {
@@ -155,7 +251,7 @@ if (typeof window.YuseApp === 'undefined') {
         container.style.borderColor = module === 'theater' ? '#9370DB' : '#E0F7FA';
       }
     }
-    // 顶部装饰动画
+
     addLocoDecoration() {
       const curves = document.querySelectorAll('.gold-curve');
       curves.forEach((curve, idx) => {
@@ -174,46 +270,17 @@ if (typeof window.YuseApp === 'undefined') {
           hsla(${hue+30}, 70%, 60%, 0.2))`;
       }, 5000);
     }
-    // 未完成模块提示
-    showUnfinishedTip() {
-      const tip = document.createElement('div');
-      tip.className = 'yuse-tip';
-      tip.innerHTML = `
-        <div class="tip-content">
-          <div class="tip-icon">🎀</div>
-          <p>该模块开发中ദ്ദി(˵ •̀ ᴗ - ˵ ) ✧～</p>
-        </div>
-      `;
-      document.body.appendChild(tip);
-      setTimeout(() => tip.remove(), 2000);
-    }
-    // 错误提示（替代原innerHTML直接替换，更友好）
-    showError(message) {
-      const appContent = document.getElementById('app-content');
-      appContent.innerHTML = `
-        <div class="yuse-error">
-          <div class="error-icon">❌</div>
-          <p>${message}</p>
-          <button class="retry-btn" onclick="window.YuseApp.init()">重新加载欲色APP</button>
-        </div>
-      `;
-      // 添加错误样式
-      const style = document.createElement('style');
-      style.textContent = `
-        .yuse-error { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 200px; gap: 16px; padding: 20px; text-align: center; }
-        .error-icon { font-size: 48px; color: #ff4444; }
-        .retry-btn { padding: 8px 16px; border: none; border-radius: 8px; background: #007AFF; color: white; cursor: pointer; }
-      `;
-      document.head.appendChild(style);
-    }
   }
-  // 全局实例化（确保每次调用都能获取到）
+
+  // 全局实例化（参考论坛APP：确保优先创建实例）
   window.YuseApp = new YuseApp();
 }
-// 全局函数：每次调用都重新渲染（对齐mobile-phone.js的自定义APP逻辑）
+
+// 全局函数（参考论坛APP的getXXXContent逻辑：每次调用重新初始化）
 window.getYuseAppContent = () => {
+  console.log('[欲色APP] 全局函数调用：重新初始化界面');
   if (window.YuseApp) {
-    window.YuseApp.init(); // 重新初始化，确保DOM和事件都生效
+    window.YuseApp.init();
     return window.YuseApp.renderMainContent();
   } else {
     window.YuseApp = new YuseApp();
