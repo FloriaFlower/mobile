@@ -221,6 +221,7 @@ if (typeof window.LiveApp === 'undefined') {
       console.log(`[Live App] 初始化消息计数: ${this.lastMessageCount}`);
     }
   }
+
   /**
    * 直播数据解析器
    * 负责解析SillyTavern消息中的直播格式数据
@@ -490,6 +491,7 @@ if (typeof window.LiveApp === 'undefined') {
       }
     }
   }
+
   /**
    * 直播状态管理器
    * 负责管理直播状态和数据存储
@@ -604,8 +606,9 @@ if (typeof window.LiveApp === 'undefined') {
       console.log('[Live App] 已清空所有直播数据');
     }
   }
+
   /**
-   * 直播应用主类
+   * 直播应用主类（核心修复：初始进入不锁屏）
    * 协调各个模块，提供统一的接口
    */
   class LiveApp {
@@ -622,27 +625,34 @@ if (typeof window.LiveApp === 'undefined') {
       this.isTyping = false; // 是否正在打字机效果
       this.pendingAppearDanmakuSigs = new Set(); // 待逐条出现的弹幕签名
       this.pendingAppearGiftSigs = new Set(); // 待逐条出现的礼物签名
-      this.isLocked = false; // 锁屏状态标记（新增）
+      this.isLocked = false; // 锁屏状态标记
+      this.isSpecialLiveActive = false; // 新增：是否为特色直播场景（PK/连麦）
       this.init();
     }
+
     /**
-     * 初始化应用（新增：加载锁屏状态）
+     * 初始化应用（核心修复1：仅特色直播场景才锁屏）
      */
     init() {
       console.log('[Live App] 直播应用初始化开始（奶油风版+锁屏修复）');
-      // 核心修复1：加载localStorage中的锁屏状态
+      // 加载localStorage中的锁屏状态
       this.loadLockState();
-      // 检测是否有活跃的直播数据
+      // 检测活跃直播数据并标记场景类型
       this.detectActiveLive();
-      // 若已锁屏，初始化后直接显示锁屏
-      if (this.isLocked) {
+      // 仅当「是特色直播且未下播」时，才显示锁屏（排除初始选择页面）
+      if (this.isLocked && this.isSpecialLiveActive) {
         setTimeout(() => this.showLockScreen(), 100);
+      } else if (this.isLocked && !this.isSpecialLiveActive) {
+        // 残留锁屏状态但非特色场景，强制清除
+        this.saveLockState(false);
+        this.isLocked = false;
       }
       this.isInitialized = true;
-      console.log('[Live App] 直播应用初始化完成，当前锁屏状态:', this.isLocked);
+      console.log('[Live App] 初始化完成 | 锁屏状态:', this.isLocked, '| 特色直播场景:', this.isSpecialLiveActive);
     }
+
     /**
-     * 核心修复2：加载锁屏状态（持久化）
+     * 加载锁屏状态（持久化）
      */
     loadLockState() {
       try {
@@ -654,8 +664,9 @@ if (typeof window.LiveApp === 'undefined') {
         this.isLocked = false;
       }
     }
+
     /**
-     * 核心修复3：保存锁屏状态（持久化）
+     * 保存锁屏状态（持久化）
      */
     saveLockState(isLocked) {
       try {
@@ -666,46 +677,40 @@ if (typeof window.LiveApp === 'undefined') {
         console.error('[Live App] 保存锁屏状态失败:', error);
       }
     }
+
     /**
-     * 检测是否有活跃的直播数据
+     * 检测活跃直播数据（核心修复2：标记是否为特色直播场景）
      */
     detectActiveLive() {
       try {
         console.log('[Live App] 检测活跃的直播数据...');
-        // 获取聊天内容
         const chatContent = this.dataParser.getChatContent();
         if (!chatContent) {
-          console.log('[Live App] 没有聊天内容，保持开始直播状态');
+          this.isSpecialLiveActive = false; // 无聊天内容 → 非特色场景
+          console.log('[Live App] 无聊天内容，保持开始直播状态 | 特色场景:', this.isSpecialLiveActive);
           return;
         }
-        // 检查是否有活跃的直播格式（非历史格式）
+
         const hasActiveLive = this.hasActiveLiveFormats(chatContent);
         if (hasActiveLive) {
-          console.log('[Live App] 🎯 检测到活跃的直播数据，自动进入直播中状态');
-          // 设置为直播中状态
+          // 判断是否为特色直播（含PK/连麦关键词）
+          this.isSpecialLiveActive = chatContent.includes('直播PK') || chatContent.includes('直播连麦');
           this.stateManager.startLive();
           this.currentView = 'live';
-          // 解析并加载现有的直播数据
+          this.eventListener.startListening();
           const liveData = this.dataParser.parseLiveData(chatContent);
           this.stateManager.updateLiveData(liveData);
-          // 开始监听新的消息
-          this.eventListener.startListening();
-          console.log('[Live App] ✅ 已自动恢复直播状态，数据:', {
-            viewerCount: this.stateManager.currentViewerCount,
-            liveContent: this.stateManager.currentLiveContent
-              ? this.stateManager.currentLiveContent.substring(0, 50) + '...'
-              : '',
-            danmakuCount: this.stateManager.danmakuList.length,
-            giftCount: this.stateManager.giftList.length,
-            interactionCount: this.stateManager.recommendedInteractions.length,
-          });
+          console.log('[Live App] 检测到活跃直播 | 特色场景:', this.isSpecialLiveActive);
         } else {
-          console.log('[Live App] 没有检测到活跃的直播数据，保持开始直播状态');
+          this.isSpecialLiveActive = false; // 无活跃直播 → 非特色场景
+          console.log('[Live App] 无活跃直播数据 | 特色场景:', this.isSpecialLiveActive);
         }
       } catch (error) {
-        console.error('[Live App] 检测活跃直播数据失败:', error);
+        console.error('[Live App] 检测活跃直播失败:', error);
+        this.isSpecialLiveActive = false;
       }
     }
+
     /**
      * 检查是否有活跃的直播格式
      */
@@ -729,46 +734,54 @@ if (typeof window.LiveApp === 'undefined') {
       }
       return false;
     }
+
     /**
      * 获取直播状态
      */
     get isLiveActive() {
       return this.stateManager.isLiveActive;
     }
+
     /**
-     * 核心修复4：开始直播（仅特色直播触发锁屏）
+     * 开始直播（核心修复3：仅特色直播触发锁屏）
      */
     async startLive(initialInteraction, isSpecial = false, specialType = '') {
       try {
         let message = '';
         if (isSpecial) {
-          // 特色直播命令（PK/连麦）- 触发锁屏
+          // 特色直播：标记场景+锁屏
           message = `${specialType}，请按照正确的直播格式要求生成本场人数、直播内容、弹幕、打赏和推荐互动。此次回复内仅生成一次本场人数和直播内容格式，直播内容需简洁，最后生成四条推荐互动，禁止错误格式。`;
+          this.isSpecialLiveActive = true;
         } else {
-          // 自由直播命令（欲色APP调用）- 不触发锁屏
+          // 自由直播：强制清除锁屏+标记非特色场景
           message = `用户开始${initialInteraction ? '“' + initialInteraction + '”主题' : ''}自由直播，请按照正确的直播格式要求生成本场人数，直播内容，弹幕，打赏和推荐互动。此次回复内仅生成一次本场人数和直播内容格式，直播内容需要简洁。最后需要生成四条推荐互动。禁止使用错误格式。`;
+          this.isSpecialLiveActive = false;
+          this.isLocked = false;
+          this.hideLockScreen(); // 主动隐藏锁屏
         }
+
         await this.sendToSillyTavern(message);
         this.stateManager.startLive();
         this.currentView = 'live';
         this.eventListener.startListening();
         this.updateAppContent();
-        
+
         // 仅特色直播提交后，设置锁屏并持久化
         if (isSpecial) {
           this.showLockScreen();
           this.saveLockState(true);
         } else {
-          this.saveLockState(false); // 非特色直播，清除锁屏状态
+          this.saveLockState(false); // 自由直播，清除持久化状态
         }
-        console.log(`[Live App] ${isSpecial ? '特色' : '自由'}直播已开始，锁屏状态: ${this.isLocked}`);
+        console.log(`[Live App] ${isSpecial ? '特色' : '自由'}直播已开始 | 锁屏状态: ${this.isLocked}`);
       } catch (error) {
         console.error('[Live App] 开始直播失败:', error);
         this.showToast('开始直播失败: ' + error.message, 'error');
       }
     }
+
     /**
-     * 核心修复5：结束直播（清除锁屏状态）
+     * 结束直播（清除锁屏状态）
      */
     async endLive() {
       try {
@@ -780,6 +793,7 @@ if (typeof window.LiveApp === 'undefined') {
         // 清除锁屏状态（持久化）
         this.hideLockScreen();
         this.saveLockState(false);
+        this.isSpecialLiveActive = false;
         // 更新状态
         this.stateManager.endLive();
         this.currentView = 'start';
@@ -792,6 +806,7 @@ if (typeof window.LiveApp === 'undefined') {
         this.showToast('结束直播失败: ' + error.message, 'error');
       }
     }
+
     /**
      * 继续直播互动
      * @param {string} interaction - 互动内容
@@ -812,6 +827,7 @@ if (typeof window.LiveApp === 'undefined') {
         this.showToast('发送互动失败: ' + error.message, 'error');
       }
     }
+
     /**
      * 解析新的直播数据
      */
@@ -884,6 +900,7 @@ if (typeof window.LiveApp === 'undefined') {
         console.error('[Live App] 解析直播数据失败:', error);
       }
     }
+
     /**
      * 防抖更新界面内容
      */
@@ -896,6 +913,7 @@ if (typeof window.LiveApp === 'undefined') {
       this.updateAppContent();
       this.updateHeader(); // 同时更新header
     }
+
     /**
      * 更新应用内容
      */
@@ -918,13 +936,14 @@ if (typeof window.LiveApp === 'undefined') {
             // 渲染后尝试触发逐条出现动画（避免丢帧）
             this.runAppearSequence();
           }
-          // 若已锁屏，渲染后显示锁屏
-          if (this.isLocked) {
+          // 仅特色直播场景且锁屏时，才显示锁屏
+          if (this.isLocked && this.isSpecialLiveActive) {
             this.showLockScreen();
           }
         }, 50);
       }
     }
+
     /**
      * 获取应用内容
      */
@@ -938,6 +957,7 @@ if (typeof window.LiveApp === 'undefined') {
           return this.renderStartView();
       }
     }
+
     /**
      * 渲染开始直播界面（新增锁屏提示文字）
      */
@@ -1078,6 +1098,7 @@ if (typeof window.LiveApp === 'undefined') {
         </div>
       `;
     }
+
     /**
      * 渲染直播中界面（适配锁屏优化）
      */
@@ -1183,6 +1204,7 @@ if (typeof window.LiveApp === 'undefined') {
         </div>
       `;
     }
+
     /**
      * 绑定事件（含锁屏按钮交互）
      */
@@ -1399,6 +1421,7 @@ if (typeof window.LiveApp === 'undefined') {
         this.showToast('事件绑定失败: ' + error.message, 'error');
       }
     }
+
     // 若接近底部则保持不动；若不在底部则瞬时跳到底部（原有）
     jumpToBottomIfNeeded(container) {
       const threshold = 10; // px判定阈值
@@ -1408,6 +1431,7 @@ if (typeof window.LiveApp === 'undefined') {
         container.scrollTop = container.scrollHeight;
       }
     }
+
     /**
      * 显示弹窗（原有）
      */
@@ -1418,6 +1442,7 @@ if (typeof window.LiveApp === 'undefined') {
         modal.classList.add('active');
       }
     }
+
     /**
      * 隐藏弹窗（原有）
      */
@@ -1428,6 +1453,7 @@ if (typeof window.LiveApp === 'undefined') {
         modal.classList.remove('active');
       }
     }
+
     /**
      * 隐藏所有弹窗（原有）
      */
@@ -1438,8 +1464,9 @@ if (typeof window.LiveApp === 'undefined') {
         modal.classList.remove('active');
       });
     }
+
     /**
-     * 核心修复6：显示锁屏（禁用底层交互）
+     * 显示锁屏（禁用底层交互）
      */
     showLockScreen() {
       const lockScreen = document.getElementById('live-lock-screen');
@@ -1454,8 +1481,9 @@ if (typeof window.LiveApp === 'undefined') {
         console.log('[Live App] 显示锁屏界面，禁用底层交互');
       }
     }
+
     /**
-     * 核心修复7：隐藏锁屏（恢复底层交互）
+     * 隐藏锁屏（恢复底层交互）
      */
     hideLockScreen() {
       const lockScreen = document.getElementById('live-lock-screen');
@@ -1469,6 +1497,7 @@ if (typeof window.LiveApp === 'undefined') {
         console.log('[Live App] 隐藏锁屏界面，恢复底层交互');
       }
     }
+
     /**
      * 设置渲染权（原有）
      */
@@ -1510,6 +1539,7 @@ if (typeof window.LiveApp === 'undefined') {
         return false;
       }
     }
+
     /**
      * 获取当前渲染权（原有）
      */
@@ -1533,6 +1563,7 @@ if (typeof window.LiveApp === 'undefined') {
         return null;
       }
     }
+
     /**
      * 清除渲染权（原有）
      */
@@ -1573,6 +1604,7 @@ if (typeof window.LiveApp === 'undefined') {
         return false;
       }
     }
+
     /**
      * 发送消息到SillyTavern（原有）
      */
