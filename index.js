@@ -488,6 +488,8 @@ const defaultSettings = {
   // 新增手机交互设置
   tavernCompatibilityMode: true,
   hidePhone: false,
+  // 新增禁止正文设置
+  disableBodyText: false,
 };
 
 // 插件设置 - 将在初始化时与 SillyTavern 的 extension_settings 集成
@@ -578,7 +580,8 @@ async function initMobileContextPlugin() {
       }
       context.saveSettingsDebounced();
     }
-    // 使用 SillyTavern 的 extensionSettings
+
+    // 使用 SillyTavern 的 extension_settings
     extension_settings = context.extensionSettings;
 
     // 等待 ContextMonitor 类加载
@@ -862,6 +865,10 @@ function createSettingsUI() {
                     <label class="checkbox_label" for="mobile_auto_send_enabled">
                         <input id="mobile_auto_send_enabled" type="checkbox" />
                         <span>专一模式（一次只和一人聊天）</span>
+                    </label>
+                    <label class="checkbox_label" for="mobile_disable_body_text">
+                        <input id="mobile_disable_body_text" type="checkbox" />
+                        <span>禁止正文</span>
                     </label>
                     <div class="flex m-t-1" style='flex-wrap: wrap;'>
                         <button id="mobile_context_status_btn" class="menu_button" style='width: auto;background:#777;color:#fff;display:none'>查看状态</button>
@@ -1255,7 +1262,17 @@ function bindSettingsControls() {
       setAutoSendEnabled(enabled);
       console.log('[Mobile Context] 消息自动发送功能已', enabled ? '启用' : '禁用');
     });
+
+  // 禁止正文功能启用/禁用
+  $('#mobile_disable_body_text')
+    .prop('checked', extension_settings.mobile_context.disableBodyText)
+    .on('change', function () {
+      extension_settings.mobile_context.disableBodyText = $(this).prop('checked');
+      saveSettings();
+      console.log('[Mobile Context] 禁止正文功能已', extension_settings.mobile_context.disableBodyText ? '启用' : '禁用');
+    });
 }
+
 /**
  * 获取消息自动发送功能启用状态
  */
@@ -1277,6 +1294,7 @@ function getAutoSendEnabled() {
     return true; // 默认启用
   }
 }
+
 /**
  * 设置消息自动发送功能启用状态
  */
@@ -1299,6 +1317,7 @@ function setAutoSendEnabled(enabled) {
     }
   }
 }
+
 /**
  * 保存设置
  */
