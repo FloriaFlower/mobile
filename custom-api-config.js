@@ -755,108 +755,153 @@ class MobileCustomAPIConfig {
             throw new Error('不支持的服务商');
         }
 
-        // 构建模型列表URL
-        let modelsUrl = apiUrl.trim();
-        if (!modelsUrl.endsWith('/')) {
-            modelsUrl += '/';
-        }
+        // 既然用户说 SillyTavern 能连上同样的API，我就尝试所有可能的配置组合
+        const configurationAttempts = [];
 
-        // 根据不同服务商构建正确的URL
-        if (provider === 'gemini') {
-            // Gemini API使用特殊的URL结构
-            if (!modelsUrl.includes('/v1beta/models')) {
-                if (modelsUrl.endsWith('/v1/')) {
-                    modelsUrl = modelsUrl.replace('/v1/', '/v1beta/models');
-                } else {
-                    modelsUrl += 'v1beta/models';
+        // 基于 URL 特征和 provider 尝试所有可能的配置
+        // 特别针对 beijixingxing.com 这类 Gemini 代理服务
+        if (provider === 'gemini' || apiUrl.includes('gemini') || apiUrl.includes('beijixingxing')) {
+            // Gemini 相关的各种配置
+            configurationAttempts.push(
+                {
+                    name: 'MakerSuite with reverse_proxy',
+                    requestBody: {
+                        chat_completion_source: 'makersuite',
+                        reverse_proxy: apiUrl.trim(),
+                        proxy_password: apiKey || ''
+                    }
+                },
+                {
+                    name: 'OpenAI-compatible for Gemini proxy',
+                    requestBody: {
+                        chat_completion_source: 'openai',
+                        reverse_proxy: apiUrl.trim(),
+                        proxy_password: apiKey || ''
+                    }
+                },
+                {
+                    name: 'Custom with Bearer for Gemini proxy',
+                    requestBody: {
+                        chat_completion_source: 'custom',
+                        custom_url: apiUrl.trim(),
+                        custom_include_headers: apiKey ? { 'Authorization': `Bearer ${apiKey}` } : {}
+                    }
+                },
+                {
+                    name: 'Custom with X-API-Key',
+                    requestBody: {
+                        chat_completion_source: 'custom',
+                        custom_url: apiUrl.trim(),
+                        custom_include_headers: apiKey ? { 'X-API-Key': apiKey } : {}
+                    }
                 }
-            }
+            );
         } else {
-            // OpenAI和自定义API使用标准URL构建
-            if (modelsUrl.endsWith('/v1/')) {
-                modelsUrl += 'models';
-            } else if (!modelsUrl.includes('/models')) {
-                modelsUrl += 'models';
-            }
+            // 其他 OpenAI 兼容 API 的各种配置
+            configurationAttempts.push(
+                {
+                    name: 'OpenAI with reverse_proxy',
+                    requestBody: {
+                        chat_completion_source: 'openai',
+                        reverse_proxy: apiUrl.trim(),
+                        proxy_password: apiKey || ''
+                    }
+                },
+                {
+                    name: 'Custom with Bearer auth',
+                    requestBody: {
+                        chat_completion_source: 'custom',
+                        custom_url: apiUrl.trim(),
+                        custom_include_headers: apiKey ? { 'Authorization': `Bearer ${apiKey}` } : {}
+                    }
+                },
+                {
+                    name: 'MistralAI with reverse_proxy',
+                    requestBody: {
+                        chat_completion_source: 'mistralai',
+                        reverse_proxy: apiUrl.trim(),
+                        proxy_password: apiKey || ''
+                    }
+                },
+                {
+                    name: 'Custom without auth (for free APIs)',
+                    requestBody: {
+                        chat_completion_source: 'custom',
+                        custom_url: apiUrl.trim()
+                    }
+                }
+            );
         }
 
-        // 构建请求头
-        const headers = { 'Content-Type': 'application/json' };
+        // 逐个尝试不同的配置
+        for (const attempt of configurationAttempts) {
+            try {
+                console.log(`[Mobile API Config] 尝试配置: ${attempt.name}`, attempt.requestBody);
 
-        // 根据服务商设置正确的认证方式
-        if (providerConfig.requiresKey && apiKey) {
-            if (provider === 'gemini') {
-                // Gemini API使用URL参数传递key
-                modelsUrl += `?key=${apiKey}`;
-            } else {
-                // OpenAI和自定义API使用Bearer认证
-                headers['Authorization'] = `Bearer ${apiKey}`;
-            }
-        }
+                // 获取请求头
+                let headers = { 'Content-Type': 'application/json' };
+                if (typeof getRequestHeaders === 'function') {
+                    headers = getRequestHeaders();
+                }
 
-        console.log('[Mobile API Config] 请求模型列表:', {
-            provider: provider,
-            url: modelsUrl.replace(apiKey || '', '[HIDDEN]'),
-            headers: { ...headers, Authorization: headers.Authorization ? 'Bearer [HIDDEN]' : undefined }
-        });
-
-        try {
-            const response = await fetch(modelsUrl, {
-                method: 'GET',
-                headers: headers
-                // 移除timeout，因为某些浏览器不支持
-            });
-
-            if (!response.ok) {
-                const errorText = await response.text();
-                console.error('[Mobile API Config] 模型列表请求失败:', {
-                    status: response.status,
-                    statusText: response.statusText,
-                    error: errorText
+                const response = await fetch('/api/backends/chat-completions/status', {
+                    method: 'POST',
+                    headers: headers,
+                    body: JSON.stringify(attempt.requestBody)
                 });
-                throw new Error(`HTTP ${response.status}: ${errorText}`);
-            }
 
-            const data = await response.json();
-            console.log('[Mobile API Config] 模型列表原始响应:', data);
+                if (!response.ok) {
+                    console.warn(`[Mobile API Config] 配置 "${attempt.name}" 请求失败: ${response.status} ${response.statusText}`);
+                    continue;
+                }
 
-            // 根据不同服务商解析响应
-            let models = [];
-            if (provider === 'gemini') {
-                // Gemini API响应格式：{ models: [{ name: "models/gemini-pro", ... }] }
-                if (data.models && Array.isArray(data.models)) {
+                const data = await response.json();
+                console.log(`[Mobile API Config] 配置 "${attempt.name}" 响应:`, data);
+
+                // 如果有严重错误（没有数据结构），跳过这个配置
+                if (data.error && !data.data) {
+                    console.warn(`[Mobile API Config] 配置 "${attempt.name}" 返回错误:`, data);
+                    continue;
+                }
+
+                // 解析模型列表
+                let models = [];
+                const actualData = data.data?.data || data.data || data;
+
+                if (actualData && Array.isArray(actualData)) {
+                    models = actualData.map(model => model.id || model.name);
+                } else if (data.models && Array.isArray(data.models)) {
                     models = data.models
                         .filter(model => model.supportedGenerationMethods?.includes('generateContent'))
-                        .map(model => model.name.replace('models/', ''));
-                } else {
-                    console.warn('[Mobile API Config] Gemini API响应格式异常:', data);
-                    // 如果没有返回期望的格式，使用默认模型
-                    models = providerConfig.defaultModels;
-                }
-            } else {
-                // OpenAI兼容格式
-                if (data.data && Array.isArray(data.data)) {
-                    // 标准OpenAI格式
-                    models = data.data.map(model => model.id);
+                        .map(model => model.name ? model.name.replace('models/', '') : model.id);
                 } else if (Array.isArray(data)) {
-                    // 直接数组格式
                     models = data.map(model => model.id || model.name || model);
-                } else {
-                    console.warn('[Mobile API Config] OpenAI兼容API响应格式异常:', data);
-                    models = providerConfig.defaultModels;
                 }
+
+                const filteredModels = models.filter(model => typeof model === 'string' && model.length > 0);
+
+                // 如果找到了有效的模型，成功！
+                if (filteredModels.length > 0) {
+                    console.log(`[Mobile API Config] ✅ 成功配置: "${attempt.name}", 找到 ${filteredModels.length} 个模型:`, filteredModels);
+                    return filteredModels;
+                } else {
+                    console.warn(`[Mobile API Config] 配置 "${attempt.name}" 没有返回有效模型`);
+                }
+
+            } catch (error) {
+                console.warn(`[Mobile API Config] 配置 "${attempt.name}" 发生异常:`, error);
+                continue;
             }
-
-            const filteredModels = models.filter(model => typeof model === 'string' && model.length > 0);
-            console.log('[Mobile API Config] 解析后的模型列表:', filteredModels);
-
-            return filteredModels.length > 0 ? filteredModels : providerConfig.defaultModels;
-
-        } catch (fetchError) {
-            console.error('[Mobile API Config] 网络请求失败:', fetchError);
-            // 如果网络请求失败，返回默认模型列表
-            return providerConfig.defaultModels;
         }
+
+        // 如果所有配置都失败了
+        console.error('[Mobile API Config] ❌ 所有配置尝试都失败了，使用默认模型列表');
+        console.error('[Mobile API Config] 请检查:');
+        console.error('1. API URL 是否正确');
+        console.error('2. API Key 是否有效');
+        console.error('3. 是否与 SillyTavern 主设置中的配置完全一致');
+
+        return providerConfig.defaultModels;
     }
 
     /**
@@ -1060,53 +1105,112 @@ class MobileCustomAPIConfig {
             throw new Error('缺少API密钥');
         }
 
-        // CORS警告检查
-        if (provider === 'gemini' && window.location.protocol === 'http:') {
-            console.warn('⚠️ [Mobile API Config] CORS警告: 从浏览器直接调用Gemini API可能被CORS策略阻止');
-            console.warn('建议通过后端代理或使用HTTPS来避免CORS问题');
-        }
+        console.log('[Mobile API Config] 🚀 通过 SillyTavern 后端发送 API 请求');
 
-        // 构建请求
-        let requestUrl = apiUrl.trim();
-        if (!requestUrl.endsWith('/')) {
-            requestUrl += '/';
-        }
+        // 使用 SillyTavern 后端代理发送请求，避免 CORS 问题
+        // 构建与 fetchModels 中相同的配置逻辑
+        let requestBody;
 
-        // 根据不同服务商构建URL
-        if (provider === 'gemini') {
-            // Gemini API使用特殊的URL结构，并通过URL参数传递API key
-            requestUrl += providerConfig.urlSuffix.replace('{model}', model);
-            if (apiKey) {
-                requestUrl += `?key=${apiKey}`;
+        if (provider === 'gemini' || apiUrl.includes('gemini') || apiUrl.includes('beijixingxing')) {
+            // Gemini 相关配置 - 使用在 fetchModels 中成功的配置
+            if (apiUrl.includes('beijixingxing')) {
+                // 对于 beijixingxing 代理，使用 OpenAI 兼容方式
+                requestBody = {
+                    chat_completion_source: 'openai',
+                    reverse_proxy: apiUrl.trim(),
+                    proxy_password: apiKey || '',
+                    model: model,
+                    messages: messages,
+                    ...options
+                };
+            } else {
+                // 原生 Gemini API
+                requestBody = {
+                    chat_completion_source: 'makersuite',
+                    reverse_proxy: apiUrl.trim(),
+                    proxy_password: apiKey || '',
+                    model: model,
+                    messages: messages,
+                    ...options
+                };
             }
         } else {
-            // OpenAI和自定义API使用标准URL构建
-            requestUrl += providerConfig.urlSuffix.replace('{model}', model);
+            // 其他 OpenAI 兼容 API
+            requestBody = {
+                chat_completion_source: 'openai',
+                reverse_proxy: apiUrl.trim(),
+                proxy_password: apiKey || '',
+                model: model,
+                messages: messages,
+                ...options
+            };
         }
 
-        const headers = { 'Content-Type': 'application/json' };
+        // 设置默认值
+        requestBody.max_tokens = options.max_tokens || 1000;
+        requestBody.temperature = options.temperature || 0.7;
+        requestBody.stream = false; // 禁用流式响应以简化处理
 
-        // 根据服务商设置正确的认证方式
-        if (providerConfig.requiresKey && apiKey && provider !== 'gemini') {
-            headers['Authorization'] = `Bearer ${apiKey}`;
-        }
-
-        const requestBody = this.buildRequestBody(provider, model, messages, options);
-
-        const response = await fetch(requestUrl, {
-            method: 'POST',
-            headers: headers,
-            body: JSON.stringify(requestBody),
-            timeout: this.currentSettings.timeout || 30000
+        console.log('[Mobile API Config] 发送请求配置:', {
+            provider,
+            url: apiUrl,
+            model,
+            messageCount: messages.length,
+            requestBody: { ...requestBody, proxy_password: requestBody.proxy_password ? '[HIDDEN]' : undefined }
         });
 
-        if (!response.ok) {
-            const errorText = await response.text();
-            throw new Error(`API调用失败: HTTP ${response.status} - ${errorText}`);
-        }
+        try {
+            // 获取请求头
+            let headers = { 'Content-Type': 'application/json' };
+            if (typeof getRequestHeaders === 'function') {
+                headers = getRequestHeaders();
+            }
 
-        const data = await response.json();
-        return this.parseAPIResponse(provider, data);
+            const response = await fetch('/api/backends/chat-completions/generate', {
+                method: 'POST',
+                headers: headers,
+                body: JSON.stringify(requestBody)
+            });
+
+            if (!response.ok) {
+                const errorText = await response.text();
+                console.error('[Mobile API Config] 后端代理请求失败:', {
+                    status: response.status,
+                    statusText: response.statusText,
+                    error: errorText
+                });
+                throw new Error(`后端代理请求失败: HTTP ${response.status} - ${errorText}`);
+            }
+
+            const data = await response.json();
+            console.log('[Mobile API Config] ✅ 后端代理响应成功:', data);
+
+            // 解析响应数据
+            if (data.error) {
+                throw new Error(`API错误: ${data.error.message || data.error}`);
+            }
+
+            // 标准化响应格式
+            if (data.choices && data.choices.length > 0) {
+                return {
+                    content: data.choices[0].message?.content || data.choices[0].text,
+                    usage: data.usage,
+                    model: data.model || model
+                };
+            } else if (data.content) {
+                // 某些 API 直接返回内容
+                return {
+                    content: data.content,
+                    model: data.model || model
+                };
+            } else {
+                throw new Error('API响应格式异常: ' + JSON.stringify(data));
+            }
+
+        } catch (fetchError) {
+            console.error('[Mobile API Config] ❌ 后端代理请求异常:', fetchError);
+            throw new Error(`API调用失败: ${fetchError.message}`);
+        }
     }
 
     /**
