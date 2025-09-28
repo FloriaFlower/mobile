@@ -284,6 +284,7 @@ class ForumUI {
                         <div class="author-name">${thread.author}</div>
                     </div>
                     <div class="thread-id">ID: t${thread.id}</div>
+                    <button class="delete-btn forum-delete-btn" data-thread-id="${thread.id}" title="删除帖子">删除</button>
                 </div>
                 <div class="post-content">
                     <h2 class="thread-title">${thread.title}</h2>
@@ -513,6 +514,18 @@ class ForumUI {
       // 只处理论坛内容区域的点击事件
       const forumContent = document.getElementById('forum-content');
       if (!forumContent || !forumContent.contains(e.target)) {
+        return;
+      }
+
+      // 处理删除按钮点击
+      if (e.target.closest('.forum-delete-btn')) {
+        e.preventDefault();
+        e.stopPropagation();
+        const deleteBtn = e.target.closest('.forum-delete-btn');
+        const threadId = deleteBtn.dataset.threadId;
+        if (threadId) {
+          this.deleteThread(threadId);
+        }
         return;
       }
 
@@ -1449,6 +1462,95 @@ class ForumUI {
         heart.parentNode.removeChild(heart);
       }
     }, 1000);
+  }
+
+  /**
+   * 删除论坛帖子及其所有回复
+   */
+  async deleteThread(threadId) {
+    console.log('[Forum UI] 开始删除帖子:', threadId);
+
+    try {
+      // 显示确认对话框
+      if (!confirm(`确定要删除帖子 ID: t${threadId} 及其所有回复吗？此操作不可撤销。`)) {
+        return;
+      }
+
+      // 获取当前聊天数据
+      if (!window.mobileContextEditor) {
+        throw new Error('上下文编辑器未就绪');
+      }
+
+      const chatData = window.mobileContextEditor.getCurrentChatData();
+      if (!chatData || !chatData.messages || chatData.messages.length === 0) {
+        throw new Error('无聊天数据');
+      }
+
+      // 获取第一条消息（包含论坛内容）
+      const firstMessage = chatData.messages[0];
+      if (!firstMessage || !firstMessage.mes) {
+        throw new Error('无法找到论坛内容');
+      }
+
+      let content = firstMessage.mes;
+
+      // 提取论坛标记之间的内容
+      const forumRegex = /<!-- FORUM_CONTENT_START -->([\s\S]*?)<!-- FORUM_CONTENT_END -->/;
+      const match = content.match(forumRegex);
+
+      if (!match) {
+        throw new Error('未找到论坛内容标记');
+      }
+
+      let forumContent = match[1];
+
+      // 删除包含指定帖子ID的所有格式
+      // 删除主帖: [标题|发帖人昵称|帖子id|标题内容|帖子详情]
+      const titleRegex = new RegExp(`\\[标题\\|[^|]+\\|${threadId}\\|[^|]+\\|[^\\]]+\\]`, 'g');
+      forumContent = forumContent.replace(titleRegex, '');
+
+      // 删除普通回复: [回复|回帖人昵称|帖子id|回复内容]
+      const replyRegex = new RegExp(`\\[回复\\|[^|]+\\|${threadId}\\|[^\\]]+\\]`, 'g');
+      forumContent = forumContent.replace(replyRegex, '');
+
+      // 删除楼中楼回复: [楼中楼|回帖人昵称|帖子id|父楼层|回复内容]
+      const subReplyRegex = new RegExp(`\\[楼中楼\\|[^|]+\\|${threadId}\\|[^|]+\\|[^\\]]+\\]`, 'g');
+      forumContent = forumContent.replace(subReplyRegex, '');
+
+      // 清理多余的空行
+      forumContent = forumContent.replace(/\n{3,}/g, '\n\n');
+
+      // 重新构建消息内容
+      const newContent = content.replace(
+        /<!-- FORUM_CONTENT_START -->[\s\S]*?<!-- FORUM_CONTENT_END -->/,
+        `<!-- FORUM_CONTENT_START -->${forumContent}<!-- FORUM_CONTENT_END -->`
+      );
+
+      // 更新消息内容
+      await window.mobileContextEditor.modifyMessage(0, newContent);
+
+      console.log('[Forum UI] ✅ 帖子删除成功:', threadId);
+
+      // 显示成功提示
+      if (window.showMobileToast) {
+        window.showMobileToast('🗑️ 帖子已删除', 'success');
+      } else {
+        alert('帖子已删除');
+      }
+
+      // 刷新论坛内容
+      setTimeout(() => {
+        this.refreshThreadList();
+      }, 500);
+
+    } catch (error) {
+      console.error('[Forum UI] 删除帖子失败:', error);
+      if (window.showMobileToast) {
+        window.showMobileToast('❌ 删除失败: ' + error.message, 'error');
+      } else {
+        alert('删除失败: ' + error.message);
+      }
+    }
   }
 }
 
