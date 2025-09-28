@@ -1,4 +1,4 @@
-/* Live App 样式文件 - 奶油风优化版 */
+/* Live App 样式文件 - 奶油风优化版（含锁屏修复） */
 /* 核心奶油风配色变量定义 */
 :root {
   --live-primary: #A68770; /* 温柔棕（主色） */
@@ -10,10 +10,9 @@
   --live-text-secondary: #8A9DAE; /* 灰蓝（次文字） */
   --live-button-gradient: linear-gradient(45deg, #A68770 0%, #8A9DAE 100%); /* 按钮渐变 */
   --live-modal-bg: #F5EFE5; /* 模态框背景 */
-  --live-lock-bg: rgba(166, 135, 112, 0.8); /* 锁屏背景（半透明） */
+  --live-lock-bg: rgba(0, 0, 0, 0.6); /* 锁屏深色遮罩（与按钮区分） */
   --live-danmaku-gift-bg: linear-gradient(90deg, rgba(166, 135, 112, 0.08), rgba(227, 213, 165, 0.08)); /* 礼物弹幕背景 */
 }
-
 /* 直播应用容器 - 奶油风主背景 */
 .live-app {
   display: flex;
@@ -22,14 +21,12 @@
   background: var(--live-bg-main);
   font-family: -apple-system, BlinkMacSystemFont, 'Helvetica Neue', 'PingFang SC', 'Microsoft YaHei', sans-serif;
 }
-
 /* 禁用整体页面滚动 */
 .live-app .app-content,
 .live-app #app-content {
   overflow: hidden !important;
   height: 100% !important;
 }
-
 /* ==================== 直播中心界面 ==================== */
 .live-main-container {
   padding: 20px;
@@ -39,32 +36,27 @@
   height: 100%;
   overflow-y: auto;
 }
-
 .live-main-header {
   text-align: center;
   margin-bottom: 10px;
 }
-
 .live-main-header h2 {
   font-size: 24px;
   font-weight: 600;
   color: var(--live-primary); /* 主色标题 */
   margin-bottom: 8px;
 }
-
 .live-main-header p {
   font-size: 14px;
   color: var(--live-text-secondary); /* 次文字色 */
   margin: 0;
 }
-
 /* 直播选项卡卡片 - 奶油风样式 */
 .live-options {
   display: flex;
   flex-direction: column;
   gap: 16px;
 }
-
 .live-option-card {
   display: flex;
   align-items: center;
@@ -76,47 +68,39 @@
   transition: all 0.3s ease;
   box-shadow: 0 3px 12px rgba(166, 135, 112, 0.1);
 }
-
 .live-option-card:hover {
   border-color: var(--live-primary); /* hover主色边框 */
   transform: translateY(-2px);
   box-shadow: 0 5px 18px rgba(166, 135, 112, 0.2);
 }
-
 .live-option-card .option-icon {
   font-size: 32px;
   margin-right: 16px;
   color: var(--live-primary); /* 图标主色 */
 }
-
 .live-option-card .option-content {
   flex: 1;
 }
-
 .live-option-card .option-content h3 {
   font-size: 18px;
   font-weight: 600;
   color: var(--live-primary); /* 卡片标题主色 */
   margin: 0 0 4px 0;
 }
-
 .live-option-card .option-content p {
   font-size: 14px;
   color: var(--live-text-secondary); /* 卡片说明次文字色 */
   margin: 0;
 }
-
 .live-option-card .option-arrow {
   font-size: 20px;
   color: var(--live-border); /* 箭头初始奶油黄色 */
   transition: transform 0.3s ease;
 }
-
 .live-option-card:hover .option-arrow {
   transform: translateX(4px);
   color: var(--live-primary); /* hover箭头主色 */
 }
-
 /* ==================== 弹窗基础样式 ==================== */
 .modal {
   position: absolute;
@@ -130,12 +114,10 @@
   visibility: hidden;
   transition: opacity 0.3s, visibility 0.3s;
 }
-
 .modal.active {
   opacity: 1;
   visibility: visible;
 }
-
 .modal-content {
   background: var(--live-modal-bg); /* 奶油米白弹窗背景 */
   border: 2px solid var(--live-border); /* 奶油黄边框 */
@@ -149,7 +131,6 @@
   box-shadow: 0 8px 25px rgba(166, 135, 112, 0.2);
   animation: slideUp 0.3s ease-out;
 }
-
 @keyframes slideUp {
   from {
     transform: translateY(30px);
@@ -160,7 +141,6 @@
     opacity: 1;
   }
 }
-
 .modal-header {
   display: flex;
   justify-content: space-between;
@@ -169,14 +149,12 @@
   margin-bottom: 20px;
   border-bottom: 1px solid var(--live-border); /* 奶油黄分隔线 */
 }
-
 .modal-header h3 {
   font-size: 18px;
   font-weight: 600;
   margin: 0;
   color: var(--live-primary); /* 弹窗标题主色 */
 }
-
 .modal-close-btn {
   background: none;
   border: none;
@@ -192,21 +170,17 @@
   border-radius: 50%;
   transition: all 0.2s ease;
 }
-
 .modal-close-btn:hover {
   background: #E8E0D0; /* 浅奶油色hover背景 */
   color: var(--live-primary); /* hover主色 */
 }
-
 .modal-body {
   padding: 0;
 }
-
 /* ==================== 自由直播弹窗样式 ==================== */
 #start-live-modal .modal-body {
   padding: 0 5px;
 }
-
 .custom-interaction-section {
   background: var(--live-bg-card);
   border-radius: 12px;
@@ -214,7 +188,6 @@
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
   margin-bottom: 16px;
 }
-
 .custom-interaction-section textarea {
   width: 100%;
   min-height: 80px;
@@ -229,13 +202,11 @@
   background: var(--live-bg-card);
   color: var(--live-text-primary);
 }
-
 .custom-interaction-section textarea:focus {
   outline: none;
   border-color: var(--live-primary);
   box-shadow: 0 0 0 2px rgba(166, 135, 112, 0.2);
 }
-
 .preset-interactions {
   background: var(--live-bg-card);
   border-radius: 12px;
@@ -243,7 +214,6 @@
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
   margin-bottom: 16px;
 }
-
 .preset-interactions h4 {
   font-size: 16px;
   font-weight: 600;
@@ -251,13 +221,11 @@
   margin-bottom: 12px;
   text-align: center;
 }
-
 .preset-buttons {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
   gap: 10px;
 }
-
 .preset-btn {
   background: var(--live-bg-main); /* 米白按钮背景 */
   border: 1px solid var(--live-border);
@@ -270,17 +238,14 @@
   text-align: center;
   line-height: 1.3;
 }
-
 .preset-btn:hover {
   background: #E8E0D0; /* 浅奶油色hover */
   border-color: var(--live-primary);
   color: var(--live-primary);
 }
-
 .preset-btn:active {
   transform: scale(0.98);
 }
-
 .start-live-btn {
   width: 100%;
   padding: 12px 24px;
@@ -294,22 +259,18 @@
   transition: all 0.3s ease;
   box-shadow: 0 4px 12px rgba(166, 135, 112, 0.3);
 }
-
 .start-live-btn:hover {
   transform: translateY(-2px);
   box-shadow: 0 6px 16px rgba(166, 135, 112, 0.4);
 }
-
 .start-live-btn:active {
   transform: translateY(0);
   box-shadow: 0 2px 8px rgba(166, 135, 112, 0.3);
 }
-
 /* ==================== 特色直播弹窗样式 ==================== */
 #special-live-modal .modal-body {
   padding: 0 5px;
 }
-
 .special-live-option {
   background: var(--live-bg-card);
   border: 2px solid var(--live-border);
@@ -319,30 +280,25 @@
   cursor: pointer;
   transition: all 0.3s ease;
 }
-
 .special-live-option:hover {
   border-color: var(--live-primary);
   background: #E8E0D0;
 }
-
 .special-live-option h4 {
   color: var(--live-primary);
   margin: 0 0 8px;
   font-size: 16px;
 }
-
 .special-live-option p {
   color: var(--live-text-secondary);
   margin: 0;
   font-size: 14px;
 }
-
 /* PK直播输入弹窗 */
 #pk-input-modal .modal-body,
 #link-select-modal .modal-body {
   padding: 0 5px;
 }
-
 #pk-anchor-input,
 #custom-link-input {
   width: calc(100% - 24px);
@@ -353,13 +309,11 @@
   background: var(--live-bg-card);
   color: var(--live-text-primary);
 }
-
 #pk-anchor-input::placeholder,
 #custom-link-input::placeholder {
   color: var(--live-text-secondary);
   opacity: 0.7;
 }
-
 /* 粉丝连麦选项 */
 .link-option-list {
   display: grid;
@@ -367,7 +321,6 @@
   gap: 10px;
   margin-bottom: 15px;
 }
-
 .link-option {
   background: var(--live-bg-card);
   border: 2px solid var(--live-border);
@@ -378,14 +331,12 @@
   transition: all 0.3s ease;
   color: var(--live-text-primary);
 }
-
 .link-option:hover,
 .link-option.active {
   background: var(--live-primary);
   color: white;
   border-color: var(--live-primary);
 }
-
 /* ==================== 直播中界面 ==================== */
 .live-container {
   display: flex;
@@ -393,7 +344,6 @@
   height: 100%;
   overflow: hidden;
 }
-
 /* 视频框 */
 .video-placeholder {
   width: calc(100% - 20px);
@@ -409,14 +359,12 @@
   padding: 6px 8px;
   overflow: hidden;
 }
-
 .live-status-top {
   color: var(--live-text-primary);
   font-size: 14px;
   text-align: left;
   margin-bottom: 10px;
 }
-
 .live-content-text {
   color: var(--live-text-primary); /* 直播内容主文字色 */
   font-size: 15px;
@@ -433,26 +381,21 @@
   align-items: flex-start;
   justify-content: center;
 }
-
 /* 直播内容滚动条 */
 .live-content-text::-webkit-scrollbar {
   width: 4px;
 }
-
 .live-content-text::-webkit-scrollbar-track {
   background: rgba(166, 135, 112, 0.1);
   border-radius: 2px;
 }
-
 .live-content-text::-webkit-scrollbar-thumb {
   background: rgba(166, 135, 112, 0.3);
   border-radius: 2px;
 }
-
 .live-content-text::-webkit-scrollbar-thumb:hover {
   background: rgba(166, 135, 112, 0.5);
 }
-
 .live-status-bottom {
   color: var(--live-text-primary);
   font-size: 13px;
@@ -464,7 +407,6 @@
   transition: opacity 0.3s;
   margin-top: 0;
 }
-
 .live-dot {
   width: 7px;
   height: 7px;
@@ -472,7 +414,6 @@
   border-radius: 50%;
   animation: breathing 1.5s infinite ease-in-out;
 }
-
 @keyframes breathing {
   0%, 100% {
     transform: scale(1);
@@ -483,7 +424,6 @@
     opacity: 0.7;
   }
 }
-
 /* 推荐互动面板 */
 .interaction-panel {
   padding: 10px;
@@ -491,21 +431,18 @@
   background: var(--live-bg-card);
   flex: 0 0 20%;
 }
-
 .interaction-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
   margin-bottom: 10px;
 }
-
 .interaction-header h4 {
   font-size: 14px;
   font-weight: bold;
   color: var(--live-primary);
   margin: 0;
 }
-
 .interact-btn {
   background: var(--live-button-gradient);
   border: none;
@@ -521,23 +458,19 @@
   align-items: center;
   gap: 3px;
 }
-
 .interact-btn:hover {
   transform: translateY(-2px);
   box-shadow: 0 6px 16px rgba(166, 135, 112, 0.4);
 }
-
 .interact-btn:active {
   transform: translateY(0);
   box-shadow: 0 2px 8px rgba(166, 135, 112, 0.3);
 }
-
 .recommended-interactions {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
   gap: 6px;
 }
-
 .rec-btn {
   background-color: var(--live-bg-main);
   border: 1px solid var(--live-border);
@@ -550,17 +483,14 @@
   text-align: center;
   line-height: 1.2;
 }
-
 .rec-btn:hover {
   background-color: #E8E0D0;
   border-color: var(--live-primary);
   color: var(--live-primary);
 }
-
 .rec-btn:active {
   transform: scale(0.98);
 }
-
 .no-interactions {
   grid-column: 1 / -1;
   text-align: center;
@@ -569,7 +499,6 @@
   padding: 20px;
   margin: 0;
 }
-
 /* 弹幕容器 */
 .danmaku-container {
   flex: 1;
@@ -580,25 +509,20 @@
   display: flex;
   flex-direction: column;
 }
-
 .danmaku-container::-webkit-scrollbar {
   width: 6px;
 }
-
 .danmaku-container::-webkit-scrollbar-track {
   background: #F0F2F5;
   border-radius: 3px;
 }
-
 .danmaku-container::-webkit-scrollbar-thumb {
   background: #DCDFE6;
   border-radius: 3px;
 }
-
 .danmaku-container::-webkit-scrollbar-thumb:hover {
   background: #C0C4CC;
 }
-
 .danmaku-list {
   display: flex;
   flex-direction: column;
@@ -606,14 +530,12 @@
   flex: 1;
   min-height: 0;
 }
-
 .danmaku-item {
   max-width: 90%;
   animation: fadeIn 0.5s ease;
   font-size: 14px;
   line-height: 1.5;
 }
-
 @keyframes fadeIn {
   from {
     opacity: 0;
@@ -624,19 +546,16 @@
     transform: translateY(0);
   }
 }
-
 /* 普通弹幕样式 */
 .danmaku-item.normal .username {
   color: var(--live-secondary); /* 灰蓝用户名 */
   font-weight: bold;
 }
-
 .danmaku-item.normal .content {
   color: var(--live-text-primary);
   margin-left: 8px;
   word-break: break-all;
 }
-
 /* 礼物弹幕样式 */
 .danmaku-item.gift {
   display: inline-block;
@@ -646,30 +565,25 @@
   border: 1px solid rgba(166, 135, 112, 0.2);
   font-size: 13px;
 }
-
 .danmaku-item.gift .username {
   color: var(--live-primary);
   font-weight: bold;
 }
-
 .danmaku-item.gift .content {
   color: #D4A373; /* 浅棕礼物内容色 */
   font-weight: bold;
   margin-left: 5px;
 }
-
 .danmaku-item.gift i {
   margin-right: 5px;
   color: var(--live-primary);
 }
-
 .no-danmaku {
   text-align: center;
   color: var(--live-text-secondary);
   font-style: italic;
   padding: 40px 20px;
 }
-
 /* ==================== 礼物列表弹窗 ==================== */
 .gift-list {
   list-style: none;
@@ -678,36 +592,30 @@
   margin: 0;
   padding: 0;
 }
-
 .gift-list li {
   padding: 10px 0;
   border-bottom: 1px dashed var(--live-border);
   font-size: 14px;
   line-height: 1.4;
 }
-
 .gift-list li:last-child {
   border-bottom: none;
 }
-
 .gift-list .username {
   color: var(--live-primary);
   font-weight: bold;
 }
-
 .gift-list .gift-name {
   color: #D4A373;
   margin-left: 10px;
   font-weight: 500;
 }
-
 .no-gifts {
   text-align: center;
   color: var(--live-text-secondary);
   font-style: italic;
   padding: 20px 0;
 }
-
 /* ==================== 自定义互动弹窗 ==================== */
 #interaction-form textarea {
   width: 100%;
@@ -723,13 +631,11 @@
   font-family: inherit;
   line-height: 1.4;
 }
-
 #interaction-form textarea:focus {
   outline: none;
   border-color: var(--live-primary);
   box-shadow: 0 0 0 2px rgba(166, 135, 112, 0.2);
 }
-
 .submit-btn {
   width: 100%;
   background: var(--live-button-gradient);
@@ -743,51 +649,58 @@
   box-shadow: 0 4px 12px rgba(166, 135, 112, 0.3);
   transition: all 0.2s ease;
 }
-
 .submit-btn:hover {
   transform: translateY(-2px);
   box-shadow: 0 6px 16px rgba(166, 135, 112, 0.4);
 }
-
 .submit-btn:active {
   transform: translateY(0);
   box-shadow: 0 2px 8px rgba(166, 135, 112, 0.3);
 }
-
-/* ==================== 锁屏界面 ==================== */
+/* ==================== 锁屏界面（核心优化） ==================== */
 #live-lock-screen {
   position: fixed;
   top: 0;
   left: 0;
   width: 100%;
   height: 100%;
-  background: var(--live-lock-bg);
-  backdrop-filter: blur(8px);
-  z-index: 9999;
+  background: var(--live-lock-bg); /* 深色半透明遮罩 */
+  backdrop-filter: blur(10px); /* 增强模糊层次感 */
+  z-index: 9999; /* 覆盖手机模拟器所有内容 */
   display: none;
-  justify-content: center;
+  flex-direction: column;
   align-items: center;
+  justify-content: center;
+  padding: 20px;
 }
-
+/* 下播按钮（突出显示） */
 #end-live-btn {
-  padding: 16px 32px;
-  background: var(--live-primary);
-  color: white;
-  border: none;
-  border-radius: 12px;
-  font-size: 18px;
-  font-weight: 600;
+  padding: 18px 40px;
+  background: white; /* 白色背景（与深色遮罩对比） */
+  color: var(--live-primary); /* 主色文字 */
+  border: 3px solid var(--live-primary); /* 主色边框 */
+  border-radius: 50px; /* 圆润按钮 */
+  font-size: 20px;
+  font-weight: 700;
   cursor: pointer;
-  box-shadow: 0 0 30px rgba(166, 135, 112, 0.6);
+  box-shadow: 0 0 30px rgba(166, 135, 112, 0.8); /* 发光阴影 */
   transition: all 0.3s ease;
+  margin-bottom: 20px;
 }
-
 #end-live-btn:hover {
-  background: #8B725A; /* 深棕hover */
-  box-shadow: 0 0 40px rgba(166, 135, 112, 0.8);
-  transform: translateY(-3px);
+  background: var(--live-primary); /* hover主色背景 */
+  color: white; /* 白色文字 */
+  box-shadow: 0 0 40px rgba(166, 135, 112, 1); /* 阴影增强 */
+  transform: translateY(-3px); /* 轻微上浮 */
 }
-
+/* 锁屏提示文字（新增） */
+#lock-screen-tip {
+  color: white;
+  font-size: 16px;
+  text-align: center;
+  margin-top: 10px;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5); /* 文字阴影增强可读性 */
+}
 /* ==================== 提示消息 ==================== */
 .live-toast {
   position: fixed;
@@ -804,28 +717,22 @@
   max-width: 300px;
   word-wrap: break-word;
 }
-
 .live-toast.show {
   opacity: 1;
   transform: translateY(0);
 }
-
 .live-toast.info {
   background: linear-gradient(135deg, #8A9DAE 0%, #6A8CAF 100%); /* 灰蓝渐变 */
 }
-
 .live-toast.success {
   background: linear-gradient(135deg, #A68770 0%, #8B725A 100%); /* 主色渐变 */
 }
-
 .live-toast.error {
   background: linear-gradient(135deg, #E17055 0%, #D63031 100%);
 }
-
 .live-toast.warning {
   background: linear-gradient(135deg, #E3D5A5 0%, #D4A373 100%); /* 奶油黄渐变 */
 }
-
 /* ==================== 错误状态 ==================== */
 .error-message {
   text-align: center;
@@ -836,27 +743,23 @@
   margin: 20px;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
 }
-
 .error-message .error-icon {
   font-size: 48px;
   margin-bottom: 16px;
   opacity: 0.5;
   color: var(--live-primary);
 }
-
 .error-message .error-title {
   font-size: 18px;
   font-weight: 600;
   margin-bottom: 8px;
   color: var(--live-primary);
 }
-
 .error-message .error-details {
   font-size: 14px;
   margin-bottom: 20px;
   color: var(--live-text-secondary);
 }
-
 /* ==================== 按钮禁用状态 ==================== */
 button:disabled,
 .rec-btn:disabled,
@@ -867,7 +770,6 @@ button:disabled,
   box-shadow: none !important;
   transform: none !important;
 }
-
 button:disabled:hover,
 .rec-btn:disabled:hover,
 .preset-btn:disabled:hover,
@@ -877,184 +779,159 @@ button:disabled:hover,
   color: var(--live-text-primary) !important;
   transform: none !important;
 }
-
 /* ==================== 响应式设计 ==================== */
 @media (max-width: 768px) {
   .live-main-container {
     padding: 16px;
     gap: 16px;
   }
-
   .modal-content {
     width: 95%;
     margin: 10px;
     padding: 20px;
   }
-
   .custom-interaction-section,
   .preset-interactions {
     padding: 12px;
   }
-
   .video-placeholder {
     margin: 6px auto 0 auto;
     padding: 6px 10px;
   }
-
   .live-content-text {
     font-size: 14px;
     line-height: 1.4;
     margin: 0 0 4px 0;
     padding: 0 4px;
   }
-
   .interaction-panel {
     padding: 8px;
   }
-
   .danmaku-container {
     padding: 12px;
   }
-
   .danmaku-list {
     gap: 6px;
   }
-
   .danmaku-item {
     font-size: 13px;
   }
-
   .danmaku-item.gift {
     font-size: 12px;
   }
-
   .live-status-bottom {
     font-size: 12px;
     gap: 4px;
   }
-
   .live-dot {
     width: 6px;
     height: 6px;
   }
-
   .interaction-header {
     margin-bottom: 8px;
   }
-
   .interaction-header h4 {
     font-size: 13px;
   }
-
   .interact-btn {
     padding: 5px 10px;
     font-size: 10px;
     border-radius: 12px;
     gap: 2px;
   }
-
   .preset-buttons,
   .recommended-interactions {
     gap: 8px;
   }
-
   .preset-btn,
   .rec-btn {
     padding: 6px 4px;
     font-size: 11px;
   }
+  /* 响应式锁屏按钮 */
+  #end-live-btn {
+    padding: 16px 32px;
+    font-size: 18px;
+  }
+  #lock-screen-tip {
+    font-size: 14px;
+  }
 }
-
 @media (max-width: 480px) {
   .live-main-header h2 {
     font-size: 20px;
   }
-
   .live-option-card {
     padding: 16px;
   }
-
   .live-option-card .option-icon {
     font-size: 28px;
     margin-right: 12px;
   }
-
   .live-option-card .option-content h3 {
     font-size: 16px;
   }
-
   .modal-content {
     width: 98%;
     margin: 5px;
     padding: 16px;
   }
-
   .preset-buttons {
     grid-template-columns: 1fr;
   }
-
   .recommended-interactions {
     grid-template-columns: repeat(2, 1fr);
   }
-
   .video-placeholder {
     margin: 4px auto 0 auto;
     padding: 4px 8px;
   }
-
   .live-content-text {
     font-size: 13px;
     line-height: 1.3;
     margin: 0 0 3px 0;
     padding: 0 3px;
   }
-
   .interaction-panel {
     padding: 6px;
   }
-
   .danmaku-list {
     gap: 5px;
   }
-
   .danmaku-item {
     font-size: 12px;
   }
-
   .danmaku-item.gift {
     font-size: 11px;
   }
-
   .live-status-bottom {
     font-size: 11px;
     gap: 3px;
   }
-
   .live-dot {
     width: 5px;
     height: 5px;
   }
-
   .interaction-header {
     margin-bottom: 6px;
   }
-
   .interaction-header h4 {
     font-size: 12px;
   }
-
   .interact-btn {
     padding: 4px 8px;
     font-size: 9px;
     border-radius: 10px;
   }
-
+  /* 响应式锁屏按钮 */
   #end-live-btn {
     padding: 14px 28px;
     font-size: 16px;
   }
+  #lock-screen-tip {
+    font-size: 13px;
+  }
 }
-
 /* ==================== 加载动画 ==================== */
 .live-loading {
   display: flex;
@@ -1064,7 +941,6 @@ button:disabled:hover,
   font-size: 16px;
   color: var(--live-text-secondary);
 }
-
 .live-loading::before {
   content: '';
   width: 20px;
@@ -1075,7 +951,6 @@ button:disabled:hover,
   animation: spin 1s linear infinite;
   margin-right: 10px;
 }
-
 @keyframes spin {
   0% {
     transform: rotate(0deg);
@@ -1084,30 +959,25 @@ button:disabled:hover,
     transform: rotate(360deg);
   }
 }
-
 /* ==================== 滚动条美化 ==================== */
 .live-main-container::-webkit-scrollbar,
 .modal-content::-webkit-scrollbar {
   width: 8px;
 }
-
 .live-main-container::-webkit-scrollbar-track,
 .modal-content::-webkit-scrollbar-track {
   background: #F1F1F1;
   border-radius: 4px;
 }
-
 .live-main-container::-webkit-scrollbar-thumb,
 .modal-content::-webkit-scrollbar-thumb {
   background: linear-gradient(135deg, #A68770 0%, #8A9DAE 100%); /* 主色+辅助色渐变 */
   border-radius: 4px;
 }
-
 .live-main-container::-webkit-scrollbar-thumb:hover,
 .modal-content::-webkit-scrollbar-thumb:hover {
   background: linear-gradient(135deg, #8B725A 0%, #6A8CAF 100%);
 }
-
 /* ==================== 特殊效果 ==================== */
 /* 按钮点击波纹 */
 .start-live-btn,
@@ -1117,7 +987,6 @@ button:disabled:hover,
   position: relative;
   overflow: hidden;
 }
-
 .start-live-btn::after,
 .submit-btn::after,
 .interact-btn::after,
@@ -1133,7 +1002,6 @@ button:disabled:hover,
   transform: translate(-50%, -50%);
   transition: width 0.3s, height 0.3s;
 }
-
 .start-live-btn:active::after,
 .submit-btn:active::after,
 .interact-btn:active::after,
@@ -1141,14 +1009,12 @@ button:disabled:hover,
   width: 200px;
   height: 200px;
 }
-
 /* 焦点可见性 */
 button:focus-visible,
 textarea:focus-visible {
   outline: 2px solid var(--live-primary);
   outline-offset: 2px;
 }
-
 /* 弹幕/礼物逐条出现动画 */
 .danmaku-item.appear-init,
 .gift-list li.appear-init {
@@ -1156,7 +1022,6 @@ textarea:focus-visible {
   transform: translateY(10px);
   display: none;
 }
-
 .danmaku-item.appear-show,
 .gift-list li.appear-show {
   opacity: 1;
@@ -1164,7 +1029,6 @@ textarea:focus-visible {
   display: block;
   transition: opacity 300ms ease, transform 300ms ease;
 }
-
 /* 图片适配 */
 .live-content-text img {
   width: 100%;
