@@ -1931,7 +1931,9 @@ if (typeof window.MessageApp === 'undefined') {
       }
 
       try {
-        const friends = window.friendRenderer.extractFriendsFromContext();
+        const allContacts = window.friendRenderer.extractFriendsFromContext();
+        // 只筛选出好友，过滤掉群聊
+        const friends = allContacts.filter(contact => !contact.isGroup);
 
         if (friends.length === 0) {
           return `
@@ -5855,8 +5857,9 @@ if (typeof window.MessageApp === 'undefined') {
         // 查找包含该群聊信息的消息
         const messagesToProcess = [];
 
-        // 创建群聊格式标记的正则表达式
-        const groupFormatRegex = new RegExp(`\\[群聊\\|${groupName}\\|${groupId}\\|([^\\]]+)\\]`, 'g');
+        // 创建所有可能包含群聊ID的格式正则表达式
+        // 只要[]内任何位置包含目标ID就匹配
+        const allGroupFormatsRegex = new RegExp(`\\[[^\\]]*\\|${groupId}\\|[^\\]]*\\]|\\[[^\\]]*\\|${groupId}\\]`, 'g');
 
         chatData.messages.forEach((message, index) => {
           if (message.mes && typeof message.mes === 'string') {
@@ -5867,9 +5870,9 @@ if (typeof window.MessageApp === 'undefined') {
             const messageForCheck = this.removeThinkingTags(message.mes);
 
             // 检查是否包含群聊格式标记（在移除thinking标签后的内容中）
-            if (groupFormatRegex.test(messageForCheck)) {
+            if (allGroupFormatsRegex.test(messageForCheck)) {
               // 只移除不在thinking标签内的群聊格式标记
-              newMessageContent = this.removePatternOutsideThinkingTags(message.mes, groupFormatRegex);
+              newMessageContent = this.removePatternOutsideThinkingTags(message.mes, allGroupFormatsRegex);
               messageModified = newMessageContent !== message.mes;
               if (messageModified) {
                 console.log(`[Message App] 消息 ${index} 包含群聊格式标记，移除后内容: "${newMessageContent}"`);
@@ -5889,7 +5892,7 @@ if (typeof window.MessageApp === 'undefined') {
             }
 
             // 重置正则表达式
-            groupFormatRegex.lastIndex = 0;
+            allGroupFormatsRegex.lastIndex = 0;
           }
         });
 
