@@ -56,6 +56,31 @@ if (typeof window.MessageSender === 'undefined') {
     }
 
     /**
+     * 检查是否启用禁止正文功能
+     */
+    isDisableBodyTextEnabled() {
+      try {
+        // 尝试从SillyTavern的extension_settings中获取
+        if (window.SillyTavern && window.SillyTavern.getContext) {
+          const context = window.SillyTavern.getContext();
+          if (context.extensionSettings && context.extensionSettings.mobile_context) {
+            return context.extensionSettings.mobile_context.disableBodyText || false;
+          }
+        }
+
+        // 回退到全局extension_settings
+        if (window.extension_settings && window.extension_settings.mobile_context) {
+          return window.extension_settings.mobile_context.disableBodyText || false;
+        }
+
+        return false; // 默认不启用
+      } catch (error) {
+        console.warn('[Message Sender] 获取禁止正文设置失败:', error);
+        return false; // 默认不启用
+      }
+    }
+
+    /**
      * 加载上下文编辑器
      */
     loadContextEditor() {
@@ -236,7 +261,14 @@ if (typeof window.MessageSender === 'undefined') {
           ? `向${this.currentFriendName}（${this.currentFriendId}）发送群聊`
           : `向${this.currentFriendName}（${this.currentFriendId}）发送消息`;
 
-        const finalMessage = `请用规定格式，${targetPrefix}\n${processedMessages.join('\n')}`;
+        // 检查是否启用禁止正文功能
+        let finalMessage;
+        if (this.isDisableBodyTextEnabled()) {
+          finalMessage = `<Request:强调！当用户只输出线上消息时，只回复线上消息，不回复正文>\n请用规定格式，${targetPrefix}\n${processedMessages.join('\n')}`;
+          console.log('[Message Sender] 禁止正文模式已启用，添加特殊前缀');
+        } else {
+          finalMessage = `请用规定格式，${targetPrefix}\n${processedMessages.join('\n')}`;
+        }
 
         console.log('[Message Sender] 发送混合消息（包含特殊格式）:', finalMessage);
 
@@ -290,7 +322,14 @@ if (typeof window.MessageSender === 'undefined') {
         ? `向${this.currentFriendName}（${this.currentFriendId}）发送群聊`
         : `向${this.currentFriendName}（${this.currentFriendId}）发送消息`;
 
-      const finalMessage = `请用规定格式，${targetPrefix}\n${messageLines.join('\n')}`;
+      // 检查是否启用禁止正文功能
+      let finalMessage;
+      if (this.isDisableBodyTextEnabled()) {
+        finalMessage = `<Request:强调！当用户只输出线上消息时，只回复线上消息，不回复正文>\n请用规定格式，${targetPrefix}\n${messageLines.join('\n')}`;
+        console.log('[Message Sender] 禁止正文模式已启用，添加特殊前缀');
+      } else {
+        finalMessage = `请用规定格式，${targetPrefix}\n${messageLines.join('\n')}`;
+      }
 
       console.log('[Message Sender] 发送纯表情包消息:', finalMessage);
 
@@ -355,7 +394,14 @@ if (typeof window.MessageSender === 'undefined') {
         targetPrefix = `向${this.currentFriendName}（${this.currentFriendId}）发送消息，请按照线上聊天私聊消息中的要求和格式生成角色回复，回复需要符合角色人设和当前剧情`;
       }
 
-      const finalMessage = `请用规定格式，${targetPrefix}\n${validatedMessages.join('\n')}`;
+      // 检查是否启用禁止正文功能
+      let finalMessage;
+      if (this.isDisableBodyTextEnabled()) {
+        finalMessage = `<Request:强调！当用户只输出线上消息时，只回复线上消息，不回复正文>\n请用规定格式，${targetPrefix}\n${validatedMessages.join('\n')}`;
+        console.log('[Message Sender] 禁止正文模式已启用，添加特殊前缀');
+      } else {
+        finalMessage = `请用规定格式，${targetPrefix}\n${validatedMessages.join('\n')}`;
+      }
 
       console.log('[Message Sender] 最终消息:', finalMessage);
 
