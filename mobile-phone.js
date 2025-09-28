@@ -7080,21 +7080,16 @@ class MobilePhone {
 
 // 初始化手机界面
 function initMobilePhone() {
+  window.mobilePhone = new MobilePhone();
+  console.log('[Mobile Phone] 提前挂载window.mobilePhone实例');
+
   if (document.readyState === 'loading') {
-    // 如果文档还在加载，等待DOMContentLoaded
     document.addEventListener('DOMContentLoaded', () => {
-      window.mobilePhone = new MobilePhone();
-      console.log('[Mobile Phone] 手机界面初始化完成');
+      console.log('[Mobile Phone] DOM就绪，完成初始化');
     });
   } else {
-    // 如果文档已经加载完成，直接初始化
-    window.mobilePhone = new MobilePhone();
-    console.log('[Mobile Phone] 手机界面初始化完成');
+    console.log('[Mobile Phone] 文档已就绪，初始化完成');
   }
 }
-
-// 立即执行初始化
+// 立即执行初始化（确保最先执行）
 initMobilePhone();
-
-// 创建全局的showToast函数供其他模块使用
-window.showMobileToast = MobilePhone.showToast.bind(MobilePhone);
