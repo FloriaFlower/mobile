@@ -1289,3 +1289,34 @@
     font-size: 11px;
   }
 }
+
+/* 删除按钮样式 */
+.delete-btn.forum-delete-btn {
+
+  top: 10px;
+  right: 10px;
+  background: #9ca3af;
+  color: white;
+  border: none;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  z-index: 10;
+}
+
+.delete-btn.forum-delete-btn:hover {
+  background: #6b7280;
+  transform: scale(1.05);
+}
+
+.delete-btn.forum-delete-btn:active {
+  transform: scale(0.95);
+}
+
+/* 确保thread-header有相对定位以便删除按钮绝对定位 */
+.thread-header {
+  position: relative;
+}
