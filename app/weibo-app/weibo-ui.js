@@ -1069,6 +1069,7 @@ class WeiboUI {
               <div class="post-time">${post.timestamp}</div>
             </div>
           </div>
+          <button class="delete-btn weibo-delete-btn" data-post-id="${post.id}" title="删除微博">删除</button>
         </div>
 
         <div class="post-content">
@@ -1331,6 +1332,18 @@ class WeiboUI {
    * 绑定博文事件
    */
   bindPostEvents() {
+    // 绑定删除按钮事件
+    document.querySelectorAll('.weibo-delete-btn').forEach(btn => {
+      btn.addEventListener('click', e => {
+        e.preventDefault();
+        e.stopPropagation();
+        const postId = btn.dataset.postId;
+        if (postId) {
+          this.deletePost(postId);
+        }
+      });
+    });
+
     // 绑定点赞事件
     document.querySelectorAll('.like-btn').forEach(btn => {
       btn.addEventListener('click', e => {
@@ -1763,6 +1776,83 @@ class WeiboUI {
       }
 
       console.log('[Weibo UI] 当前页面已设置:', page);
+    }
+  }
+
+  /**
+   * 删除微博及其所有评论和回复
+   */
+  async deletePost(postId) {
+    console.log('[Weibo UI] 开始删除微博:', postId);
+
+    try {
+      // 显示确认对话框
+      if (!confirm(`确定要删除微博 ID: ${postId} 及其所有评论吗？此操作不可撤销。`)) {
+        return;
+      }
+
+      // 获取当前聊天数据
+      const chatData = await this.getCurrentChatData();
+      if (!chatData || !chatData.messages || chatData.messages.length === 0) {
+        throw new Error('无聊天数据');
+      }
+
+      // 获取第一条消息（包含微博内容）
+      const firstMessage = chatData.messages[0];
+      if (!firstMessage || !firstMessage.mes) {
+        throw new Error('无法找到微博内容');
+      }
+
+      let content = firstMessage.mes;
+
+      // 提取微博标记之间的内容
+      const weiboRegex = /<!-- WEIBO_CONTENT_START -->([\s\S]*?)<!-- WEIBO_CONTENT_END -->/;
+      const match = content.match(weiboRegex);
+
+      if (!match) {
+        throw new Error('未找到微博内容标记');
+      }
+
+      let weiboContent = match[1];
+
+      // 删除包含指定微博ID的所有格式
+      // 删除主博文: [博文|发博人昵称|博文id|博文内容]
+      const postRegex = new RegExp(`\\[博文\\|[^|]+\\|${postId}\\|[^\\]]+\\]`, 'g');
+      weiboContent = weiboContent.replace(postRegex, '');
+
+      // 删除评论: [评论|评论人昵称|博文id|评论内容]
+      const commentRegex = new RegExp(`\\[评论\\|[^|]+\\|${postId}\\|[^\\]]+\\]`, 'g');
+      weiboContent = weiboContent.replace(commentRegex, '');
+
+      // 删除回复: [回复|回复人昵称|博文id|回复内容]
+      const replyRegex = new RegExp(`\\[回复\\|[^|]+\\|${postId}\\|[^\\]]+\\]`, 'g');
+      weiboContent = weiboContent.replace(replyRegex, '');
+
+      // 清理多余的空行
+      weiboContent = weiboContent.replace(/\n{3,}/g, '\n\n');
+
+      // 重新构建消息内容
+      const newContent = content.replace(
+        /<!-- WEIBO_CONTENT_START -->[\s\S]*?<!-- WEIBO_CONTENT_END -->/,
+        `<!-- WEIBO_CONTENT_START -->${weiboContent}<!-- WEIBO_CONTENT_END -->`
+      );
+
+      // 更新消息内容
+      await window.mobileContextEditor.modifyMessage(0, newContent);
+
+      console.log('[Weibo UI] ✅ 微博删除成功:', postId);
+
+      // 显示成功提示
+      this.showNotification('🗑️ 微博已删除', 'success');
+
+      // 刷新微博内容
+      setTimeout(() => {
+        this.refreshWeiboList();
+      }, 500);
+
+    } catch (error) {
+      console.error('[Weibo UI] 删除微博失败:', error);
+      this.showNotification('❌ 删除失败: ' + error.message, 'error');
     }
   }
 }
