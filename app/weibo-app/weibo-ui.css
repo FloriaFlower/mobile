@@ -476,7 +476,7 @@
   cursor: pointer;
   transition: all 0.2s ease;
   justify-content: center;
-  
+
 }
 
 .action-btn:hover {
@@ -1205,4 +1205,35 @@
   .stat-label {
     font-size: 6px;
   }
+}
+
+/* 删除按钮样式 */
+.delete-btn.weibo-delete-btn {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background: #9ca3af;
+  color: white;
+  border: none;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  z-index: 10;
+}
+
+.delete-btn.weibo-delete-btn:hover {
+  background: #6b7280;
+  transform: scale(1.05);
+}
+
+.delete-btn.weibo-delete-btn:active {
+  transform: scale(0.95);
+}
+
+/* 确保post-header有相对定位以便删除按钮绝对定位 */
+.post-header {
+  position: relative;
 }
