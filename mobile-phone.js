@@ -6411,7 +6411,13 @@ class MobilePhone {
 
   // 加载欲色剧场应用
   async loadYuseTheaterApp() {
-    console.log('[Mobile Phone] 开始加载欲色剧场应用模块...');
+    console.log('[Mobile Phone] 🎞️ 开始加载欲色剧场应用模块（触发脚本加载）');
+     // 核心：添加加载前日志，确认是否进入该方法
+     console.log('[Mobile Phone] 检查当前全局函数状态：', {
+       getYuseTheaterAppContent: typeof window.getYuseTheaterAppContent,
+       bindYuseTheaterEvents: typeof window.bindYuseTheaterEvents,
+       yuseTheaterApp: typeof window.yuseTheaterApp
+     });
     // 检查是否已加载
     if (window.getYuseTheaterAppContent && window.bindYuseTheaterEvents && window.yuseTheaterApp) {
       console.log('[Mobile Phone] 欲色剧场模块已存在，跳过加载');
@@ -6459,21 +6465,27 @@ class MobilePhone {
       cssLink.rel = 'stylesheet';
       cssLink.href = '/scripts/extensions/third-party/mobile/styles/yuse-theater.css';
       cssLink.onload = () => {
-        console.log('[Mobile Phone] yuse-theater.css 加载完成');
+        console.log('[Mobile Phone] ✅ yuse-theater.css 加载完成（Network可查）');
         checkComplete();
       };
-      cssLink.onerror = () => handleError('yuse-theater.css');
+      cssLink.onerror = () => {
+        handleError('yuse-theater.css（路径可能错误）');
+      };
       document.head.appendChild(cssLink);
+      console.log('[Mobile Phone] 已发起yuse-theater.css请求，路径：', cssLink.href);
 
       // 2. 加载应用逻辑文件（yuse-theater-app.js）
       const appScript = document.createElement('script');
       appScript.src = '/scripts/extensions/third-party/mobile/app/yuse-theater-app.js';
       appScript.onload = () => {
-        console.log('[Mobile Phone] yuse-theater-app.js 加载完成');
+        console.log('[Mobile Phone] ✅ yuse-theater-app.js 加载完成（Network可查）');
         checkComplete();
       };
-      appScript.onerror = () => handleError('yuse-theater-app.js');
+      appScript.onerror = () => {
+        handleError('yuse-theater-app.js（路径可能错误）');
+      };
       document.head.appendChild(appScript);
+      console.log('[Mobile Phone] 已发起yuse-theater-app.js请求，路径：', appScript.src);      
     });
     return window._yuseTheaterAppLoading;
   }
@@ -7080,16 +7092,46 @@ class MobilePhone {
 
 // 初始化手机界面
 function initMobilePhone() {
-  window.mobilePhone = new MobilePhone();
-  console.log('[Mobile Phone] 提前挂载window.mobilePhone实例');
+  try {
+    // 核心修复：优先创建并挂载实例，不等待DOM就绪（参考论坛APP全局实例暴露逻辑）
+    const mobileInstance = new MobilePhone();
+    window.mobilePhone = mobileInstance;
+    console.log('[Mobile Phone] ✅ 提前挂载window.mobilePhone实例（优先级最高）');
+    console.log('[Mobile Phone] 实例信息：', window.mobilePhone);
 
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', () => {
-      console.log('[Mobile Phone] DOM就绪，完成初始化');
-    });
-  } else {
-    console.log('[Mobile Phone] 文档已就绪，初始化完成');
+    // 原有DOM就绪逻辑保留，但实例已提前创建
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', () => {
+        console.log('[Mobile Phone] DOM就绪，补充初始化');
+        // DOM就绪后同步更新一次界面（防止实例创建时DOM未就绪的问题）
+        if (window.mobilePhone && window.mobilePhone.updateHeader) {
+          window.mobilePhone.updateHeader({ app: 'home', title: '主界面', view: 'main' });
+        }
+      });
+    } else {
+      console.log('[Mobile Phone] 文档已就绪，初始化完成');
+    }
+  } catch (error) {
+    // 核心修复：暴露实例创建失败的错误（之前未捕获）
+    console.error('[Mobile Phone] ❌ 实例创建失败，无法挂载window.mobilePhone：', error);
+    // 给用户显示可视化错误
+    const errorEl = document.createElement('div');
+    errorEl.style.cssText = `
+      position: fixed;
+      top: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: #e74c3c;
+      color: white;
+      padding: 12px 20px;
+      border-radius: 8px;
+      z-index: 99999;
+      font-size: 14px;
+    `;
+    errorEl.innerHTML = `❌ 手机核心实例创建失败：${error.message}<br>请刷新页面重试`;
+    document.body.appendChild(errorEl);
   }
 }
-// 立即执行初始化（确保最先执行）
+// 立即执行初始化（确保最先执行，比所有APP脚本都早）
 initMobilePhone();
+
