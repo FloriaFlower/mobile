@@ -492,7 +492,7 @@ if (typeof window.LiveApp === 'undefined') {
   }
   /**
    * 直播状态管理器
-   * 负责管理直播状态和数据存储
+   * 负责管理直播状态和数据存储（新增特色会话状态管理）
    */
   class LiveStateManager {
     constructor() {
@@ -502,27 +502,59 @@ if (typeof window.LiveApp === 'undefined') {
       this.danmakuList = [];
       this.giftList = [];
       this.recommendedInteractions = [];
-      // 移除弹幕数量限制，显示所有历史弹幕
+      // 新增：特色直播会话状态（区分“残留关键词”和“真实会话”）
+      this.isSpecialSessionActive = false;
+      // 加载持久化的会话状态
+      this.loadSpecialSessionState();
     }
+
+    // 新增：加载特色会话状态
+    loadSpecialSessionState() {
+      try {
+        const sessionState = localStorage.getItem('liveAppSpecialSession');
+        this.isSpecialSessionActive = sessionState === 'true';
+      } catch (error) {
+        console.error('[Live App] 读取特色会话状态失败:', error);
+        this.isSpecialSessionActive = false;
+      }
+    }
+
+    // 新增：保存特色会话状态
+    saveSpecialSessionState(isActive) {
+      try {
+        localStorage.setItem('liveAppSpecialSession', isActive);
+        this.isSpecialSessionActive = isActive;
+      } catch (error) {
+        console.error('[Live App] 保存特色会话状态失败:', error);
+      }
+    }
+
     /**
-     * 开始直播
+     * 开始直播（修改：关联特色会话状态）
      */
-    startLive() {
+    startLive(isSpecial = false) {
       this.isLiveActive = true;
       this.currentViewerCount = 0;
       this.currentLiveContent = '';
       this.danmakuList = [];
       this.giftList = [];
       this.recommendedInteractions = [];
-      console.log('[Live App] 直播状态已激活');
+      // 只有特色直播才标记会话
+      if (isSpecial) {
+        this.saveSpecialSessionState(true);
+      }
+      console.log('[Live App] 直播状态已激活 | 特色会话:', this.isSpecialSessionActive);
     }
+
     /**
-     * 结束直播
+     * 结束直播（修改：清除特色会话状态）
      */
     endLive() {
       this.isLiveActive = false;
-      console.log('[Live App] 直播状态已停止');
+      this.saveSpecialSessionState(false); // 结束任何直播都清除会话
+      console.log('[Live App] 直播状态已停止 | 特色会话已清除');
     }
+
     /**
      * 更新直播数据
      * @param {Object} liveData - 解析后的直播数据
@@ -558,7 +590,6 @@ if (typeof window.LiveApp === 'undefined') {
         if (newDanmaku.length > 0) {
           this.danmakuList = this.danmakuList.concat(newDanmaku);
           console.log(`[Live App] 添加 ${newDanmaku.length} 条新弹幕，总计 ${this.danmakuList.length} 条`);
-          // 移除弹幕数量限制，保留所有历史弹幕
           console.log(`[Live App] 保留所有弹幕，当前总数: ${this.danmakuList.length}`);
         }
       }
@@ -579,6 +610,7 @@ if (typeof window.LiveApp === 'undefined') {
         }
       }
     }
+
     /**
      * 获取当前直播状态
      */
@@ -590,8 +622,10 @@ if (typeof window.LiveApp === 'undefined') {
         danmakuList: [...this.danmakuList], // 返回副本
         giftList: [...this.giftList], // 返回副本
         recommendedInteractions: [...this.recommendedInteractions], // 返回副本
+        isSpecialSessionActive: this.isSpecialSessionActive, // 新增：返回会话状态
       };
     }
+
     /**
      * 清空所有数据
      */
@@ -605,7 +639,7 @@ if (typeof window.LiveApp === 'undefined') {
     }
   }
   /**
-   * 直播应用主类（核心修复：初始进入不锁屏）
+   * 直播应用主类（核心修复：会话级锁屏控制）
    * 协调各个模块，提供统一的接口
    */
   class LiveApp {
@@ -623,33 +657,34 @@ if (typeof window.LiveApp === 'undefined') {
       this.pendingAppearDanmakuSigs = new Set(); // 待逐条出现的弹幕签名
       this.pendingAppearGiftSigs = new Set(); // 待逐条出现的礼物签名
       this.isLocked = false; // 锁屏状态标记
-      this.isSpecialLiveActive = false; // 新增：是否为特色直播场景（PK/连麦）
       this.init();
     }
+
     /**
-     * 初始化应用（核心修复1：仅特色直播场景才锁屏）
+     * 初始化应用（修改：基于“会话+锁屏”双条件判断）
      */
     init() {
-      console.log('[Live App] 直播应用初始化开始（奶油风版+锁屏修复）');
-      // 加载localStorage中的锁屏状态
+      console.log('[Live App] 直播应用初始化开始（会话级锁屏修复）');
+      // 加载锁屏和会话状态
       this.loadLockState();
-      // 核心修复：初始化时先强制将特色场景标记设为false（未选任何选项前必为非特色）
-      this.isSpecialLiveActive = false;
-      // 检测活跃直播数据（若之前没下播，这里会更新isSpecialLiveActive）
-      this.detectActiveLive();
-      // 新逻辑：必须同时满足“锁屏状态+活跃特色直播”才显示锁屏
-      if (this.isLocked && this.isSpecialLiveActive) {
-        setTimeout(() => this.showLockScreen(), 100);
+      this.stateManager.loadSpecialSessionState(); // 读取真实会话状态
+      // 核心逻辑：只有“有未结束的特色会话”且“锁屏状态”才显示锁屏
+      if (this.isLocked && this.stateManager.isSpecialSessionActive) {
+        setTimeout(() => this.showLockScreen(), 100); // 延迟显示，确保DOM加载
       } else {
-        // 只要有一个不满足（尤其是进入选择页面时），强制清除所有锁屏残留
+        // 任何一个条件不满足，强制清除所有锁屏残留
         this.saveLockState(false);
         this.isLocked = false;
-        this.hideLockScreen(); // 主动隐藏，避免残留
-        console.log('[Live App] 初始化：非特色直播场景，已清除锁屏残留');
+        this.hideLockScreen();
+        this.stateManager.saveSpecialSessionState(false); // 清除无效会话
+        console.log('[Live App] 初始化：非活跃特色会话，已清除所有锁屏残留');
       }
+      // 检测活跃直播数据（仅更新直播内容，不判断特色场景）
+      this.detectActiveLive();
       this.isInitialized = true;
-      console.log('[Live App] 初始化完成 | 锁屏状态:', this.isLocked, '| 特色直播场景:', this.isSpecialLiveActive);
+      console.log('[Live App] 初始化完成 | 锁屏:', this.isLocked, '| 特色会话:', this.stateManager.isSpecialSessionActive);
     }
+
     /**
      * 加载锁屏状态（持久化）
      */
@@ -663,6 +698,7 @@ if (typeof window.LiveApp === 'undefined') {
         this.isLocked = false;
       }
     }
+
     /**
      * 保存锁屏状态（持久化）
      */
@@ -675,37 +711,33 @@ if (typeof window.LiveApp === 'undefined') {
         console.error('[Live App] 保存锁屏状态失败:', error);
       }
     }
+
     /**
-     * 检测活跃直播数据（核心修复2：标记是否为特色直播场景）
+     * 检测活跃直播数据（修改：不再通过关键词判断特色场景）
      */
     detectActiveLive() {
       try {
-        console.log('[Live App] 检测活跃的直播数据...');
+        console.log('[Live App] 检测活跃直播数据...');
         const chatContent = this.dataParser.getChatContent();
-        if (!chatContent) {
-          this.isSpecialLiveActive = false; // 无聊天内容 → 非特色场景
-          console.log('[Live App] 无聊天内容，保持开始直播状态 | 特色场景:', this.isSpecialLiveActive);
-          return;
-        }
         const hasActiveLive = this.hasActiveLiveFormats(chatContent);
+
         if (hasActiveLive) {
-          // 判断是否为特色直播（含PK/连麦关键词）
-          this.isSpecialLiveActive = chatContent.includes('直播PK') || chatContent.includes('直播连麦');
-          this.stateManager.startLive();
+          // 基于会话状态判断是否为特色直播，不依赖关键词
+          this.stateManager.startLive(this.stateManager.isSpecialSessionActive);
           this.currentView = 'live';
           this.eventListener.startListening();
           const liveData = this.dataParser.parseLiveData(chatContent);
           this.stateManager.updateLiveData(liveData);
-          console.log('[Live App] 检测到活跃直播 | 特色场景:', this.isSpecialLiveActive);
+          console.log('[Live App] 检测到活跃直播 | 特色会话:', this.stateManager.isSpecialSessionActive);
         } else {
-          this.isSpecialLiveActive = false; // 无活跃直播 → 非特色场景
-          console.log('[Live App] 无活跃直播数据 | 特色场景:', this.isSpecialLiveActive);
+          this.currentView = 'start';
+          console.log('[Live App] 无活跃直播数据');
         }
       } catch (error) {
         console.error('[Live App] 检测活跃直播失败:', error);
-        this.isSpecialLiveActive = false;
       }
     }
+
     /**
      * 检查是否有活跃的直播格式
      */
@@ -729,49 +761,57 @@ if (typeof window.LiveApp === 'undefined') {
       }
       return false;
     }
+
     /**
      * 获取直播状态
      */
     get isLiveActive() {
       return this.stateManager.isLiveActive;
     }
+
     /**
-     * 开始直播（核心修复3：仅特色直播触发锁屏）
+     * 开始直播（修改：特色直播关联会话+锁屏）
      */
     async startLive(initialInteraction, isSpecial = false, specialType = '') {
       try {
         let message = '';
-        if (isSpecial) {
-          // 特色直播：标记场景+锁屏
-          message = `${specialType}，请按照正确的直播格式要求生成本场人数、直播内容、弹幕、打赏和推荐互动。此次回复内仅生成一次本场人数和直播内容格式，直播内容需简洁，最后生成四条推荐互动，禁止错误格式。`;
-        } else {
-          // 自由直播：强制清除锁屏+标记非特色场景
+        // 1. 自由直播：强制清除所有锁屏/会话状态
+        if (!isSpecial) {
           message = `用户开始${initialInteraction ? '“' + initialInteraction + '”主题' : ''}自由直播，请按照正确的直播格式要求生成本场人数，直播内容，弹幕，打赏和推荐互动。此次回复内仅生成一次本场人数和直播内容格式，直播内容需要简洁。最后需要生成四条推荐互动。禁止使用错误格式。`;
-          this.isSpecialLiveActive = false;
+          this.saveLockState(false);
           this.isLocked = false;
-          this.hideLockScreen(); // 主动隐藏锁屏
-          this.saveLockState(false); // 清除持久化状态
+          this.hideLockScreen();
+          this.stateManager.saveSpecialSessionState(false); // 确保会话关闭
+        } 
+        // 2. 特色直播：仅拼接命令，不提前修改状态
+        else {
+          message = `${specialType}，请按照正确的直播格式要求生成本场人数、直播内容、弹幕、打赏和推荐互动。此次回复内仅生成一次本场人数和直播内容格式，直播内容需简洁，最后生成四条推荐互动，禁止错误格式。`;
         }
-        // 先发送命令给AI，成功后再处理特色直播的锁屏逻辑
+
+        // 3. 发送命令成功后，才处理特色直播的锁屏和会话
         const sendSuccess = await this.sendToSillyTavern(message);
         if (sendSuccess) {
-          this.stateManager.startLive();
+          this.stateManager.startLive(isSpecial); // 特色直播会标记会话
           this.currentView = 'live';
           this.eventListener.startListening();
           this.updateAppContent();
-          // 仅特色直播提交后，设置锁屏并持久化
+
+          // 4. 仅特色直播发送成功后，才锁屏并保存状态
           if (isSpecial) {
-            this.isSpecialLiveActive = true;
-            this.showLockScreen();
+            this.isLocked = true;
             this.saveLockState(true);
+            this.showLockScreen(); // 发送成功后再锁屏
+            console.log('[Live App] 特色直播启动成功，已锁屏');
+          } else {
+            console.log('[Live App] 自由直播启动成功，无锁屏');
           }
-          console.log(`[Live App] ${isSpecial ? '特色' : '自由'}直播已开始 | 锁屏状态: ${this.isLocked}`);
         }
       } catch (error) {
         console.error('[Live App] 开始直播失败:', error);
         this.showToast('开始直播失败: ' + error.message, 'error');
       }
     }
+
     /**
      * 结束直播（清除锁屏状态）
      */
@@ -782,22 +822,22 @@ if (typeof window.LiveApp === 'undefined') {
         this.eventListener.stopListening();
         // 转换历史弹幕格式
         await this.convertLiveToHistory();
-        // 清除锁屏状态（持久化）
+        // 清除锁屏+会话状态（持久化）
         this.hideLockScreen();
         this.saveLockState(false);
-        this.isSpecialLiveActive = false;
+        this.stateManager.endLive(); // 内部会清除会话
         // 更新状态
-        this.stateManager.endLive();
         this.currentView = 'start';
         // 更新界面
         this.updateAppContent();
         this.showToast('直播已结束', 'success');
-        console.log('[Live App] 直播已结束，锁屏状态已清除');
+        console.log('[Live App] 直播已结束，锁屏+会话状态已清除');
       } catch (error) {
         console.error('[Live App] 结束直播失败:', error);
         this.showToast('结束直播失败: ' + error.message, 'error');
       }
     }
+
     /**
      * 继续直播互动
      * @param {string} interaction - 互动内容
@@ -818,6 +858,7 @@ if (typeof window.LiveApp === 'undefined') {
         this.showToast('发送互动失败: ' + error.message, 'error');
       }
     }
+
     /**
      * 解析新的直播数据
      */
@@ -890,6 +931,7 @@ if (typeof window.LiveApp === 'undefined') {
         console.error('[Live App] 解析直播数据失败:', error);
       }
     }
+
     /**
      * 防抖更新界面内容
      */
@@ -902,6 +944,7 @@ if (typeof window.LiveApp === 'undefined') {
       this.updateAppContent();
       this.updateHeader(); // 同时更新header
     }
+
     /**
      * 更新应用内容
      */
@@ -924,13 +967,14 @@ if (typeof window.LiveApp === 'undefined') {
             // 渲染后尝试触发逐条出现动画（避免丢帧）
             this.runAppearSequence();
           }
-          // 仅特色直播场景且锁屏时，才显示锁屏
-          if (this.isLocked && this.isSpecialLiveActive) {
+          // 仅特色会话+锁屏时，才显示锁屏
+          if (this.isLocked && this.stateManager.isSpecialSessionActive) {
             this.showLockScreen();
           }
         }, 50);
       }
     }
+
     /**
      * 获取应用内容
      */
@@ -944,8 +988,9 @@ if (typeof window.LiveApp === 'undefined') {
           return this.renderStartView();
       }
     }
+
     /**
-     * 渲染开始直播界面（新增锁屏提示文字）
+     * 渲染开始直播界面（修改：锁屏元素初始完全隐藏）
      */
     renderStartView() {
       return `
@@ -1076,14 +1121,15 @@ if (typeof window.LiveApp === 'undefined') {
               </div>
             </div>
           </div>
-          <!-- 直播锁屏界面（优化：深色遮罩+白色按钮+提示文字） -->
-          <div id="live-lock-screen" style="display: none; position: fixed; inset: 0; z-index: 9999; background: rgba(0, 0, 0, 0.6); backdrop-filter: blur(10px); display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px;">
+          <!-- 直播锁屏界面（修改：初始完全隐藏） -->
+          <div id="live-lock-screen" style="display: none !important; position: fixed; inset: 0; z-index: 9999; background: rgba(0, 0, 0, 0.6); backdrop-filter: blur(10px); display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px;">
             <button id="end-live-btn" style="padding: 18px 40px; background: white; color: #A68770; border: 3px solid #A68770; border-radius: 50px; font-size: 20px; font-weight: 700; cursor: pointer; box-shadow: 0 0 30px rgba(166, 135, 112, 0.8); transition: all 0.3s ease; margin-bottom: 20px;">下播</button>
             <div id="lock-screen-tip" style="color: white; font-size: 16px; text-align: center; text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);">点击下播前，模拟器将保持锁屏状态</div>
           </div>
         </div>
       `;
     }
+
     /**
      * 渲染直播中界面（适配锁屏优化）
      */
@@ -1181,14 +1227,15 @@ if (typeof window.LiveApp === 'undefined') {
               </ul>
             </div>
           </div>
-          <!-- 直播锁屏界面（优化：与开始界面统一样式） -->
-          <div id="live-lock-screen" style="display: none; position: fixed; inset: 0; z-index: 9999; background: rgba(0, 0, 0, 0.6); backdrop-filter: blur(10px); display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px;">
+          <!-- 直播锁屏界面（修改：初始完全隐藏） -->
+          <div id="live-lock-screen" style="display: none !important; position: fixed; inset: 0; z-index: 9999; background: rgba(0, 0, 0, 0.6); backdrop-filter: blur(10px); display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px;">
             <button id="end-live-btn" style="padding: 18px 40px; background: white; color: #A68770; border: 3px solid #A68770; border-radius: 50px; font-size: 20px; font-weight: 700; cursor: pointer; box-shadow: 0 0 30px rgba(166, 135, 112, 0.8); transition: all 0.3s ease; margin-bottom: 20px;">下播</button>
             <div id="lock-screen-tip" style="color: white; font-size: 16px; text-align: center; text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);">点击下播前，模拟器将保持锁屏状态</div>
           </div>
         </div>
       `;
     }
+
     /**
      * 绑定事件（含锁屏按钮交互）
      */
@@ -1401,6 +1448,7 @@ if (typeof window.LiveApp === 'undefined') {
         this.showToast('事件绑定失败: ' + error.message, 'error');
       }
     }
+
     // 若接近底部则保持不动；若不在底部则瞬时跳到底部（原有）
     jumpToBottomIfNeeded(container) {
       const threshold = 10; // px判定阈值
@@ -1410,6 +1458,7 @@ if (typeof window.LiveApp === 'undefined') {
         container.scrollTop = container.scrollHeight;
       }
     }
+
     /**
      * 显示弹窗（原有）
      */
@@ -1420,6 +1469,7 @@ if (typeof window.LiveApp === 'undefined') {
         modal.classList.add('active');
       }
     }
+
     /**
      * 隐藏弹窗（原有）
      */
@@ -1430,6 +1480,7 @@ if (typeof window.LiveApp === 'undefined') {
         modal.classList.remove('active');
       }
     }
+
     /**
      * 隐藏所有弹窗（原有）
      */
@@ -1440,47 +1491,50 @@ if (typeof window.LiveApp === 'undefined') {
         modal.classList.remove('active');
       });
     }
+
     /**
-     * 显示锁屏（禁用底层交互）
+     * 显示锁屏（修改：双条件校验+仅覆盖手机模拟器）
      */
     showLockScreen() {
       const lockScreen = document.getElementById('live-lock-screen');
-      if (lockScreen) {
-        // 核心：仅覆盖手机模拟器，不影响外部页面
-        const mobileContainer = document.querySelector('.mobile-phone-container');
-        if (mobileContainer) {
-          // 给手机模拟器添加相对定位，确保锁屏在模拟器内部悬浮
-          mobileContainer.style.position = 'relative';
-          // 锁屏样式：覆盖整个模拟器，只显示下播按钮
-          lockScreen.style.cssText = `
-            position: absolute; 
-            top: 0; 
-            left: 0; 
-            right: 0; 
-            bottom: 0; 
-            z-index: 9999; 
-            background: rgba(0, 0, 0, 0.8); 
-            backdrop-filter: blur(10px); 
-            display: flex; 
-            flex-direction: column; 
-            align-items: center; 
-            justify-content: center; 
-            padding: 20px;
-          `;
-          // 仅允许下播按钮点击，屏蔽模拟器内其他元素
-          mobileContainer.style.pointerEvents = 'none';
-          lockScreen.style.pointerEvents = 'auto';
-          // 确保锁屏元素挂载到手机容器内，避免层级问题
-          if (lockScreen.parentElement !== mobileContainer) {
-            mobileContainer.appendChild(lockScreen);
-          }
-        } else {
-          // 兜底：无手机容器时仍显示锁屏（兼容异常场景）
-          lockScreen.style.display = 'flex';
-        }
-        console.log('[Live App] 手机模拟器已锁屏，仅下播按钮可点击');
+      const mobileContainer = document.querySelector('.mobile-phone-container');
+      if (!lockScreen || !mobileContainer) return;
+
+      // 双条件校验：必须有未结束的特色会话 + 锁屏状态
+      if (!this.isLocked || !this.stateManager.isSpecialSessionActive) {
+        lockScreen.style.display = 'none';
+        mobileContainer.style.pointerEvents = 'auto';
+        return;
       }
+
+      // 强制锁屏样式：仅覆盖手机模拟器，屏蔽所有其他交互
+      mobileContainer.style.position = 'relative';
+      lockScreen.style.cssText = `
+        position: absolute; 
+        top: 0; 
+        left: 0; 
+        right: 0; 
+        bottom: 0; 
+        z-index: 9999; 
+        background: rgba(0, 0, 0, 0.8); 
+        backdrop-filter: blur(10px); 
+        display: flex; 
+        flex-direction: column; 
+        align-items: center; 
+        justify-content: center; 
+        padding: 20px;
+      `;
+      // 仅允许下播按钮点击，屏蔽模拟器内其他元素
+      mobileContainer.style.pointerEvents = 'none';
+      lockScreen.style.pointerEvents = 'auto';
+
+      // 确保锁屏元素挂载到手机容器内，避免层级问题
+      if (lockScreen.parentElement !== mobileContainer) {
+        mobileContainer.appendChild(lockScreen);
+      }
+      console.log('[Live App] 手机模拟器已锁屏，仅下播按钮可点击');
     }
+
     /**
      * 隐藏锁屏（恢复底层交互）
      */
@@ -1498,6 +1552,7 @@ if (typeof window.LiveApp === 'undefined') {
         console.log('[Live App] 隐藏锁屏界面，恢复底层交互');
       }
     }
+      
     /**
      * 设置渲染权（原有）
      */
