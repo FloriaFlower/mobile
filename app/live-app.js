@@ -990,7 +990,7 @@ if (typeof window.LiveApp === 'undefined') {
     }
 
     /**
-     * 渲染开始直播界面（修改：锁屏元素初始完全隐藏）
+     * 渲染开始直播界面
      */
     renderStartView() {
       return `
@@ -1001,7 +1001,7 @@ if (typeof window.LiveApp === 'undefined') {
               <p>选择你想要的直播功能</p>
             </div>
             <div class="live-options">
-              <!-- 1. 自由直播（原“我要直播”） -->
+              <!-- 1. 自由直播 -->
               <div class="live-option-card" id="start-streaming-option">
                 <div class="option-icon">🎥</div>
                 <div class="option-content">
@@ -1010,7 +1010,7 @@ if (typeof window.LiveApp === 'undefined') {
                 </div>
                 <div class="option-arrow">→</div>
               </div>
-              <!-- 2. 特色直播（新增） -->
+              <!-- 2. 特色直播 -->
               <div class="live-option-card" id="special-streaming-option">
                 <div class="option-icon">✨</div>
                 <div class="option-content">
@@ -1019,9 +1019,9 @@ if (typeof window.LiveApp === 'undefined') {
                 </div>
                 <div class="option-arrow">→</div>
               </div>
-              <!-- 3. 观看直播（原有） -->
+              <!-- 3. 观看直播 -->
               <div class="live-option-card" id="watch-streaming-option">
-                <div class="option-icon">📺</div>
+                <div class="option-icon">📀</div>
                 <div class="option-content">
                   <h3>观看直播</h3>
                   <p>观看其他主播的精彩直播</p>
@@ -1030,9 +1030,9 @@ if (typeof window.LiveApp === 'undefined') {
               </div>
             </div>
           </div>
-          <!-- 自由直播弹窗（原有，仅文字修改） -->
-          <div class="modal" id="start-live-modal" style="display: none;">
-            <div class="modal-content">
+          <!-- 自由直播弹窗 -->
+          <div class="live-modal" id="start-live-modal" style="display: none;">
+            <div class="live-modal-content">
               <div class="modal-header">
                 <h3>开启自由直播</h3>
                 <button class="modal-close-btn">&times;</button>
@@ -1058,9 +1058,9 @@ if (typeof window.LiveApp === 'undefined') {
               </div>
             </div>
           </div>
-          <!-- 特色直播弹窗（新增） -->
-          <div class="modal" id="special-live-modal" style="display: none;">
-            <div class="modal-content special-live-modal">
+          <!-- 特色直播弹窗 -->
+          <div class="live-modal" id="special-live-modal" style="display: none;">
+            <div class="live-modal-content special-live-modal">
               <div class="modal-header">
                 <h3>选择特色直播模式</h3>
                 <button class="modal-close-btn">&times;</button>
@@ -1079,9 +1079,9 @@ if (typeof window.LiveApp === 'undefined') {
               </div>
             </div>
           </div>
-          <!-- PK直播输入弹窗（新增） -->
-          <div class="modal" id="pk-input-modal" style="display: none;">
-            <div class="modal-content">
+          <!-- PK直播输入弹窗 -->
+          <div class="live-modal" id="pk-input-modal" style="display: none;">
+            <div class="live-modal-content">
               <div class="modal-header">
                 <h3>PK直播设置</h3>
                 <button class="modal-close-btn">&times;</button>
@@ -1090,16 +1090,16 @@ if (typeof window.LiveApp === 'undefined') {
                 <input
                   type="text"
                   id="pk-anchor-input"
-                  placeholder="输入你要PK的主播"
+                  placeholder="输入你想PK的主播"
                   class="pk-input"
                 >
-                <button class="start-live-btn" id="submit-pk-live">提交并开始PK</button>
+                <button class="start-live-btn" id="submit-pk-live">发送/同意PK申请</button>
               </div>
             </div>
           </div>
-          <!-- 粉丝连麦选择弹窗（新增） -->
-          <div class="modal" id="link-select-modal" style="display: none;">
-            <div class="modal-content">
+          <!-- 粉丝连麦选择弹窗 -->
+          <div class="live-modal" id="link-select-modal" style="display: none;">
+            <div class="live-modal-content">
               <div class="modal-header">
                 <h3>选择连麦对象</h3>
                 <button class="modal-close-btn">&times;</button>
@@ -1114,14 +1114,14 @@ if (typeof window.LiveApp === 'undefined') {
                 <input
                   type="text"
                   id="custom-link-input"
-                  placeholder="自定义连麦对象（选填）"
+                  placeholder="自定义连麦对象"
                   class="pk-input"
                 >
-                <button class="start-live-btn" id="submit-link-live">提交并开始连麦</button>
+                <button class="start-live-btn" id="submit-link-live">发送/接受连麦邀请</button>
               </div>
             </div>
           </div>
-          <!-- 直播锁屏界面（修改：初始完全隐藏） -->
+          <!-- 直播锁屏界面 -->
           <div id="live-lock-screen" style="display: none !important; position: fixed; inset: 0; z-index: 9999; background: rgba(0, 0, 0, 0.6); backdrop-filter: blur(10px); display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px;">
             <button id="end-live-btn" style="padding: 18px 40px; background: white; color: #A68770; border: 3px solid #A68770; border-radius: 50px; font-size: 20px; font-weight: 700; cursor: pointer; box-shadow: 0 0 30px rgba(166, 135, 112, 0.8); transition: all 0.3s ease; margin-bottom: 20px;">下播</button>
             <div id="lock-screen-tip" style="color: white; font-size: 16px; text-align: center; text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);">点击下播前，模拟器将保持锁屏状态</div>
@@ -1193,8 +1193,8 @@ if (typeof window.LiveApp === 'undefined') {
             </div>
           </div>
           <!-- 自定义互动弹窗 -->
-          <div id="interaction-modal" class="modal">
-            <div class="modal-content">
+          <div id="interaction-modal" class="live-modal">
+            <div class="live-modal-content">
               <div class="modal-header">
                 <h3>自定义互动</h3>
                 <button class="modal-close-btn">&times;</button>
@@ -1206,8 +1206,8 @@ if (typeof window.LiveApp === 'undefined') {
             </div>
           </div>
           <!-- 礼物列表弹窗 -->
-          <div id="gift-modal" class="modal">
-            <div class="modal-content">
+          <div id="gift-modal" class="live-modal">
+            <div class="live-modal-content">
               <div class="modal-header">
                 <h3>礼物流水</h3>
                 <button class="modal-close-btn">&times;</button>
@@ -1460,37 +1460,29 @@ if (typeof window.LiveApp === 'undefined') {
     }
 
     /**
-     * 显示弹窗（原有）
+     * 显示弹窗
      */
-    showModal(modalId) {
-      const modal = document.getElementById(modalId);
-      if (modal) {
-        modal.style.display = 'flex';
-        modal.classList.add('active');
-      }
+  showModal(modalId) {
+    const modal = document.getElementById(modalId);
+    if (modal) {
+      modal.style.display = 'flex';
+      modal.classList.add('live-modal-active'); // 新增专属激活类
     }
-
-    /**
-     * 隐藏弹窗（原有）
-     */
-    hideModal(modalId) {
-      const modal = document.getElementById(modalId);
+  }
+  hideModal(modalId) {
+    const modal = document.getElementById(modalId);
       if (modal) {
         modal.style.display = 'none';
-        modal.classList.remove('active');
+        modal.classList.remove('live-modal-active');
       }
     }
-
-    /**
-     * 隐藏所有弹窗（原有）
-     */
-    hideAllModals() {
-      const modals = document.querySelectorAll('.modal');
-      modals.forEach(modal => {
-        modal.style.display = 'none';
-        modal.classList.remove('active');
-      });
-    }
+  hideAllModals() {
+    const modals = document.querySelectorAll('.live-modal'); // 匹配专属类名
+    modals.forEach(modal => {
+      modal.style.display = 'none';
+      modal.classList.remove('live-modal-active');
+    });
+  }
 
     /**
      * 显示锁屏（修
