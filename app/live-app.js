@@ -1380,9 +1380,27 @@ if (typeof window.LiveApp === 'undefined') {
           const featureStreamingOption = appContainer.querySelector('#feature-streaming-option');
           if (featureStreamingOption) {
             featureStreamingOption.addEventListener('click', () => {
-              this.showModal('feature-live-modal');
+              const featureModal = document.getElementById('feature-live-modal');
+              if (featureModal) {
+                this.showModal('feature-live-modal');
+                console.log('[Live App] 点击特色直播，显示 feature-live-modal');
+              } else {
+                console.error('[Live App] 未找到 feature-live-modal 弹窗');
+                this.showToast('弹窗未加载，请重试', 'error');
+              }
             });
           }
+          const pkModeBtn = appContainer.querySelector('.feature-mode-btn[data-mode="pk"]');
+          const connectModeBtn = appContainer.querySelector('.feature-mode-btn[data-mode="connect"]');
+          const pkInputModal = document.getElementById('pk-input-modal');
+          const connectSelectModal = document.getElementById('connect-select-modal');
+          if (pkModeBtn && pkInputModal) {
+            pkModeBtn.addEventListener('click', () => {
+              pkInputModal.style.display = 'flex';
+              pkInputModal.classList.add('active');
+              console.log('[Live App] 选择PK模式，显示 pk-input-modal');
+            });
+          }          
           // PK模式点击：显示输入框
           const pkLiveMode = appContainer.querySelector('#pk-live-mode');
           if (pkLiveMode) {
@@ -1432,6 +1450,12 @@ if (typeof window.LiveApp === 'undefined') {
             });
           });
 
+          if (connectModeBtn && connectSelectModal) {
+            connectModeBtn.addEventListener('click', () => {
+              connectSelectModal.style.display = 'flex';
+              connectSelectModal.classList.add('active');
+            });
+          }
           // 观看直播选项卡
           const watchStreamingOption = appContainer.querySelector('#watch-streaming-option');
           if (watchStreamingOption) {
