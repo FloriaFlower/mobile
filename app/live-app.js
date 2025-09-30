@@ -1493,65 +1493,70 @@ if (typeof window.LiveApp === 'undefined') {
     }
 
     /**
-     * 显示锁屏（修改：双条件校验+仅覆盖手机模拟器）
+     * 显示锁屏（修
      */
-    showLockScreen() {
-      const lockScreen = document.getElementById('live-lock-screen');
-      const mobileContainer = document.querySelector('.mobile-phone-container');
-      if (!lockScreen || !mobileContainer) return;
+  showLockScreen() {
+    const lockScreen = document.getElementById('live-lock-screen');
+    const mobileContainer = document.querySelector('.mobile-phone-container');
+    if (!lockScreen || !mobileContainer) return;
 
-      // 双条件校验：必须有未结束的特色会话 + 锁屏状态
-      if (!this.isLocked || !this.stateManager.isSpecialSessionActive) {
-        lockScreen.style.display = 'none';
-        mobileContainer.style.pointerEvents = 'auto';
-        return;
-      }
-
-      // 强制锁屏样式：仅覆盖手机模拟器，屏蔽所有其他交互
-      mobileContainer.style.position = 'relative';
-      lockScreen.style.cssText = `
-        position: absolute; 
-        top: 0; 
-        left: 0; 
-        right: 0; 
-        bottom: 0; 
-        z-index: 9999; 
-        background: rgba(0, 0, 0, 0.8); 
-        backdrop-filter: blur(10px); 
-        display: flex; 
-        flex-direction: column; 
-        align-items: center; 
-        justify-content: center; 
-        padding: 20px;
-      `;
-      // 仅允许下播按钮点击，屏蔽模拟器内其他元素
-      mobileContainer.style.pointerEvents = 'none';
-      lockScreen.style.pointerEvents = 'auto';
-
-      // 确保锁屏元素挂载到手机容器内，避免层级问题
-      if (lockScreen.parentElement !== mobileContainer) {
-        mobileContainer.appendChild(lockScreen);
-      }
-      console.log('[Live App] 手机模拟器已锁屏，仅下播按钮可点击');
+    // 双条件校验：必须有未结束的特色会话 + 锁屏状态
+    if (!this.isLocked || !this.stateManager.isSpecialSessionActive) {
+      lockScreen.style.display = 'none';
+      mobileContainer.style.pointerEvents = 'auto';
+      return;
     }
 
-    /**
-     * 隐藏锁屏（恢复底层交互）
-     */
-    hideLockScreen() {
-      const lockScreen = document.getElementById('live-lock-screen');
-      if (lockScreen) {
-        lockScreen.style.display = 'none';
-        // 恢复手机模拟器交互
-        const mobileContainer = document.querySelector('.mobile-phone-container');
-        if (mobileContainer) {
-          mobileContainer.style.pointerEvents = 'auto';
-          // 移除相对定位，避免影响其他布局
-          mobileContainer.style.position = '';
-        }
-        console.log('[Live App] 隐藏锁屏界面，恢复底层交互');
-      }
+    // 关键修复：锁屏仅覆盖模拟器内容，不修改容器position（避免屏幕消失）
+    lockScreen.style.cssText = `
+      position: absolute; 
+      top: 0; 
+      left: 0; 
+      right: 0; 
+      bottom: 0; 
+      z-index: 9999; 
+      background: var(--live-lock-bg); 
+      backdrop-filter: blur(10px); 
+      display: flex; 
+      flex-direction: column; 
+      align-items: center; 
+      justify-content: center; 
+      padding: 20px;
+    `;
+
+    // 修复：仅屏蔽模拟器内内容，保留模拟器自身交互（如悬浮按钮）
+    const mobileScreen = mobileContainer.querySelector('.mobile-screen'); // 假设模拟器屏幕有此类
+    if (mobileScreen) {
+      mobileScreen.style.pointerEvents = 'none'; // 仅屏蔽屏幕内容，不屏蔽模拟器外壳
     }
+    lockScreen.style.pointerEvents = 'auto';
+
+    // 确保锁屏挂载到模拟器容器内，避免层级问题
+    if (lockScreen.parentElement !== mobileContainer) {
+      mobileContainer.appendChild(lockScreen);
+    }
+    console.log('[Live App] 手机模拟器内容已锁屏，保留模拟器外壳交互');
+  }
+
+  /**
+   * 隐藏锁屏（修复：恢复屏幕交互，不破坏容器结构）
+   */
+  hideLockScreen() {
+    const lockScreen = document.getElementById('live-lock-screen');
+    const mobileContainer = document.querySelector('.mobile-phone-container');
+    const mobileScreen = mobileContainer?.querySelector('.mobile-screen');
+  
+    if (lockScreen) {
+      lockScreen.style.display = 'none';
+      // 恢复屏幕交互
+      if (mobileScreen) {
+        mobileScreen.style.pointerEvents = 'auto';
+      }
+      // 不清除容器position，避免影响模拟器布局
+      console.log('[Live App] 隐藏锁屏，恢复屏幕交互');
+    }
+  }
+
       
     /**
      * 设置渲染权（原有）
