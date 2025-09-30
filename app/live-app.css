@@ -102,7 +102,7 @@
   color: var(--live-primary); /* hover箭头主色 */
 }
 /* ==================== 弹窗基础样式 ==================== */
-.modal {
+.live-modal {
   position: absolute;
   inset: 0;
   background-color: rgba(0, 0, 0, 0.5);
@@ -114,18 +114,18 @@
   visibility: hidden;
   transition: opacity 0.3s, visibility 0.3s;
 }
-.modal.active {
+.live-modal.live-modal-active {
   opacity: 1;
   visibility: visible;
 }
-.modal-content {
-  background: var(--live-modal-bg); /* 奶油米白弹窗背景 */
-  border: 2px solid var(--live-border); /* 奶油黄边框 */
+.live-modal-content {
+  background: var(--live-modal-bg); 
+  border: 2px solid var(--live-border); 
   border-radius: 18px;
   padding: 25px;
   width: 85%;
   max-width: 400px;
-  color: var(--live-text-primary); /* 弹窗文字主色 */
+  color: var(--live-text-primary); 
   max-height: 80vh;
   overflow-y: auto;
   box-shadow: 0 8px 25px rgba(166, 135, 112, 0.2);
@@ -141,7 +141,7 @@
     opacity: 1;
   }
 }
-.modal-header {
+.live-modal-content .modal-header { {
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -155,7 +155,7 @@
   margin: 0;
   color: var(--live-primary); /* 弹窗标题主色 */
 }
-.modal-close-btn {
+.live-modal-content .modal-close-btn {
   background: none;
   border: none;
   color: var(--live-text-secondary); /* 关闭按钮次文字色 */
