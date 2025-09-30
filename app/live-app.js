@@ -1108,63 +1108,63 @@ if (typeof window.LiveApp === 'undefined') {
                 </button>
               </div>
             </div>
-            <!-- 3. 新增：特色直播弹窗 -->
-            <div class="modal" id="feature-live-modal" style="display: none;">
-              <div class="modal-content">
-                <div class="modal-header">
-                  <h3>选择特色直播模式</h3>
-                  <button class="modal-close-btn">&times;</button>
+          </div>
+          <!-- 3. 新增：特色直播弹窗 -->
+          <div class="modal" id="feature-live-modal" style="display: none;">
+            <div class="modal-content">
+              <div class="modal-header">
+                <h3>选择特色直播模式</h3>
+                <button class="modal-close-btn">&times;</button>
+              </div>
+              <div class="modal-body">
+                <div class="feature-mode-buttons">
+                  <!-- PK直播模式 -->
+                  <button class="feature-mode-btn" data-mode="pk">
+                    🆚 PK直播模式
+                  </button>
+                  <!-- 粉丝连麦模式 -->
+                  <button class="feature-mode-btn" data-mode="connect">
+                    🎙 粉丝连麦模式
+                  </button>
                 </div>
-                <div class="modal-body">
-                  <div class="feature-mode-buttons">
-                    <!-- PK直播模式 -->
-                    <button class="feature-mode-btn" data-mode="pk">
-                      🆚 PK直播模式
-                    </button>
-                    <!-- 粉丝连麦模式 -->
-                     <button class="feature-mode-btn" data-mode="connect">
-                      🎙 粉丝连麦模式
-                     </button>
-                  </div>
-                  <!-- PK模式输入弹窗（初始隐藏） -->
-                  <div class="modal" id="pk-input-modal" style="display: none;">
-                    <div class="modal-content">
-                      <div class="modal-header">
-                        <h3>PK直播</h3>
-                        <button class="modal-close-btn">&times;</button>
+                <!-- PK模式输入弹窗（初始隐藏） -->
+                <div class="modal" id="pk-input-modal" style="display: none;">
+                  <div class="modal-content">
+                    <div class="modal-header">
+                      <h3>PK直播</h3>
+                      <button class="modal-close-btn">&times;</button>
+                    </div>
+                    <div class="modal-body">
+                      <div class="input-section">
+                        <label>输入你要PK的主播</label>
+                        <input type="text" id="pk-anchor-input" placeholder="例如：嘿嘿（请迅速回忆男主名单）">
                       </div>
-                      <div class="modal-body">
-                        <div class="input-section">
-                          <label>输入你要PK的主播</label>
-                          <input type="text" id="pk-anchor-input" placeholder="例如：嘿嘿（请迅速回忆男主名单）">
-                        </div>
-                        <button class="start-live-btn" id="start-pk-live">提交</button>
-                      </div>
+                      <button class="start-live-btn" id="start-pk-live">提交</button>
                     </div>
                   </div>
-                  <!-- 连麦模式选择弹窗（初始隐藏） -->
-                  <div class="modal" id="connect-select-modal" style="display: none;">
-                    <div class="modal-content">
-                      <div class="modal-header">
-                        <h3>粉丝连麦</h3>
-                        <button class="modal-close-btn">&times;</button>
-                      </div>
-                      <div class="modal-body">
-                        <div class="preset-interactions">
-                          <h4>选择连麦对象</h4>
-                          <div class="preset-buttons">
-                            <button class="preset-btn" data-anchor="霍">霍</button>
-                            <button class="preset-btn" data-anchor="X">X</button>
-                            <button class="preset-btn" data-anchor="难言">难言</button>
-                            <button class="preset-btn" data-anchor="神秘人">神秘人</button>
-                          </div>
+                </div>
+                <!-- 连麦模式选择弹窗（初始隐藏） -->
+                <div class="modal" id="connect-select-modal" style="display: none;">
+                  <div class="modal-content">
+                    <div class="modal-header">
+                      <h3>粉丝连麦</h3>
+                      <button class="modal-close-btn">&times;</button>
+                    </div>
+                    <div class="modal-body">
+                      <div class="preset-interactions">
+                        <h4>选择连麦对象</h4>
+                        <div class="preset-buttons">
+                          <button class="preset-btn" data-anchor="霍">霍</button>
+                          <button class="preset-btn" data-anchor="X">X</button>
+                          <button class="preset-btn" data-anchor="难言">难言</button>
+                          <button class="preset-btn" data-anchor="神秘人">神秘人</button>
                         </div>
-                        <div class="input-section">
-                          <label>或输入自定义昵称</label>
-                          <input type="text" id="connect-anchor-input" placeholder="自定义连麦对象">
-                        </div>
-                        <button class="start-live-btn" id="start-connect-live">提交</button>
                       </div>
+                      <div class="input-section">
+                        <label>或输入自定义昵称</label>
+                        <input type="text" id="connect-anchor-input" placeholder="自定义连麦对象">
+                      </div>
+                      <button class="start-live-btn" id="start-connect-live">提交</button>
                     </div>
                   </div>
                 </div>
