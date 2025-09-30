@@ -1180,111 +1180,109 @@ if (typeof window.LiveApp === 'undefined') {
      */
     renderLiveView() {
       const state = this.stateManager.getCurrentState();
+      // 1. 先在模板外处理卡片逻辑
+      let featureCardHtml = '';
+      if (this.stateManager.currentLiveContent) {
+        const liveTheme = this.stateManager.currentLiveContent.includes('PK') ? 'pk' : 'link';
+        if (liveTheme === 'pk') {
+          // PK卡片HTML
+          featureCardHtml = `
+            <div class="feature-card">
+              <div class="feature-card-toggle" id="pk-card-toggle">
+                🆚 PK直播卡片 <span class="toggle-icon">▼</span>
+              </div>
+              <div class="feature-card-content" id="pk-card-content" style="display: none;">
+                <div style="display: flex; justify-content: space-between; align-items: center; padding: 12px; background: var(--live-bg-card); border-radius: 12px; margin-bottom: 8px;">
+                  <div style="text-align: center;">
+                    <div style="background: var(--live-border); padding: 4px 8px; border-radius: 8px; margin-bottom: 8px;">当前主播</div>
+                    <div style="border: 2px solid var(--live-primary); border-radius: 8px; overflow: hidden; width: 80px; height: 80px;">
+                      <img src="当前主播图片" style="width: 100%; height: 100%; object-fit: cover;">
+                    </div>
+                  </div>
+                  <div style="font-size: 24px; font-weight: bold; color: var(--live-primary);">VS</div>
+                  <div style="text-align: center;">
+                    <div style="background: var(--live-border); padding: 4px 8px; border-radius: 8px; margin-bottom: 8px;">PK主播</div>
+                    <div style="border: 2px solid var(--live-primary); border-radius: 8px; overflow: hidden; width: 80px; height: 80px;">
+                      <img src="PK主播图片" style="width: 100%; height: 100%; object-fit: cover;">
+                    </div>
+                  </div>
+                </div>
+                <div style="height: 16px; background: var(--live-bg-main); border-radius: 8px; margin-bottom: 8px;">
+                  <div style="width: 60%; height: 100%; background: linear-gradient(90deg, #E3D5A5, #A68770); border-radius: 8px;"></div>
+                </div>
+                <div style="background: var(--live-bg-card); padding: 8px; border-radius: 8px;">
+                  <div style="font-size: 14px; color: var(--live-text-secondary);">PK倒计时：05:23</div>
+                </div>
+              </div>
+            </div>
+          `;
+        } else if (liveTheme === 'link') {
+          // 连麦卡片HTML（完整保留原样式）
+          featureCardHtml = `
+            <div class="feature-card">
+              <div class="feature-card-toggle" id="link-card-toggle">
+                🎤 连麦直播卡片 <span class="toggle-icon">▼</span>
+              </div>
+              <div class="feature-card-content" id="link-card-content" style="display: none;">
+                <div style="display: flex; justify-content: space-between; align-items: center; padding: 12px; background: var(--live-bg-card); border-radius: 12px; margin-bottom: 8px;">
+                  <div style="text-align: center;">
+                    <div style="background: var(--live-border); padding: 4px 8px; border-radius: 8px; margin-bottom: 8px;">主播</div>
+                    <div style="border: 2px solid var(--live-primary); border-radius: 8px; overflow: hidden; width: 80px; height: 80px;">
+                      <img src="主播图片" style="width: 100%; height: 100%; object-fit: cover;">
+                    </div>
+                  </div>
+                  <div style="font-size: 20px; color: var(--live-primary);">连麦中</div>
+                  <div style="text-align: center;">
+                    <div style="background: var(--live-border); padding: 4px 8px; border-radius: 8px; margin-bottom: 8px;">粉丝</div>
+                    <div style="border: 2px solid var(--live-primary); border-radius: 8px; overflow: hidden; width: 80px; height: 80px;">
+                      <img src="粉丝图片" style="width: 100%; height: 100%; object-fit: cover;">
+                    </div>
+                  </div>
+                </div>
+                <div style="background: var(--live-bg-card); padding: 8px; border-radius: 8px;">
+                  <div style="font-size: 14px; color: var(--live-text-secondary);">连麦时长：12:45</div>
+                </div>
+              </div>
+            </div>
+          `;
+        }
+      }
 
-      // 渲染推荐互动按钮
+      // 2. 渲染推荐互动按钮
       const recommendedButtons = state.recommendedInteractions
         .map(interaction => `<button class="rec-btn" data-interaction="${interaction}">${interaction}</button>`)
         .join('');
 
-      // 渲染弹幕列表
+      // 3. 渲染弹幕列表
       const danmakuItems = state.danmakuList
         .map(danmaku => {
           const sig = this.createDanmakuSignature(danmaku);
           const needAppearClass = this.pendingAppearDanmakuSigs.has(sig) ? ' need-appear' : '';
           if (danmaku.type === 'gift') {
             return `
-            <div class="danmaku-item gift${needAppearClass}" data-sig="${sig}">
-              <i class="fas fa-gift"></i>
-              <span class="username">${danmaku.username}</span>
-              <span class="content">送出 ${danmaku.content}</span>
-            </div>
-          `;
+              <div class="danmaku-item gift${needAppearClass}" data-sig="${sig}">
+                <<i class="fas fa-gift"></</i>
+                <span class="username">${danmaku.username}</span>
+                <span class="content">送出 ${danmaku.content}</span>
+              </div>
+            `;
           } else {
             return `
-            <div class="danmaku-item normal${needAppearClass}" data-sig="${sig}">
-              <span class="username">${danmaku.username}:</span>
-              <span class="content">${danmaku.content}</span>
-            </div>
-          `;
+              <div class="danmaku-item normal${needAppearClass}" data-sig="${sig}">
+                <span class="username">${danmaku.username}:</span>
+                <span class="content">${danmaku.content}</span>
+              </div>
+            `;
           }
         })
         .join('');
 
+      // 4. 模板字符串中用${featureCardHtml}插入卡片
       return `
         <div class="live-app">
           <div class="live-container">         
-            // 特色直播卡片容器（根据当前直播主题判断显示PK/连麦卡片）
-            const liveTheme = this.stateManager.currentLiveContent.includes('PK') ? 'pk' : 'link';
-            let featureCardHtml = '';
-            if (liveTheme === 'pk') {
-              // PK卡片
-              featureCardHtml = `
-                <div class="feature-card">
-                  <!-- 可点击展开的小长条 -->
-                  <div class="feature-card-toggle" id="pk-card-toggle">
-                    🆚 PK直播卡片 <span class="toggle-icon">▼</span>
-                  </div>
-                  <!-- 展开后的卡片内容 -->
-                  <div class="feature-card-content" id="pk-card-content" style="display: none;">
-                    <!-- 主播PK区域 -->
-                    <div style="display: flex; justify-content: space-between; align-items: center; padding: 12px; background: var(--live-bg-card); border-radius: 12px; margin-bottom: 8px;">
-                      <div style="text-align: center;">
-                        <div style="background: var(--live-border); padding: 4px 8px; border-radius: 8px; margin-bottom: 8px;">当前主播</div>
-                        <div style="border: 2px solid var(--live-primary); border-radius: 8px; overflow: hidden; width: 80px; height: 80px;">
-                          <img src="当前主播图片" style="width: 100%; height: 100%; object-fit: cover;">
-                        </div>
-                      </div>
-                      <div style="font-size: 24px; font-weight: bold; color: var(--live-primary);">VS</div>
-                      <div style="text-align: center;">
-                        <div style="background: var(--live-border); padding: 4px 8px; border-radius: 8px; margin-bottom: 8px;">PK主播</div>
-                        <div style="border: 2px solid var(--live-primary); border-radius: 8px; overflow: hidden; width: 80px; height: 80px;">
-                          <img src="PK主播图片" style="width: 100%; height: 100%; object-fit: cover;">
-                        </div>
-                      </div>
-                    </div>
-                    <!-- PK进度条 -->
-                    <div style="height: 16px; background: var(--live-bg-main); border-radius: 8px; margin-bottom: 8px;">
-                      <div style="width: 60%; height: 100%; background: linear-gradient(90deg, #E3D5A5, #A68770); border-radius: 8px;"></div>
-                    </div>
-                    <!-- 直播状态栏 -->
-                    <div style="background: var(--live-bg-card); padding: 8px; border-radius: 8px;">
-                      <div style="font-size: 14px; color: var(--live-text-secondary);">PK倒计时：05:23</div>
-                    </div>
-                  </div>
-                </div>
-              `;
-            } else if (liveTheme === 'link') {
-              // 连麦卡片
-              featureCardHtml = `
-                <div class="feature-card">
-                  <div class="feature-card-toggle" id="link-card-toggle">
-                    🎤 连麦直播卡片 <span class="toggle-icon">▼</span>
-                  </div>
-                  <div class="feature-card-content" id="link-card-content" style="display: none;">
-                    <!-- 粉丝连麦区域 -->
-                    <div style="display: flex; justify-content: space-between; align-items: center; padding: 12px; background: var(--live-bg-card); border-radius: 12px; margin-bottom: 8px;">
-                      <div style="text-align: center;">
-                        <div style="background: var(--live-border); padding: 4px 8px; border-radius: 8px; margin-bottom: 8px;">主播</div>
-                        <div style="border: 2px solid var(--live-primary); border-radius: 8px; overflow: hidden; width: 80px; height: 80px;">
-                          <img src="主播图片" style="width: 100%; height: 100%; object-fit: cover;">
-                        </div>
-                      </div>
-                      <div style="font-size: 20px; color: var(--live-primary);">连麦中</div>
-                      <div style="text-align: center;">
-                        <div style="background: var(--live-border); padding: 4px 8px; border-radius: 8px; margin-bottom: 8px;">粉丝</div>
-                        <div style="border: 2px solid var(--live-primary); border-radius: 8px; overflow: hidden; width: 80px; height: 80px;">
-                          <img src="粉丝图片" style="width: 100%; height: 100%; object-fit: cover;">
-                        </div>
-                      </div>
-                    </div>
-                    <!-- 直播状态栏 -->
-                    <div style="background: var(--live-bg-card); padding: 8px; border-radius: 8px;">
-                      <div style="font-size: 14px; color: var(--live-text-secondary);">连麦时长：12:45</div>
-                    </div>
-                  </div>
-                </div>
-              `;
-            }
+            <!-- 插入特色直播卡片 -->
+            ${featureCardHtml}
             <!-- 视频框 -->
             <div class="video-placeholder">
               <p class="live-content-text">${state.liveContent || '等待直播内容...'}</p>
