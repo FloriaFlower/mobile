@@ -1267,9 +1267,9 @@ if (typeof window.LiveApp === 'undefined') {
         featureCardHtml = `
           <div class="feature-card">
             <div class="feature-card-toggle" id="pk-card-toggle">
-              🆚 PK直播卡片 <span class="toggle-icon">▼</span>
+              🆚 PK封面卡片 <span class="toggle-icon">▼</span>
             </div>
-            <div class="feature-card-content" id="pk-card-content" style="display: none; position: relative;">
+            <div class="feature-card-content" id="pk-card-content" style="display: none; padding: 16px; max-height: 300px; overflow-y: auto;">
               <!-- 小心心背景动画（和live-连麦.js一致） -->
               <div style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 0; pointer-events: none;">
                 <span class="live-status-bar-heart">💖</span>
@@ -1401,7 +1401,7 @@ if (typeof window.LiveApp === 'undefined') {
           if (danmaku.type === 'gift') {
             return `
               <div class="danmaku-item gift${needAppearClass}" data-sig="${sig}">
-                <<i class="fas fa-gift"></</i>
+                <i class="fas fa-gift"></i>
                 <span class="username">${danmaku.username}</span>
                 <span class="content">送出 ${danmaku.content}</span>
               </div>
@@ -1427,7 +1427,7 @@ if (typeof window.LiveApp === 'undefined') {
             <div class="video-placeholder">
               <p class="live-content-text">${state.liveContent || '等待直播内容...'}</p>
               <div class="live-status-bottom">
-                <div class="live-dot"></div>
+                <div class="live-dot" style="background: var(--live-danger-red);"></div>
                 <span>LIVE</span>
               </div>
             </div>
