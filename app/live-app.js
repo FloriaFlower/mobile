@@ -1282,7 +1282,7 @@ if (typeof window.LiveApp === 'undefined') {
                 <!-- 左侧：当前主播 -->
                 <div style="flex: 1; text-align: center;">
                   <div style="background: var(--live-border); padding: 4px 8px; border-radius: 8px; margin-bottom: 8px; font-size: 14px; color: var(--live-text-primary);">${userPk.type}</div>
-                  <div style="border: 2px solid var(--live-primary); border-radius: 8px; overflow: hidden; width: 80px; height: 80px; margin: 0 auto;">
+                  <div style="border: 3px solid var(--live-primary); border-radius: 12px; overflow: hidden; width: 180px; height: 180px; margin: 0 auto 12px;">
                     <img src="${userPk.imgUrl}" style="width: 100%; height: 100%; object-fit: cover;" alt="${userPk.type}">
                   </div>
                   <div style="margin-top: 8px; font-size: 13px; color: var(--live-text-primary);">欲色币: ${userPk.currency}</div>
@@ -1294,7 +1294,7 @@ if (typeof window.LiveApp === 'undefined') {
                 <!-- 右侧：对手主播 -->
                 <div style="flex: 1; text-align: center;">
                   <div style="background: var(--live-border); padding: 4px 8px; border-radius: 8px; margin-bottom: 8px; font-size: 14px; color: var(--live-text-primary);">${rivalPk.type}</div>
-                  <div style="border: 2px solid var(--live-primary); border-radius: 8px; overflow: hidden; width: 80px; height: 80px; margin: 0 auto;">
+                  <div style="border: 3px solid var(--live-primary); border-radius: 12px; overflow: hidden; width: 180px; height: 180px; margin: 0 auto 12px;">
                     <img src="${rivalPk.imgUrl}" style="width: 100%; height: 100%; object-fit: cover;" alt="${rivalPk.type}">
                   </div>
                   <div style="margin-top: 8px; font-size: 13px; color: var(--live-text-primary);">欲色币: ${rivalPk.currency}</div>
@@ -1306,11 +1306,11 @@ if (typeof window.LiveApp === 'undefined') {
                 <div style="width: ${rivalProgress}%; height: 100%; background: linear-gradient(90deg, #A68770, #E3D5A5); border-radius: 0 6px 6px 0;"></div>
               </div>
               <!-- 简化状态栏（高光+系统提示） -->
-              <div style="background: linear-gradient(135deg, rgba(227, 213, 165, 0.2), rgba(245, 239, 229, 0.2)); padding: 12px; border-radius: 8px; margin: 0 15px 15px;">
-                <div style="text-align: center; margin-bottom: 8px;">
-                  <span style="font-size: 16px; font-weight: bold; color: var(--live-danger-red); animation: heartPulse 1.5s infinite alternate;">🔥 高光次数: ${highLightCount} 次</span>
+              <div style="background: linear-gradient(135deg, rgba(227, 213, 165, 0.3), rgba(245, 239, 229, 0.3)); padding: 16px; border-radius: 12px; margin: 0 15px 15px; min-height: 80px;">
+                <div style="text-align: center; margin-bottom: 12px;">
+                  <span style="font-size: 18px; font-weight: bold; color: #E3D5A5; animation: heartPulse 1.5s infinite alternate; text-shadow: 1px 1px 2px rgba(93, 74, 58, 0.5);">🔥 高光次数: ${highLightCount} 次</span>
                 </div>
-                <div style="font-size: 13px; color: var(--live-text-secondary); line-height: 1.5;">
+                <div class="system-tips-container">
                   <p>${systemTips.tip1}</p>
                   <p>${systemTips.tip2}</p>
                   <p>${systemTips.tip3}</p>
@@ -1341,7 +1341,7 @@ if (typeof window.LiveApp === 'undefined') {
                 <!-- 左侧：主播 -->
                 <div style="flex: 1; text-align: center;">
                   <div style="background: var(--live-border); padding: 4px 8px; border-radius: 8px; margin-bottom: 8px; font-size: 14px; color: var(--live-text-primary);">${userLink.type}</div>
-                  <div style="border: 2px solid var(--live-primary); border-radius: 8px; overflow: hidden; width: 80px; height: 80px; margin: 0 auto;">
+                  <div style="border: 3px solid var(--live-primary); border-radius: 12px; overflow: hidden; width: 180px; height: 180px; margin: 0 auto 12px;">
                     <img src="${userLink.imgUrl}" style="width: 100%; height: 100%; object-fit: cover;" alt="${userLink.type}">
                   </div>
                 </div>
@@ -1367,7 +1367,7 @@ if (typeof window.LiveApp === 'undefined') {
                 <!-- 右侧：粉丝 -->
                 <div style="flex: 1; text-align: center;">
                   <div style="background: var(--live-border); padding: 4px 8px; border-radius: 8px; margin-bottom: 8px; font-size: 14px; color: var(--live-text-primary);">${fanLink.type}</div>
-                  <div style="border: 2px solid var(--live-primary); border-radius: 8px; overflow: hidden; width: 80px; height: 80px; margin: 0 auto;">
+                  <div style="border: 3px solid var(--live-primary); border-radius: 12px; overflow: hidden; width: 180px; height: 180px; margin: 0 auto 12px;">
                     <img src="${fanLink.imgUrl}" style="width: 100%; height: 100%; object-fit: cover;" alt="${fanLink.type}">
                   </div>
                 </div>
