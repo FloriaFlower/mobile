@@ -18,7 +18,11 @@
   --feature-btn-gap: 15px; /* 特色模式按钮间距 */
   --feature-btn-padding: 12px 0; /* 特色模式按钮内边距 */
   --feature-btn-font: 16px; /* 特色模式按钮字体 */
+  /* 新增：动画元素专用变量 */
+  --heart-color: rgba(166, 135, 112, 0.7); /* 小心心/心形连接色 */
+  --heart-hover-color: rgba(166, 135, 112, 0.9); /* 心形hover色 */
 }
+
 /* 直播应用容器 - 奶油风背景替换 */
 .live-app {
   display: flex;
@@ -27,12 +31,14 @@
   background: var(--live-bg-main); /* 替换原线性渐变 */
   font-family: -apple-system, BlinkMacSystemFont, 'Helvetica Neue', 'PingFang SC', 'Microsoft YaHei', sans-serif;
 }
+
 /* 禁用直播应用的整体页面滚动条 */
 .live-app .app-content,
 .live-app #app-content {
   overflow: hidden !important; /* 禁用整体滚动 */
   height: 100% !important;
 }
+
 /* ==================== 直播中心界面 - 奶油风样式修改 ==================== */
 .live-main-container {
   padding: 20px;
@@ -43,27 +49,32 @@
   overflow-y: auto;
   background: var(--live-bg-main); /* 确保背景统一 */
 }
+
 .live-main-header {
   text-align: center;
   margin-bottom: 10px;
 }
+
 .live-main-header h2 {
   font-size: 24px;
   font-weight: 600;
   color: var(--live-text-primary); /* 主文字色替换 */
   margin-bottom: 8px;
 }
+
 .live-main-header p {
   font-size: 14px;
   color: var(--live-text-secondary); /* 次要文字色替换 */
   margin: 0;
 }
+
 /* 直播选项卡 - 奶油风卡片样式 */
 .live-options {
   display: flex;
   flex-direction: column;
   gap: 16px;
 }
+
 .live-option-card {
   display: flex;
   align-items: center;
@@ -75,38 +86,46 @@
   transition: all 0.3s ease;
   box-shadow: 0 2px 10px rgba(166, 135, 112, 0.1); /* 柔和奶油风阴影 */
 }
+
 .live-option-card:hover {
   border-color: var(--live-primary); /*  hover边框色替换 */
   transform: translateY(-2px);
   box-shadow: 0 4px 20px rgba(166, 135, 112, 0.2); /*  hover阴影替换 */
 }
+
 .live-option-card .option-icon {
   font-size: 32px;
   margin-right: 16px;
 }
+
 .live-option-card .option-content {
   flex: 1;
 }
+
 .live-option-card .option-content h3 {
   font-size: 18px;
   font-weight: 600;
   color: var(--live-text-primary); /* 主文字色替换 */
   margin: 0 0 4px 0;
 }
+
 .live-option-card .option-content p {
   font-size: 14px;
   color: var(--live-text-secondary); /* 次要文字色替换 */
   margin: 0;
 }
+
 .live-option-card .option-arrow {
   font-size: 20px;
   color: var(--live-text-secondary); /* 次要文字色替换 */
   transition: transform 0.3s ease;
 }
+
 .live-option-card:hover .option-arrow {
   transform: translateX(4px);
   color: var(--live-primary); /*  hover箭头色替换 */
 }
+
 /* ==================== 弹窗样式 - 奶油风修改（解决拥挤问题） ==================== */
 /* 【修复：弹窗基础样式 - 增加内边距，优化字体】 */
 .modal {
@@ -121,10 +140,12 @@
   visibility: hidden;
   transition: opacity 0.3s, visibility 0.3s;
 }
+
 .modal.active {
   opacity: 1;
   visibility: visible;
 }
+
 .modal-content {
   background-color: var(--live-modal-bg); /* 弹窗背景替换 */
   border-radius: 12px;
@@ -139,6 +160,7 @@
   color: var(--live-text-primary); /* 弹窗文字色替换 */
   box-shadow: 0 10px 30px rgba(166, 135, 112, 0.2); /* 增加阴影，更立体 */
 }
+
 /* 弹窗头部样式 */
 .modal-header {
   display: flex;
@@ -148,16 +170,19 @@
   margin-bottom: 15px;
   border-bottom: 1px solid var(--live-border); /* 边框色替换 */
 }
+
 .modal-header h3 {
   font-size: 18px;
   font-weight: 600;
   margin: 0;
   color: var(--live-text-primary); /* 标题文字色替换 */
 }
+
 /* 弹窗内容区样式 */
 .modal-body {
   padding: 5px 0; /* 减少上下内边距，避免拥挤 */
 }
+
 /* 【修复：特色模式按钮样式 - 更美观，增加间距】 */
 .feature-mode-buttons {
   display: grid;
@@ -165,6 +190,7 @@
   gap: var(--feature-btn-gap);
   margin-bottom: 20px;
 }
+
 .feature-mode-btn {
   background: var(--live-button-gradient); /* 按钮渐变 */
   border: none;
@@ -181,24 +207,29 @@
   justify-content: center;
   gap: 8px; /* 图标与文字间距 */
 }
+
 .feature-mode-btn:hover {
   transform: translateY(-2px);
   box-shadow: 0 6px 16px rgba(166, 135, 112, 0.4);
 }
+
 .feature-mode-btn:active {
   transform: translateY(0);
   box-shadow: 0 2px 8px rgba(166, 135, 112, 0.3);
 }
+
 /* 输入框区域样式 */
 .input-section {
   margin-bottom: 15px;
 }
+
 .input-section label {
   display: block;
   font-size: 14px;
   color: var(--live-text-primary);
   margin-bottom: 8px;
 }
+
 .input-section input {
   width: 100%;
   padding: 12px;
@@ -208,27 +239,32 @@
   color: var(--live-text-primary);
   background: var(--live-bg-main);
 }
+
 .input-section input:focus {
   outline: none;
   border-color: var(--live-primary);
   box-shadow: 0 0 0 2px rgba(166, 135, 112, 0.2);
 }
+
 /* 预设连麦选项样式 */
 .preset-interactions {
   margin-bottom: 15px;
 }
+
 .preset-interactions h4 {
   font-size: 14px;
   color: var(--live-text-primary);
   margin-bottom: 10px;
   text-align: left;
 }
+
 .preset-buttons {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
   gap: 10px;
   margin-bottom: 15px;
 }
+
 .preset-btn {
   background: var(--live-button-bg);
   border: 1px solid var(--live-border);
@@ -240,11 +276,13 @@
   transition: all 0.2s ease;
   text-align: center;
 }
+
 .preset-btn.active {
   background: var(--live-primary);
   color: var(--live-bg-card);
   border-color: var(--live-primary);
 }
+
 /* 关闭按钮样式 */
 .modal-close-btn {
   background: none;
@@ -261,10 +299,12 @@
   border-radius: 50%;
   transition: all 0.2s ease;
 }
+
 .modal-close-btn:hover {
   background-color: var(--live-border); /*  hover背景色替换 */
   color: var(--live-text-primary); /*  hover文字色替换 */
 }
+
 /* ==================== 自定义互动区域 - 奶油风 ==================== */
 .custom-interaction-section {
   background: var(--live-bg-card); /* 背景替换 */
@@ -273,6 +313,7 @@
   box-shadow: 0 2px 10px rgba(166, 135, 112, 0.1); /* 奶油风阴影 */
   margin-bottom: 15px;
 }
+
 .custom-interaction-section textarea {
   width: 100%;
   min-height: 80px;
@@ -287,11 +328,13 @@
   background: var(--live-bg-main); /* 输入框背景替换 */
   color: var(--live-text-primary); /* 输入框文字色替换 */
 }
+
 .custom-interaction-section textarea:focus {
   outline: none;
   border-color: var(--live-primary); /*  focus边框色替换 */
   box-shadow: 0 0 0 2px rgba(166, 135, 112, 0.2); /*  focus阴影替换 */
 }
+
 /* 开始直播按钮 - 奶油风渐变 */
 .start-live-btn {
   width: 100%;
@@ -306,15 +349,18 @@
   transition: all 0.3s ease;
   box-shadow: 0 4px 12px rgba(166, 135, 112, 0.3); /* 按钮阴影替换 */
 }
+
 .start-live-btn:hover {
   transform: translateY(-2px);
   box-shadow: 0 6px 16px rgba(166, 135, 112, 0.4); /*  hover阴影替换 */
 }
+
 .start-live-btn:active {
   transform: translateY(0);
   box-shadow: 0 2px 8px rgba(166, 135, 112, 0.3); /*  active阴影替换 */
 }
-/* ==================== 直播中界面 - 奶油风修改（含特色卡片） ==================== */
+
+/* ==================== 直播中界面 - 奶油风修改（含特色卡片+补全动画元素） ==================== */
 .live-container {
   display: flex;
   flex-direction: column;
@@ -322,7 +368,8 @@
   overflow: hidden; /* 禁用整体滚动 */
   background: var(--live-bg-main); /* 容器背景替换 */
 }
-/* 【修复：特色卡片样式 - 按要求保留PK/连麦区域、进度条、状态栏】 */
+
+/* 【修复：特色卡片样式 - 按要求保留PK/连麦区域、进度条、状态栏 + 补全动画元素】 */
 /* 卡片基础样式 */
 .feature-card {
   margin-bottom: 12px;
@@ -331,7 +378,9 @@
   background: var(--live-bg-card); /* 卡片背景替换 */
   border: 1px solid var(--live-border); /* 卡片边框色替换 */
   box-shadow: 0 2px 10px rgba(166, 135, 112, 0.1);
+  position: relative; /* 为动画元素（小心心、PK图标）提供定位基准 */
 }
+
 /* PK/连麦主播区域样式 */
 .pk-streamer-container, .link-streamer-container {
   display: flex;
@@ -339,12 +388,29 @@
   align-items: center;
   padding: 15px;
   background: linear-gradient(135deg, rgba(227, 213, 165, 0.1), rgba(245, 239, 229, 0.1));
+  position: relative; /* 为连麦心形连接提供定位基准 */
 }
+
 .streamer-card {
   flex: 1;
   text-align: center;
   padding: 0 10px;
+  position: relative; /* 为小心心动画提供定位基准 */
 }
+
+/* 新增：小心心动画元素（背景浮动） */
+.streamer-card .heart-float {
+  position: absolute;
+  width: 16px;
+  height: 16px;
+  background-color: var(--heart-color);
+  clip-path: polygon(50% 0%, 100% 35%, 82% 100%, 18% 100%, 0% 35%);
+  opacity: 0;
+  animation: heartFloatBurst 3s infinite ease-in-out;
+  z-index: 1;
+}
+
+/* 主播标题样式 */
 .streamer-title {
   background-color: var(--live-border);
   color: var(--live-text-primary);
@@ -353,7 +419,11 @@
   border-radius: 8px 8px 0 0;
   margin-bottom: 8px;
   font-size: 14px;
+  position: relative;
+  z-index: 2; /* 确保标题在小心心上方 */
 }
+
+/* 主播头像样式 */
 .streamer-image {
   border: 2px solid var(--live-primary);
   border-radius: 8px;
@@ -361,17 +431,22 @@
   width: 100px;
   height: 100px;
   margin: 0 auto;
+  position: relative;
+  z-index: 2; /* 确保头像在小心心上方 */
 }
+
 .streamer-image img {
   width: 100%;
   height: 100%;
   object-fit: cover;
 }
-/* PK特有：VS图标 */
+
+/* PK特有：VS图标（优化样式，确保悬浮居中） */
 .pk-vs {
   position: absolute;
   left: 50%;
-  transform: translateX(-50%);
+  top: 50%;
+  transform: translate(-50%, -50%);
   background: var(--live-bg-card);
   width: 40px;
   height: 40px;
@@ -382,8 +457,38 @@
   border: 2px solid var(--live-primary);
   font-weight: bold;
   color: var(--live-primary);
-  z-index: 1;
+  z-index: 3; /* 确保VS图标在最上层 */
+  box-shadow: 0 0 10px rgba(166, 135, 112, 0.3); /* 增加阴影，突出立体感 */
 }
+
+/* 连麦特有：心形连接（带心跳动画） */
+.link-heart-connector {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: 80px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2;
+}
+
+.link-heart-connector svg {
+  width: 100%;
+  height: 100%;
+  fill: none;
+  stroke: var(--heart-color);
+  stroke-width: 2;
+  stroke-linecap: round;
+  animation: heartbeat 1.5s infinite ease-in-out;
+}
+
+.link-heart-connector svg path {
+  stroke: linear-gradient(90deg, var(--live-primary), var(--heart-hover-color));
+}
+
 /* PK特有：进度条样式 */
 .pk-progress-bar {
   height: 12px;
@@ -392,40 +497,47 @@
   margin: 0 15px 15px;
   overflow: hidden;
 }
+
 .pk-progress-left {
   height: 100%;
   width: 60%;
   background: linear-gradient(90deg, #E3D5A5, #A68770);
   border-radius: 6px 0 0 6px;
 }
+
 .pk-progress-right {
   height: 100%;
   width: 40%;
   background: linear-gradient(90deg, #A68770, #E3D5A5);
   border-radius: 0 6px 6px 0;
 }
+
 /* 直播状态栏（简化版：只保留高潮次数和系统提示） */
 .live-status-simple {
   padding: 15px;
   background: linear-gradient(135deg, rgba(227, 213, 165, 0.2), rgba(245, 239, 229, 0.2));
   border-top: 1px solid var(--live-border);
 }
+
 .high-tide-simple {
   text-align: center;
   margin-bottom: 10px;
 }
+
 .high-tide-simple span {
   font-size: 16px;
   font-weight: bold;
   color: var(--live-danger-red);
   animation: heartPulse 1.5s infinite alternate;
 }
+
 .system-tip-simple {
   font-size: 13px;
   color: var(--live-text-secondary);
   text-align: center;
   line-height: 1.5;
 }
+
 /* 卡片切换按钮样式 */
 .feature-card-toggle {
   background: var(--live-bg-main); /* 切换条背景替换 */
@@ -438,11 +550,13 @@
   color: var(--live-text-primary); /* 切换条文字色替换 */
   font-weight: 500;
 }
+
 .feature-card-content {
   background: var(--live-bg-main); /* 内容区背景替换 */
   padding: 0; /* 取消内边距，由子元素控制 */
   border-radius: 0 0 12px 12px;
 }
+
 /* 视频框 - 保留黑色背景（直播内容区） */
 .video-placeholder {
   width: calc(100% - 20px); /* 减少左右边距 30px → 20px */
@@ -459,6 +573,7 @@
   padding: 6px 8px; /* 进一步减少内边距 */
   overflow: hidden; /* 确保内容不会溢出 */
 }
+
 .live-status-bottom {
   color: #fff;
   font-size: 13px; /* 减小字体 14px → 13px */
@@ -470,6 +585,7 @@
   transition: opacity 0.3s;
   margin-top: 0; /* 移除上边距，让内容更紧凑 */
 }
+
 .live-dot {
   width: 7px; /* 减小尺寸 8px → 7px */
   height: 7px; /* 减小尺寸 8px → 7px */
@@ -477,17 +593,7 @@
   border-radius: 50%;
   animation: breathing 1.5s infinite ease-in-out;
 }
-@keyframes breathing {
-  0%,
-  100% {
-    transform: scale(1);
-    opacity: 1;
-  }
-  50% {
-    transform: scale(1.2);
-    opacity: 0.7;
-  }
-}
+
 /* 推荐互动面板 - 奶油风 */
 .interaction-panel {
   padding: 10px; /* 减少padding 15px → 10px */
@@ -495,18 +601,21 @@
   background: var(--live-bg-card); /* 背景替换 */
   flex: 0 0 20%; /* 使用flex比例：占20%的高度 */
 }
+
 .interaction-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
   margin-bottom: 10px; /* 减少下边距 15px → 10px */
 }
+
 .interaction-header h4 {
   font-size: 14px; /* 减小字体 16px → 14px */
   font-weight: bold;
   color: var(--live-text-primary); /* 主文字色替换 */
   margin: 0;
 }
+
 /* 互动按钮 - 奶油风渐变 */
 .interact-btn {
   background: var(--live-button-gradient); /* 按钮渐变替换 */
@@ -523,20 +632,24 @@
   align-items: center;
   gap: 3px; /* 减小间距 4px → 3px */
 }
+
 .interact-btn:hover {
   transform: translateY(-2px);
   box-shadow: 0 6px 16px rgba(166, 135, 112, 0.4); /*  hover阴影替换 */
 }
+
 .interact-btn:active {
   transform: translateY(0);
   box-shadow: 0 2px 8px rgba(166, 135, 112, 0.3); /*  active阴影替换 */
 }
+
 /* 推荐互动按钮组 - 奶油风 */
 .recommended-interactions {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
   gap: 6px; /* 减少间距 10px → 6px */
 }
+
 .rec-btn {
   background-color: var(--live-button-bg); /* 按钮背景替换 */
   border: 1px solid var(--live-border); /* 边框色替换 */
@@ -549,14 +662,17 @@
   text-align: center;
   line-height: 1.2; /* 减少行高 1.3 → 1.2 */
 }
+
 .rec-btn:hover {
   background-color: #E8E2D0; /*  hover背景色（奶油风延伸） */
   border-color: var(--live-primary); /*  hover边框色替换 */
   color: var(--live-primary); /*  hover文字色替换 */
 }
+
 .rec-btn:active {
   transform: scale(0.98);
 }
+
 .no-interactions {
   grid-column: 1 / -1;
   text-align: center;
@@ -565,6 +681,7 @@
   padding: 20px;
   margin: 0;
 }
+
 /* 弹幕容器 - 奶油风 */
 .danmaku-container {
   flex: 1; /* 使用剩余的所有空间（约35%） */
@@ -575,20 +692,25 @@
   display: flex; /* 设置为flex容器 */
   flex-direction: column; /* 垂直布局 */
 }
+
 .danmaku-container::-webkit-scrollbar {
   width: 6px;
 }
+
 .danmaku-container::-webkit-scrollbar-track {
   background: var(--live-bg-main); /* 滚动条轨道背景替换 */
   border-radius: 3px;
 }
+
 .danmaku-container::-webkit-scrollbar-thumb {
   background: var(--live-border); /* 滚动条thumb色替换 */
   border-radius: 3px;
 }
+
 .danmaku-container::-webkit-scrollbar-thumb:hover {
   background: var(--live-primary); /*  hover thumb色替换 */
 }
+
 .danmaku-list {
   display: flex;
   flex-direction: column;
@@ -596,6 +718,7 @@
   flex: 1; /* 占用父容器的剩余空间 */
   min-height: 0; /* 允许收缩 */
 }
+
 .danmaku-item {
   max-width: 90%;
   animation: fadeIn 0.5s ease;
@@ -603,26 +726,19 @@
   line-height: 1.5;
   color: var(--live-text-primary); /* 弹幕文字色替换 */
 }
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(10px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
+
 /* 普通弹幕样式 - 奶油风文字色 */
 .danmaku-item.normal .username {
   color: var(--live-primary); /* 用户名色替换为奶油主色 */
   font-weight: bold;
 }
+
 .danmaku-item.normal .content {
   color: var(--live-text-primary); /* 弹幕内容色替换 */
   margin-left: 8px;
   word-break: break-all;
 }
+
 /* 礼物弹幕样式 - 奶油风背景 */
 .danmaku-item.gift {
   display: inline-block;
@@ -632,19 +748,23 @@
   border: 1px solid rgba(166, 135, 112, 0.2); /* 边框色替换 */
   font-size: 13px;
 }
+
 .danmaku-item.gift .username {
   color: var(--live-primary); /* 用户名色替换为奶油主色 */
   font-weight: bold;
 }
+
 .danmaku-item.gift .content {
   color: #A68770; /* 礼物内容色替换为奶油主色 */
   font-weight: bold;
   margin-left: 5px;
 }
+
 .danmaku-item.gift i {
   margin-right: 5px;
   color: var(--live-primary); /* 图标色替换为奶油主色 */
 }
+
 .no-danmaku {
   text-align: center;
   color: var(--live-text-secondary); /* 次要文字色替换 */
@@ -652,6 +772,7 @@
   padding: 40px 20px;
   margin: 0;
 }
+
 /* ==================== 提示消息 - 奶油风调整 ==================== */
 .live-toast {
   position: fixed;
@@ -668,23 +789,29 @@
   max-width: 300px;
   word-wrap: break-word;
 }
+
 .live-toast.show {
   opacity: 1;
   transform: translateY(0);
 }
+
 /* 提示消息颜色调整（保留原有色系但柔和化） */
 .live-toast.info {
   background: linear-gradient(135deg, #8A9DAE 0%, #A68770 100%); /* 奶油风信息色 */
 }
+
 .live-toast.success {
   background: linear-gradient(135deg, #A68770 0%, #E3D5A5 100%); /* 奶油风成功色 */
 }
+
 .live-toast.error {
   background: linear-gradient(135deg, #E17055 0%, #A68770 100%); /* 奶油风错误色 */
 }
+
 .live-toast.warning {
   background: linear-gradient(135deg, #E3D5A5 0%, #A68770 100%); /* 奶油风警告色 */
 }
+
 /* ==================== 错误状态 - 奶油风 ==================== */
 .error-message {
   text-align: center;
@@ -695,23 +822,27 @@
   margin: 20px;
   box-shadow: 0 2px 10px rgba(166, 135, 112, 0.1); /* 奶油风阴影 */
 }
+
 .error-message .error-icon {
   font-size: 48px;
   margin-bottom: 16px;
   opacity: 0.5;
   color: var(--live-primary); /* 图标色替换为奶油主色 */
 }
+
 .error-message .error-title {
   font-size: 18px;
   font-weight: 600;
   margin-bottom: 8px;
   color: var(--live-text-primary); /* 主文字色替换 */
 }
+
 .error-message .error-details {
   font-size: 14px;
   margin-bottom: 20px;
   color: var(--live-text-secondary); /* 次要文字色替换 */
 }
+
 /* ==================== 按钮禁用状态 - 奶油风 ==================== */
 button:disabled,
 .rec-btn:disabled,
@@ -722,6 +853,7 @@ button:disabled,
   box-shadow: none !important;
   transform: none !important;
 }
+
 button:disabled:hover,
 .rec-btn:disabled:hover,
 .preset-btn:disabled:hover,
@@ -731,6 +863,7 @@ button:disabled:hover,
   color: var(--live-text-secondary) !important; /* 禁用文字色替换 */
   transform: none !important;
 }
+
 /* ==================== 响应式设计 - 适配移动端/PC端 ==================== */
 @media (max-width: 768px) {
   /* 弹窗响应式 */
@@ -739,154 +872,219 @@ button:disabled:hover,
     padding: 15px; /* 减少移动端弹窗内边距 */
     max-height: 90vh;
   }
+
   .feature-mode-btn {
     padding: 10px 0;
     font-size: 14px;
   }
+
   .preset-buttons {
     gap: 8px;
   }
-  /* 特色卡片响应式 */
+
+  /* 特色卡片响应式（含动画元素） */
   .streamer-image {
     width: 80px;
     height: 80px;
   }
+
   .pk-vs {
     width: 35px;
     height: 35px;
     font-size: 12px;
   }
+
+  .link-heart-connector {
+    width: 60px;
+    height: 25px;
+  }
+
+  .streamer-card .heart-float {
+    width: 14px;
+    height: 14px;
+  }
+
   /* 其他响应式保留... */
   .live-main-container {
     padding: 16px;
     gap: 16px;
   }
+
   .video-placeholder {
     margin: 6px auto 0 auto;
     padding: 6px 10px;
   }
+
   .live-content-text {
     font-size: 14px;
     line-height: 1.4;
     margin: 0 0 4px 0;
     padding: 0 4px;
   }
+
   .interaction-panel {
     padding: 8px;
   }
+
   .danmaku-container {
     padding: 12px;
   }
+
   .danmaku-list {
     gap: 6px;
   }
+
   .danmaku-item {
     font-size: 13px;
   }
+
   .danmaku-item.gift {
     font-size: 12px;
   }
+
   .live-status-bottom {
     font-size: 12px;
     gap: 4px;
   }
+
   .live-dot {
     width: 6px;
     height: 6px;
   }
+
   .interaction-header {
     margin-bottom: 8px;
   }
+
   .interaction-header h4 {
     font-size: 13px;
   }
+
   .interact-btn {
     padding: 5px 10px;
     font-size: 10px;
     border-radius: 12px;
     gap: 2px;
   }
+
   .preset-btn,
   .rec-btn {
     padding: 6px 4px;
     font-size: 11px;
   }
 }
+
 @media (max-width: 480px) {
   /* 弹窗响应式 */
   .modal-header h3 {
     font-size: 16px;
   }
+
   .feature-mode-buttons {
     gap: 10px;
   }
-  /* 特色卡片响应式 */
+
+  /* 特色卡片响应式（含动画元素） */
   .streamer-image {
     width: 70px;
     height: 70px;
   }
+
+  .pk-vs {
+    width: 30px;
+    height: 30px;
+    font-size: 11px;
+  }
+
+  .link-heart-connector {
+    width: 50px;
+    height: 20px;
+  }
+
+  .streamer-card .heart-float {
+    width: 12px;
+    height: 12px;
+  }
+
   .high-tide-simple span {
     font-size: 14px;
   }
+
   .system-tip-simple {
     font-size: 12px;
   }
+
   /* 其他响应式保留... */
   .live-main-header h2 {
     font-size: 20px;
   }
+
   .live-option-card {
     padding: 16px;
   }
+
   .live-option-card .option-icon {
     font-size: 28px;
     margin-right: 12px;
   }
+
   .live-option-card .option-content h3 {
     font-size: 16px;
   }
+
   .video-placeholder {
     margin: 4px auto 0 auto;
     padding: 4px 8px;
   }
+
   .live-content-text {
     font-size: 13px;
     line-height: 1.3;
     margin: 0 0 3px 0;
     padding: 0 3px;
   }
+
   .interaction-panel {
     padding: 6px;
   }
+
   .danmaku-list {
     gap: 5px;
   }
+
   .danmaku-item {
     font-size: 12px;
   }
+
   .danmaku-item.gift {
     font-size: 11px;
   }
+
   .live-status-bottom {
     font-size: 11px;
     gap: 3px;
   }
+
   .live-dot {
     width: 5px;
     height: 5px;
   }
+
   .interaction-header {
     margin-bottom: 6px;
   }
+
   .interaction-header h4 {
     font-size: 12px;
   }
+
   .interact-btn {
     padding: 4px 8px;
     font-size: 9px;
     border-radius: 10px;
   }
 }
+
 /* ==================== 加载动画 - 奶油风 ==================== */
 .live-loading {
   display: flex;
@@ -897,6 +1095,7 @@ button:disabled:hover,
   color: var(--live-text-secondary); /* 次要文字色替换 */
   background: var(--live-bg-main); /* 背景替换 */
 }
+
 .live-loading::before {
   content: '';
   width: 20px;
@@ -907,34 +1106,31 @@ button:disabled:hover,
   animation: spin 1s linear infinite;
   margin-right: 10px;
 }
-@keyframes spin {
-  0% {
-    transform: rotate(0deg);
-  }
-  100% {
-    transform: rotate(360deg);
-  }
-}
+
 /* ==================== 滚动条美化 - 奶油风 ==================== */
 .live-main-container::-webkit-scrollbar,
 .modal-content::-webkit-scrollbar {
   width: 8px;
 }
+
 .live-main-container::-webkit-scrollbar-track,
 .modal-content::-webkit-scrollbar-track {
   background: var(--live-bg-main); /* 滚动条轨道背景替换 */
   border-radius: 4px;
 }
+
 .live-main-container::-webkit-scrollbar-thumb,
 .modal-content::-webkit-scrollbar-thumb {
   background: linear-gradient(135deg, #E3D5A5 0%, #A68770 100%); /* 奶油风滚动条渐变 */
   border-radius: 4px;
 }
+
 .live-main-container::-webkit-scrollbar-thumb:hover,
 .modal-content::-webkit-scrollbar-thumb:hover {
   background: linear-gradient(135deg, #A68770 0%, #8A9DAE 100%); /*  hover渐变替换 */
 }
-/* ==================== 特殊效果 - 奶油风 ==================== */
+
+/* ==================== 特殊效果 - 奶油风（含补全动画元素关键帧） ==================== */
 /* 按钮点击波纹效果 */
 .start-live-btn,
 .submit-btn,
@@ -943,6 +1139,7 @@ button:disabled:hover,
   position: relative;
   overflow: hidden;
 }
+
 .start-live-btn::after,
 .submit-btn::after,
 .interact-btn::after,
@@ -958,6 +1155,7 @@ button:disabled:hover,
   transform: translate(-50%, -50%);
   transition: width 0.3s, height 0.3s;
 }
+
 .start-live-btn:active::after,
 .submit-btn:active::after,
 .interact-btn:active::after,
@@ -965,6 +1163,7 @@ button:disabled:hover,
   width: 200px;
   height: 200px;
 }
+
 /* 焦点可见性 */
 button:focus-visible,
 textarea:focus-visible,
@@ -972,6 +1171,7 @@ input:focus-visible {
   outline: 2px solid var(--live-primary); /* 焦点轮廓色替换 */
   outline-offset: 2px;
 }
+
 /* 新增弹幕/礼物逐条出现效果 */
 .danmaku-item.appear-init,
 .gift-list li.appear-init {
@@ -979,6 +1179,7 @@ input:focus-visible {
   transform: translateY(10px);
   display: none; /* 初始不占位，避免空白 */
 }
+
 .danmaku-item.appear-show,
 .gift-list li.appear-show {
   opacity: 1;
@@ -987,6 +1188,7 @@ input:focus-visible {
   transition: opacity 300ms ease, transform 300ms ease;
   color: var(--live-text-primary); /* 文字色替换 */
 }
+
 /* 图片自适应 */
 .live-content-text img,
 .streamer-image img {
@@ -994,7 +1196,43 @@ input:focus-visible {
   height: 100%;
   object-fit: cover;
 }
-/* 心跳动画（用于高潮次数） */
+
+/* 【补全：动画元素关键帧】 */
+/* 1. 小心心浮动+爆裂动画（heartFloatBurst） */
+@keyframes heartFloatBurst {
+  0% {
+    opacity: 0;
+    transform: translateY(10px) scale(0.8);
+  }
+  30% {
+    opacity: 1;
+    transform: translateY(-15px) scale(1);
+  }
+  70% {
+    opacity: 0.8;
+    transform: translateY(-30px) scale(1.1);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-50px) scale(0.9) rotate(15deg);
+  }
+}
+
+/* 2. 连麦心形连接心跳动画（heartbeat） */
+@keyframes heartbeat {
+  0%, 100% {
+    stroke-width: 2;
+    opacity: 0.7;
+    transform: scale(1);
+  }
+  50% {
+    stroke-width: 3;
+    opacity: 1;
+    transform: scale(1.1);
+  }
+}
+
+/* 3. 高潮次数心跳动画（heartPulse） */
 @keyframes heartPulse {
   0% {
     transform: scale(1);
@@ -1006,7 +1244,21 @@ input:focus-visible {
     transform: scale(1);
   }
 }
-/* 弹窗滑入动画 */
+
+/* 4. 直播状态点呼吸动画（breathing） */
+@keyframes breathing {
+  0%,
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.2);
+    opacity: 0.7;
+  }
+}
+
+/* 5. 弹窗滑入动画（slideUp） */
 @keyframes slideUp {
   from {
     transform: translateY(30px);
@@ -1015,5 +1267,27 @@ input:focus-visible {
   to {
     transform: translateY(0);
     opacity: 1;
+  }
+}
+
+/* 6. 弹幕淡入动画（fadeIn） */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* 7. 加载旋转动画（spin） */
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
   }
 }
