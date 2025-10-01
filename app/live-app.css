@@ -13,32 +13,11 @@
   --live-modal-bg: #F5EFE5; /* 弹窗背景 */
   --live-screen-bg: #F5EFE5; /* 屏幕背景 */
   --live-danger-red: #ff4d4f; /* 保留危险红色（直播状态点） */
-  /* 新增：特色弹窗专用变量 */
-  --modal-padding: 20px; /* 弹窗内边距 */
-  --feature-btn-gap: 15px; /* 特色模式按钮间距 */
-  --feature-btn-padding: 12px 0; /* 特色模式按钮内边距 */
-  --feature-btn-font: 16px; /* 特色模式按钮字体 */
-  /* 新增：动画元素专用变量（还原原版） */
-  --heart-color: rgba(255, 182, 213, 0.7); /* 小心心/心形连接色 */
-  --heart-hover-color: rgba(255, 105, 180, 0.9); /* 心形hover色 */
-  --pk-a-bg: rgba(255, 182, 213, 0.5); /* PK主播A背景色 */
-  --pk-a-color: #d6008f; /* PK主播A文字色 */
-  --pk-a-border: 3px solid #ffb6d5; /* PK主播A边框色 */
-  --pk-b-bg: rgba(182, 213, 255, 0.5); /* PK主播B背景色 */
-  --pk-b-color: #0066cc; /* PK主播B文字色 */
-  --pk-b-border: 3px solid #b6d5ff; /* PK主播B边框色 */
-  --link-a-bg: rgba(255, 182, 213, 0.5); /* 连麦主播背景色 */
-  --link-a-color: #d6008f; /* 连麦主播文字色 */
-  --link-a-border: 3px solid #ffb6d5; /* 连麦主播边框色 */
-  --link-b-bg: rgba(182, 213, 255, 0.5); /* 连麦粉丝背景色 */
-  --link-b-color: #0066cc; /* 连麦粉丝文字色 */
-  --link-b-border: 3px solid #b6d5ff; /* 连麦粉丝边框色 */
-  --system-tip-color: #A0C4FF; /* 系统提示文字色（还原原版） */
-  --high-tide-box-bg: rgba(255,255,255,0.9); /* 高光区域背景（还原原版） */
-  /* 新增：粉蓝渐变（需求1） */
-  --card-gradient: linear-gradient(to bottom, #f6d2dc 0%, #c7d7f1 100%);
-  /* 新增：视频区文字色（需求5） */
-  --video-text-color: #E3D5A5;
+  --card-gradient: linear-gradient(135deg, #f6d2dc 20%, #c7d7f1 80%); /* 调整渐变方向和色值 */
+  --streamer-width: 180px; /* 原图150px → 180px */
+  --streamer-height: 270px;
+  --card-z-index: 100; /* 需求④：层级高于直播间 */
+  --content-max-height: calc(80vh - 120px);
 }
 /* 直播应用容器 - 奶油风背景替换 */
 .live-app {
@@ -337,36 +316,20 @@
 }
 /* ==================== 直播中界面 - 完全还原原版样式（PK/连麦卡片） ==================== */
 .live-container {
-  display: flex;
-  flex-direction: column;
-  height: 100%; /* 使用父容器高度，即 calc(100% - 48px) */
-  overflow: hidden; /* 禁用整体滚动 */
-  background: var(--live-bg-main); /* 容器背景替换 */
+  background: var(--live-bg-main);
+  position: relative; /* 为卡片定位提供基准 */
 }
 /* 【核心：还原特色卡片样式 - 对齐原版regex文件】 */
 /* 卡片基础样式（透明背景+无额外边框） */
 .feature-card {
-  margin-bottom: 12px;
-  border-radius: 12px;
-  overflow: visible;
-  background: var(--live-bg-card); /* 卡片本身透明 */
-  border: none; /* 去掉边框 */
-  box-shadow: none; /* 去掉阴影 */
-  position: relative; /* 为动画元素（小心心、PK图标）提供定位基准 */
-  width: 100%;
+  margin-bottom: 0; /* 移除底部间距 */
+  z-index: var(--card-z-index); /* 层级置顶 */
 }
 /* 卡片切换按钮（还原文字色） */
-.feature-card-toggle {
-  background: linear-gradient(135deg, rgba(227, 213, 165, 0.1), rgba(245, 239, 229, 0.1)); /* 切换条背景还原 */
-  border-bottom: 1px solid var(--live-border); /* 切换条边框色替换 */
-  padding: 10px 16px;
-  cursor: pointer;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  color: var(--live-text-primary); /* 切换条文字色替换 */
-  font-weight: 500;
-  font-size: 16px;
+.feature-card-content {
+  max-height: var(--content-max-height); /* 限制内容高度，避免滚动条 */
+  overflow: visible; /* 移除滚动条，需求④ */
+  padding: 8px; /* 减少内边距 */
 }
 /* 卡片内容区（需求4：添加滑动条，限制最大高度） */
 .feature-card-content {
@@ -381,31 +344,28 @@
 }
 /* PK/连麦主播容器（需求1：粉蓝渐变背景） */
 .pk-streamer-container, .link-streamer-container {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 15px;
-  background: var(--card-gradient); /* 需求1：粉蓝渐变背景 */
-  position: relative; /* 为连麦心形连接提供定位基准 */
-  border-radius: 12px;
-  margin-bottom: 15px;
+  background: var(--card-gradient); /* 直接作为卡片背景 */
+  padding: 12px; /* 减少内边距 */
+  border-radius: 20px; /* 增加圆角 */
+  margin-bottom: 10px; /* 减少间距 */
+  height: calc(var(--streamer-height) + 40px); /* 预留标题空间 */
 }
 /* 主播卡片（还原宽度+定位） */
 .streamer-card {
-  flex: 1;
-  text-align: center;
-  padding: 0 10px;
-  position: relative; /* 为小心心动画提供定位基准 */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px; /* 标题与图片间距 */
 }
 /* 主播标题（还原原版配色） */
 .streamer-title {
   background-color: var(--pk-a-bg);
   color: var(--pk-a-color);
   font-weight: bold;
-  padding: 5px 10px;
-  border-radius: 8px 8px 0 0;
-  margin-bottom: 8px;
-  font-size: 18px;
+  padding: 4px 8px;
+  border-radius: 6px 6px 0 0;
+  margin: 0;
+  font-size: 15px;
   transition: background-color 0.5s ease, color 0.5s ease;
 }
 .streamer-title.pk-b-title {
@@ -422,14 +382,10 @@
 }
 /* 主播头像（需求3：调大图片尺寸） */
 .streamer-image {
-  border: var(--pk-a-border);
-  border-radius: 10px;
-  overflow: hidden;
-  width: 150px; /* 需求3：调大宽度（原120px） */
-  height: 220px; /* 需求3：调大高度（原180px） */
-  margin: 0 auto;
-  position: relative;
-  z-index: 2; /* 确保头像在小心心上方 */
+  width: var(--streamer-width); /* 放大图片 */
+  height: var(--streamer-height);
+  border-radius: 12px; /* 增加圆角 */
+  border-width: 4px; /* 加粗边框 */
 }
 .streamer-image.pk-b-image {
   border-color: var(--pk-b-border);
@@ -462,50 +418,39 @@
   z-index: 3; /* 确保VS图标在最上层 */
   box-shadow: 0 0 10px rgba(255, 105, 180, 0.3); /* 增加阴影，突出立体感 */
 }
-/* PK特有：进度条（需求2：添加欲色币显示，修复蓝色进度） */
+/* PK特有：进度条 */
 .pk-progress-bar {
-  height: 25px;
-  background: var(--live-bg-main);
+  height: 30px; /* 加高进度条 */
+  background: rgba(255,255,255,0.9);
   border-radius: 15px;
-  margin: 0 15px 15px;
+  margin: 0 12px;
+  padding: 0 45px; /* 左右预留数字空间 */
+  position: relative;
+  box-shadow: inset 0 2px 4px rgba(0,0,0,0.1);
+}
+.pk-currency-inside {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--live-text-primary);
+  white-space: nowrap;
+}
+.pk-left { left: 12px; color: var(--pk-a-color); } /* 用户颜色 */
+.pk-right { right: 12px; color: var(--pk-b-color); } /* 对手颜色 */
+.pk-progress-track {
+  height: 100%;
+  border-radius: 15px;
   overflow: hidden;
-  box-shadow: inset 0 0 5px rgba(0,0,0,0.1);
-  position: relative; /* 为欲色币定位 */
-  padding: 0 40px; /* 左右预留欲色币空间 */
 }
-/* 进度条内欲色币（左侧-用户） */
-.pk-currency-left {
-  position: absolute;
-  left: 10px;
-  top: 50%;
-  transform: translateY(-50%);
-  font-size: 14px;
-  font-weight: bold;
-  color: var(--pk-a-color);
-  z-index: 2;
-}
-/* 进度条内欲色币（右侧-对手） */
-.pk-currency-right {
-  position: absolute;
-  right: 10px;
-  top: 50%;
-  transform: translateY(-50%);
-  font-size: 14px;
-  font-weight: bold;
-  color: var(--pk-b-color);
-  z-index: 2;
-}
-/* 用户进度条（粉色，正常显示） */
 .pk-progress-left {
-  height: 100%;
   background: linear-gradient(90deg, #ff66b2, #ffb6d5);
-  border-radius: 15px 0 0 15px;
+  transition: width 0.3s ease;
 }
-/* 对手进度条（需求2：修复蓝色显示） */
 .pk-progress-right {
-  height: 100%;
-  background: linear-gradient(90deg, #6699ff, #b6d5ff); /* 需求2：蓝色渐变 */
-  border-radius: 0 15px 15px 0;
+  background: linear-gradient(90deg, #6699ff, #b6d5ff);
+  transition: width 0.3s ease;
 }
 /* 连麦特有：心形连接（完全还原原版） */
 .link-heart-connector {
@@ -587,6 +532,7 @@
 }
 /* 视频框 - 保留黑色背景（需求5：文字改为暖米白） */
 .video-placeholder {
+  margin-top: -20px; /* 上移20px，卡片覆盖视频区 */
   width: calc(100% - 20px); /* 减少左右边距 30px → 20px */
   flex: 0 0 40%; /* 使用flex比例：占40%的高度 */
   background-color: #000;
@@ -870,6 +816,8 @@ button:disabled:hover,
 }
 /* ==================== 响应式设计 - 适配移动端/PC端 ==================== */
 @media (max-width: 768px) {
+  --streamer-width: 150px; /* 移动端缩小 */
+  --streamer-height: 225px;
   /* 弹窗响应式 */
   .modal-content {
     width: 95%;
@@ -902,11 +850,9 @@ button:disabled:hover,
   }
   /* 进度条响应式 */
   .pk-progress-bar {
-    padding: 0 30px; /* 响应式：减少左右预留空间 */
+    padding: 0 35px;
   }
-  .pk-currency-left, .pk-currency-right {
-    font-size: 12px; /* 响应式：减小欲色币文字 */
-  }
+  .pk-currency-inside { font-size: 12px; }
   /* 其他响应式保留... */
   .live-main-container {
     padding: 16px;
