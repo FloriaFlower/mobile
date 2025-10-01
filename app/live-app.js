@@ -1299,19 +1299,18 @@ if (typeof window.LiveApp === 'undefined') {
                   </div>
                 </div>
               </div>
-              <!-- PK进度条（还原25px高度+渐变） -->
+              <!-- PK进度条 -->
               <div class="pk-progress-bar">
-                <!-- 用户欲色币（左侧） -->
-                <div class="pk-currency-left">${userCurrency}</div>
-                <!-- 进度条内容 -->
-                <div id="pkBar" style="display: flex; height: 100%; width: 100%;">
-                  <div class="pk-progress-left" style="width: ${userProgress}%;"></div>
-                  <div class="pk-progress-right" style="width: ${rivalProgress}%;"></div>
+                <div class="progress-inner">
+                  <span class="currency-left">${userCurrency}</span>
+                  <div class="progress-track">
+                    <div class="pk-progress-left" style="width: ${userProgress}%;"></div>
+                    <div class="pk-progress-right" style="width: ${rivalProgress}%;"></div>
+                  </div>
+                  <span class="currency-right">${rivalCurrency}</span>
                 </div>
-                <!-- 对手欲色币（右侧） -->
-                <div class="pk-currency-right">${rivalCurrency}</div>
               </div>
-              <!-- 系统提示（还原显示，新增high-tide-box容器） -->
+              <!-- 系统提示 -->
               <div class="high-tide-box">
                 <div style="font-size: 18px; font-weight: 700; color: #E3D5A5; margin-bottom: 8px; animation: heartPulse 1.5s infinite alternate;">
                   🔥 高光次数: <span style="font-size: 28px; color: #E3D5A5; display: inline-block; animation: heartPulse 1s infinite alternate;">${highLightCount}</span> 次
