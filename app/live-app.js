@@ -387,7 +387,7 @@ if (typeof window.LiveApp === 'undefined') {
         allMatches.push({
           type: 'gift',
           match: match,
-          index: match.index, // 在原文中的位置
+          index: match.index,
         });
       });
 
@@ -690,7 +690,7 @@ if (typeof window.LiveApp === 'undefined') {
       if (liveData.recommendedInteractions && liveData.recommendedInteractions.length > 0) {
         this.recommendedInteractions = liveData.recommendedInteractions;
         console.log(`[Live App] 更新推荐互动: ${this.recommendedInteractions.length} 个`);
-      }
+      }     
 
       // 添加新弹幕（累积所有历史弹幕）
       if (liveData.danmakuList && liveData.danmakuList.length > 0) {
@@ -730,6 +730,10 @@ if (typeof window.LiveApp === 'undefined') {
           console.log(`[Live App] 添加 ${newGifts.length} 个新礼物，总计 ${this.giftList.length} 个`);
         }
       }
+      this.pkCoverData = liveData.pkCoverData;
+      this.linkCoverData = liveData.linkCoverData;
+      this.highLightCount = liveData.highLightCount;
+      this.systemTips = liveData.systemTips;      
     }
 
     /**
@@ -740,9 +744,13 @@ if (typeof window.LiveApp === 'undefined') {
         isLiveActive: this.isLiveActive,
         viewerCount: this.currentViewerCount,
         liveContent: this.currentLiveContent,
-        danmakuList: [...this.danmakuList], // 返回副本
-        giftList: [...this.giftList], // 返回副本
-        recommendedInteractions: [...this.recommendedInteractions], // 返回副本
+        danmakuList: [...this.danmakuList],
+        giftList: [...this.giftList],
+        recommendedInteractions: [...this.recommendedInteractions],
+        pkCoverData: this.pkCoverData,
+        linkCoverData: this.linkCoverData,
+        highLightCount: this.highLightCount,
+        systemTips: this.systemTips,
       };
     }
 
