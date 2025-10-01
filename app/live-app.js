@@ -1287,7 +1287,7 @@ if (typeof window.LiveApp === 'undefined') {
                     <img src="${userPk.imgUrl}" style="width: 100%; height: 100%; object-fit: cover;" alt="${userPk.type}">
                   </div>
                 </div>
-                <!-- 中间：圆形PK图标（还原原版样式） -->
+                <!-- 中间：圆形PK图标 -->
                 <div class="pk-vs">
                   <span style="font-size: 24px; font-weight: bold; background: linear-gradient(to right, #ff66b2, #6699ff); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">PK</span>
                 </div>
@@ -1301,13 +1301,12 @@ if (typeof window.LiveApp === 'undefined') {
               </div>
               <!-- PK进度条 -->
               <div class="pk-progress-bar">
-                <div class="progress-inner">
-                  <span class="currency-left">${userCurrency}</span>
-                  <div class="progress-track">
-                    <div class="pk-progress-left" style="width: ${userProgress}%;"></div>
-                    <div class="pk-progress-right" style="width: ${rivalProgress}%;"></div>
-                  </div>
-                  <span class="currency-right">${rivalCurrency}</span>
+                <!-- 进度条内容 -->
+                <div id="pkBar" style="display: flex; height: 100%; width: 100%;">
+                  <div class="pk-currency-left">${userCurrency}</div>
+                  <div class="pk-progress-left" style="width: ${userProgress}%;"></div>
+                  <div class="pk-progress-right" style="width: ${rivalProgress}%;"></div>
+                  <div class="pk-currency-right">${userCurrency}</div>
                 </div>
               </div>
               <!-- 系统提示 -->
