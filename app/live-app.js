@@ -436,16 +436,16 @@ if (typeof window.LiveApp === 'undefined') {
       const pkCovers = [];
       const matches = [...content.matchAll(this.patterns.pkCover)];
       matches.forEach(match => {
-        const type = match[1]?.trim(); // 类型：{{user}} 或 对手昵称
-        const imgUrl = match[2]?.trim(); // 照片链接
-        const currency = match[3]?.trim() || '0'; // 欲色币（默认0，容错）
+        const type = match[1]?.trim();
+        const imgUrl = match[2]?.trim();
+        const currency = match[3]?.trim() || '0';
         if (type && imgUrl) {
           pkCovers.push({ type, imgUrl, currency });
         }
       });
       // 提取用户和对手数据（容错：不足2条时补默认值）
-      const userPk = pkCovers.find(item => item.type === '{{user}}') || { type: '{{user}}', imgUrl: '默认主播图链接', currency: '0' };
-      const rivalPk = pkCovers.find(item => item.type !== '{{user}}') || { type: '未知对手', imgUrl: '默认对手图链接', currency: '0' };
+      const userPk = pkCovers[0] || { type: '主播', imgUrl: '默认主播图链接', currency: '0' };
+      const rivalPk = pkCovers[1] || { type: '未知对手', imgUrl: '默认对手图链接', currency: '0' };
       return { userPk, rivalPk };
     }
     // 新增：解析连麦封面动态数据（用户/粉丝信息）
