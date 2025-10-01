@@ -262,6 +262,12 @@ if (typeof window.LiveApp === 'undefined') {
         normalDanmaku: /\[直播\|([^\|]+)\|弹幕\|([^\]]+)\]/g,
         giftDanmaku: /\[直播\|([^\|]+)\|打赏\|([^\]]+)\]/g,
         recommendedInteraction: /\[直播\|推荐互动\|([^\]]+)\]/g,
+        pkCover: /\[PK封面\|(.*?)\|(.*?)\|(.*?)\]/g,
+        linkCover: /\[连麦封面\|(.*?)\|(.*?)\]/g,
+        highLight: /\[PK封面\|高光次数\|(.*?)\]/g,
+        linkHighLight: /\[连麦封面\|高光次数\|(.*?)\]/g,
+        pkTips: /\[PK封面\|系统提示1\|(.*?)\|系统提示2\|(.*?)\|系统提示3\|(.*?)\]/g,
+        linkTips: /\[连麦封面\|系统提示1\|(.*?)\|系统提示2\|(.*?)\|系统提示3\|(.*?)\]/g
       };
     }
 
@@ -277,6 +283,10 @@ if (typeof window.LiveApp === 'undefined') {
         danmakuList: [],
         giftList: [],
         recommendedInteractions: [],
+        pkCoverData: null,
+        linkCoverData: null,
+        highLightCount: '0',
+        systemTips: { tip1: '', tip2: '', tip3: '' }
       };
 
       if (!content || typeof content !== 'string') {
@@ -285,18 +295,24 @@ if (typeof window.LiveApp === 'undefined') {
 
       // 1. 解析直播人数
       liveData.viewerCount = this.parseViewerCount(content);
-
       // 2. 解析直播内容
       liveData.liveContent = this.parseLiveContent(content);
-
       // 3. 解析所有弹幕（保持原始顺序）
       const { danmakuList, giftList } = this.parseAllDanmaku(content);
       liveData.danmakuList = danmakuList;
       liveData.giftList = giftList;
-
-      // 5. 解析推荐互动
+      // 4. 解析推荐互动
       liveData.recommendedInteractions = this.parseRecommendedInteractions(content);
-
+      // 5. 判断直播主题（PK/连麦），解析对应动态数据
+      const liveTheme = content.includes('[PK封面') ? 'pk' : (content.includes('[连麦封面') ? 'link' : '');
+      if (liveTheme === 'pk') {
+        liveData.pkCoverData = this.parsePkCover(content);
+      } else if (liveTheme === 'link') {
+        liveData.linkCoverData = this.parseLinkCover(content);
+      }
+      // 6. 解析高光次数和系统提示
+      liveData.highLightCount = this.parseHighLight(content, liveTheme);
+      liveData.systemTips = this.parseSystemTips(content, liveTheme);
       return liveData;
     }
 
@@ -346,7 +362,7 @@ if (typeof window.LiveApp === 'undefined') {
       const lastMatch = matches[matches.length - 1];
       return lastMatch[1].trim();
     }
-
+    
     /**
      * 解析所有弹幕（保持原始顺序）
      */
@@ -415,7 +431,60 @@ if (typeof window.LiveApp === 'undefined') {
 
       return { danmakuList, giftList };
     }
-
+    // 新增：解析PK封面动态数据（用户/对手信息、欲色币）
+    parsePkCover(content) {
+      const pkCovers = [];
+      const matches = [...content.matchAll(this.patterns.pkCover)];
+      matches.forEach(match => {
+        const type = match[1]?.trim(); // 类型：{{user}} 或 对手昵称
+        const imgUrl = match[2]?.trim(); // 照片链接
+        const currency = match[3]?.trim() || '0'; // 欲色币（默认0，容错）
+        if (type && imgUrl) {
+          pkCovers.push({ type, imgUrl, currency });
+        }
+      });
+      // 提取用户和对手数据（容错：不足2条时补默认值）
+      const userPk = pkCovers.find(item => item.type === '{{user}}') || { type: '{{user}}', imgUrl: '默认主播图链接', currency: '0' };
+      const rivalPk = pkCovers.find(item => item.type !== '{{user}}') || { type: '未知对手', imgUrl: '默认对手图链接', currency: '0' };
+      return { userPk, rivalPk };
+    }
+    // 新增：解析连麦封面动态数据（用户/粉丝信息）
+    parseLinkCover(content) {
+      const linkCovers = [];
+      const matches = [...content.matchAll(this.patterns.linkCover)];
+      matches.forEach(match => {
+        const type = match[1]?.trim(); // 类型：{{user}} 或 粉丝昵称
+        const imgUrl = match[2]?.trim(); // 照片链接
+        if (type && imgUrl) {
+          linkCovers.push({ type, imgUrl });
+        }
+      });
+      // 提取用户和粉丝数据（容错）
+      const userLink = linkCovers.find(item => item.type === '{{user}}') || { type: '{{user}}', imgUrl: '默认主播图链接' };
+      const fanLink = linkCovers.find(item => item.type !== '{{user}}') || { type: '未知粉丝', imgUrl: '默认粉丝图链接' };
+      return { userLink, fanLink };
+    }
+    // 新增：解析高光次数（兼容PK/连麦）
+    parseHighLight(content, liveTheme) {
+      if (liveTheme === 'pk') {
+        const matches = [...content.matchAll(this.patterns.highLight)];
+        return matches.length ? matches[0][1].trim() : '0';
+      } else {
+        const matches = [...content.matchAll(this.patterns.linkHighLight)];
+        return matches.length ? matches[0][1].trim() : '0';
+      }
+    }
+    // 新增：解析系统提示（兼容PK/连麦）
+    parseSystemTips(content, liveTheme) {
+      if (liveTheme === 'pk') {
+        const matches = [...content.matchAll(this.patterns.pkTips)];
+        return matches.length ? { tip1: matches[0][1].trim(), tip2: matches[0][2].trim(), tip3: matches[0][3].trim() } : { tip1: 'PK加油！', tip2: '注意观众互动', tip3: '保持节奏' };
+      } else {
+        const matches = [...content.matchAll(this.patterns.linkTips)];
+        return matches.length ? { tip1: matches[0][1].trim(), tip2: matches[0][2].trim(), tip3: matches[0][3].trim() } : { tip1: '连麦愉快！', tip2: '倾听粉丝想法', tip3: '分享更多趣事' };
+      }
+    }
+    
     /**
      * 解析普通弹幕（保留原方法以备兼容）
      */
@@ -1037,7 +1106,6 @@ if (typeof window.LiveApp === 'undefined') {
               <h2>直播中心</h2>
               <p>选择你想要的直播功能</p>
             </div>
-
             <div class="live-options">
               <!-- 1. 自由直播 -->
               <div class="live-option-card" id="start-streaming-option">
@@ -1068,7 +1136,6 @@ if (typeof window.LiveApp === 'undefined') {
               </div>
             </div>
           </div>
-
           <!-- 开始直播弹窗 -->
           <div class="modal" id="start-live-modal" style="display: none;">
             <div class="modal-content">
@@ -1084,7 +1151,6 @@ if (typeof window.LiveApp === 'undefined') {
                     rows="3"
                   ></textarea>
                 </div>
-
                 <div class="preset-interactions">
                   <h4>预设互动</h4>
                   <div class="preset-buttons">
@@ -1102,7 +1168,6 @@ if (typeof window.LiveApp === 'undefined') {
                     </button>
                   </div>
                 </div>
-
                 <button class="start-live-btn" id="start-custom-live">
                   开始直播
                 </button>
@@ -1174,78 +1239,145 @@ if (typeof window.LiveApp === 'undefined') {
         </div>
       `;
     }
-
     /**
      * 渲染直播中界面
      */
     renderLiveView() {
       const state = this.stateManager.getCurrentState();
-      // 1. 先在模板外处理卡片逻辑
+      // 新增：获取解析到的动态封面数据（PK/连麦）
+      const { pkCoverData, linkCoverData, highLightCount, systemTips } = state;
       let featureCardHtml = '';
-      if (this.stateManager.currentLiveContent) {
-        const liveTheme = this.stateManager.currentLiveContent.includes('PK') ? 'pk' : 'link';
-        if (liveTheme === 'pk') {
-          // PK卡片HTML
-          featureCardHtml = `
-            <div class="feature-card">
-              <div class="feature-card-toggle" id="pk-card-toggle">
-                🆚 PK直播卡片 <span class="toggle-icon">▼</span>
+      // 1. 动态生成PK卡片（含圆形PK图标、进度条、小心心动画）
+      if (pkCoverData) {
+        const { userPk, rivalPk } = pkCoverData;
+        // 计算PK进度（根据欲色币比例）
+        const userCurrency = parseInt(userPk.currency) || 0;
+        const rivalCurrency = parseInt(rivalPk.currency) || 0;
+        const total = userCurrency + rivalCurrency;
+        const userProgress = total ? Math.round((userCurrency / total) * 100) : 60;
+        const rivalProgress = total ? Math.round((rivalCurrency / total) * 100) : 40;
+        featureCardHtml = `
+          <div class="feature-card">
+            <div class="feature-card-toggle" id="pk-card-toggle">
+              🆚 PK直播卡片 <span class="toggle-icon">▼</span>
+            </div>
+            <div class="feature-card-content" id="pk-card-content" style="display: none; position: relative;">
+              <!-- 小心心背景动画（和live-连麦.js一致） -->
+              <div style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 0; pointer-events: none;">
+                <span class="live-status-bar-heart">💖</span>
+                <span class="live-status-bar-heart">💗</span>
+                <span class="live-status-bar-heart">💕</span>
+                <span class="live-status-bar-heart">💞</span>
               </div>
-              <div class="feature-card-content" id="pk-card-content" style="display: none;">
-                <div style="display: flex; justify-content: space-between; align-items: center; padding: 12px; background: var(--live-bg-card); border-radius: 12px; margin-bottom: 8px;">
-                  <div style="text-align: center;">
-                    <div style="background: var(--live-border); padding: 4px 8px; border-radius: 8px; margin-bottom: 8px;">当前主播</div>
-                    <div style="border: 2px solid var(--live-primary); border-radius: 8px; overflow: hidden; width: 80px; height: 80px;">
-                      <img src="当前主播图片" style="width: 100%; height: 100%; object-fit: cover;">
-                    </div>
+              <!-- PK主播区域（含圆形PK图标） -->
+              <div style="display: flex; justify-content: space-between; align-items: center; padding: 12px; background: var(--live-bg-card); border-radius: 12px; margin-bottom: 8px; position: relative; z-index: 1;">
+                <!-- 左侧：当前主播 -->
+                <div style="flex: 1; text-align: center;">
+                  <div style="background: var(--live-border); padding: 4px 8px; border-radius: 8px; margin-bottom: 8px; font-size: 14px; color: var(--live-text-primary);">${userPk.type}</div>
+                  <div style="border: 2px solid var(--live-primary); border-radius: 8px; overflow: hidden; width: 80px; height: 80px; margin: 0 auto;">
+                    <img src="${userPk.imgUrl}" style="width: 100%; height: 100%; object-fit: cover;" alt="${userPk.type}">
                   </div>
-                  <div style="font-size: 24px; font-weight: bold; color: var(--live-primary);">VS</div>
-                  <div style="text-align: center;">
-                    <div style="background: var(--live-border); padding: 4px 8px; border-radius: 8px; margin-bottom: 8px;">PK主播</div>
-                    <div style="border: 2px solid var(--live-primary); border-radius: 8px; overflow: hidden; width: 80px; height: 80px;">
-                      <img src="PK主播图片" style="width: 100%; height: 100%; object-fit: cover;">
-                    </div>
+                  <div style="margin-top: 8px; font-size: 13px; color: var(--live-text-primary);">欲色币: ${userPk.currency}</div>
+                </div>
+                <!-- 中间：圆形PK图标 -->
+                <div style="position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); background: var(--live-bg-card); width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; border: 2px solid var(--live-primary); z-index: 2;">
+                  <span style="font-size: 16px; font-weight: bold; color: var(--live-primary);">PK</span>
+                </div>
+                <!-- 右侧：对手主播 -->
+                <div style="flex: 1; text-align: center;">
+                  <div style="background: var(--live-border); padding: 4px 8px; border-radius: 8px; margin-bottom: 8px; font-size: 14px; color: var(--live-text-primary);">${rivalPk.type}</div>
+                  <div style="border: 2px solid var(--live-primary); border-radius: 8px; overflow: hidden; width: 80px; height: 80px; margin: 0 auto;">
+                    <img src="${rivalPk.imgUrl}" style="width: 100%; height: 100%; object-fit: cover;" alt="${rivalPk.type}">
                   </div>
+                  <div style="margin-top: 8px; font-size: 13px; color: var(--live-text-primary);">欲色币: ${rivalPk.currency}</div>
                 </div>
-                <div style="height: 16px; background: var(--live-bg-main); border-radius: 8px; margin-bottom: 8px;">
-                  <div style="width: 60%; height: 100%; background: linear-gradient(90deg, #E3D5A5, #A68770); border-radius: 8px;"></div>
+              </div>
+              <!-- PK进度条 -->
+              <div style="height: 12px; background: var(--live-bg-main); border-radius: 6px; margin: 0 15px 15px; overflow: hidden;">
+                <div style="width: ${userProgress}%; height: 100%; background: linear-gradient(90deg, #E3D5A5, #A68770); border-radius: 6px 0 0 6px;"></div>
+                <div style="width: ${rivalProgress}%; height: 100%; background: linear-gradient(90deg, #A68770, #E3D5A5); border-radius: 0 6px 6px 0;"></div>
+              </div>
+              <!-- 简化状态栏（高光+系统提示） -->
+              <div style="background: linear-gradient(135deg, rgba(227, 213, 165, 0.2), rgba(245, 239, 229, 0.2)); padding: 12px; border-radius: 8px; margin: 0 15px 15px;">
+                <div style="text-align: center; margin-bottom: 8px;">
+                  <span style="font-size: 16px; font-weight: bold; color: var(--live-danger-red); animation: heartPulse 1.5s infinite alternate;">🔥 高光次数: ${highLightCount} 次</span>
                 </div>
-                <div style="background: var(--live-bg-card); padding: 8px; border-radius: 8px;">
-                  <div style="font-size: 14px; color: var(--live-text-secondary);">PK倒计时：05:23</div>
+                <div style="font-size: 13px; color: var(--live-text-secondary); line-height: 1.5;">
+                  <p>${systemTips.tip1}</p>
+                  <p>${systemTips.tip2}</p>
+                  <p>${systemTips.tip3}</p>
                 </div>
               </div>
             </div>
-          `;
-        } else if (liveTheme === 'link') {
-          // 连麦卡片HTML（完整保留原样式）
-          featureCardHtml = `
-            <div class="feature-card">
-              <div class="feature-card-toggle" id="link-card-toggle">
-                🎤 连麦直播卡片 <span class="toggle-icon">▼</span>
+          </div>
+        `;
+      }
+      // 2. 动态生成连麦卡片（含心形连接、心跳动画、小心心动画）
+      else if (linkCoverData) {
+        const { userLink, fanLink } = linkCoverData;
+        featureCardHtml = `
+          <div class="feature-card">
+            <div class="feature-card-toggle" id="link-card-toggle">
+              🎤 连麦直播卡片 <span class="toggle-icon">▼</span>
+            </div>
+            <div class="feature-card-content" id="link-card-content" style="display: none; position: relative;">
+              <!-- 小心心背景动画（和live-连麦.js一致） -->
+              <div style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 0; pointer-events: none;">
+                <span class="live-status-bar-heart">💖</span>
+                <span class="live-status-bar-heart">💗</span>
+                <span class="live-status-bar-heart">💕</span>
+                <span class="live-status-bar-heart">💞</span>
               </div>
-              <div class="feature-card-content" id="link-card-content" style="display: none;">
-                <div style="display: flex; justify-content: space-between; align-items: center; padding: 12px; background: var(--live-bg-card); border-radius: 12px; margin-bottom: 8px;">
-                  <div style="text-align: center;">
-                    <div style="background: var(--live-border); padding: 4px 8px; border-radius: 8px; margin-bottom: 8px;">主播</div>
-                    <div style="border: 2px solid var(--live-primary); border-radius: 8px; overflow: hidden; width: 80px; height: 80px;">
-                      <img src="主播图片" style="width: 100%; height: 100%; object-fit: cover;">
-                    </div>
-                  </div>
-                  <div style="font-size: 20px; color: var(--live-primary);">连麦中</div>
-                  <div style="text-align: center;">
-                    <div style="background: var(--live-border); padding: 4px 8px; border-radius: 8px; margin-bottom: 8px;">粉丝</div>
-                    <div style="border: 2px solid var(--live-primary); border-radius: 8px; overflow: hidden; width: 80px; height: 80px;">
-                      <img src="粉丝图片" style="width: 100%; height: 100%; object-fit: cover;">
-                    </div>
+              <!-- 连麦主播区域（含心形连接） -->
+              <div style="display: flex; justify-content: space-between; align-items: center; padding: 12px; background: var(--live-bg-card); border-radius: 12px; margin-bottom: 8px; position: relative; z-index: 1;">
+                <!-- 左侧：主播 -->
+                <div style="flex: 1; text-align: center;">
+                  <div style="background: var(--live-border); padding: 4px 8px; border-radius: 8px; margin-bottom: 8px; font-size: 14px; color: var(--live-text-primary);">${userLink.type}</div>
+                  <div style="border: 2px solid var(--live-primary); border-radius: 8px; overflow: hidden; width: 80px; height: 80px; margin: 0 auto;">
+                    <img src="${userLink.imgUrl}" style="width: 100%; height: 100%; object-fit: cover;" alt="${userLink.type}">
                   </div>
                 </div>
-                <div style="background: var(--live-bg-card); padding: 8px; border-radius: 8px;">
-                  <div style="font-size: 14px; color: var(--live-text-secondary);">连麦时长：12:45</div>
+                <!-- 中间：心形连接（和live-连麦.js完全一致） -->
+                <div style="position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); z-index: 2; width: 60px; height: 60px;">
+                  <svg width="60" height="60" viewBox="0 0 100 40" preserveAspectRatio="xMidYMid meet">
+                    <defs>
+                      <clipPath id="heart-clip-shape" clipPathUnits="objectBoundingBox">
+                        <path d="M0.5,1 C0.5,1,0,0.7,0,0.3 A0.25,0.25,1,0,1,0.5,0.3 A0.25,0.25,1,0,1,1,0.3 C1,0.7,0.5,1,0.5,1 Z" />
+                      </clipPath>
+                      <linearGradient id="heartbeatGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                        <stop offset="0%" style="stop-color:#ff66b2;" />
+                        <stop offset="100%" style="stop-color:#6699ff;" />
+                      </linearGradient>
+                    </defs>
+                    <rect width="60" height="60" clip-path="url(#heart-clip-shape)" fill="rgba(255,182,213,0.3)" filter="drop-shadow(0px 0px 3px #ff66b2)" />
+                    <path d="M10,20 L25,20 L30,15 L40,25 L50,5 L60,35 L65,20 L90,20" 
+                      stroke="url(#heartbeatGradient)" stroke-width="2.5" stroke-linecap="round" 
+                      stroke-linejoin="round" fill="none" stroke-dasharray="300" stroke-dashoffset="300" 
+                      animation="draw-heartbeat 2.5s linear infinite" />
+                  </svg>
+                </div>
+                <!-- 右侧：粉丝 -->
+                <div style="flex: 1; text-align: center;">
+                  <div style="background: var(--live-border); padding: 4px 8px; border-radius: 8px; margin-bottom: 8px; font-size: 14px; color: var(--live-text-primary);">${fanLink.type}</div>
+                  <div style="border: 2px solid var(--live-primary); border-radius: 8px; overflow: hidden; width: 80px; height: 80px; margin: 0 auto;">
+                    <img src="${fanLink.imgUrl}" style="width: 100%; height: 100%; object-fit: cover;" alt="${fanLink.type}">
+                  </div>
+                </div>
+              </div>
+              <!-- 简化状态栏（高光+系统提示） -->
+              <div style="background: linear-gradient(135deg, rgba(227, 213, 165, 0.2), rgba(245, 239, 229, 0.2)); padding: 12px; border-radius: 8px; margin: 0 15px 15px;">
+                <div style="text-align: center; margin-bottom: 8px;">
+                  <span style="font-size: 16px; font-weight: bold; color: var(--live-danger-red); animation: heartPulse 1.5s infinite alternate;">🔥 高光次数: ${highLightCount} 次</span>
+                </div>
+                <div style="font-size: 13px; color: var(--live-text-secondary); line-height: 1.5;">
+                  <p>${systemTips.tip1}</p>
+                  <p>${systemTips.tip2}</p>
+                  <p>${systemTips.tip3}</p>
                 </div>
               </div>
             </div>
-          `;
-        }
+          </div>
+        `;
       }
 
       // 2. 渲染推荐互动按钮
@@ -1418,27 +1550,34 @@ if (typeof window.LiveApp === 'undefined') {
             });
           }
           // PK提交：发送“与xx进行直播PK”
-          const submitPkBtn = appContainer.querySelector('.submit-pk-btn');
+          const submitPkBtn = appContainer.querySelector('#start-pk-live');
           if (submitPkBtn) {
             submitPkBtn.addEventListener('click', () => {
               const anchorName = appContainer.querySelector('#pk-anchor-input').value.trim();
               if (anchorName) {
                 this.hideModal('feature-live-modal');
-                this.startLive(`与${anchorName}进行直播PK`); // 复用startLive方法，传入PK主题
+                this.hideModal('pk-input-modal'); // 关闭子弹窗
+                this.startLive(`与${anchorName}进行直播PK`); // 向AI发送PK指令
+              } else {
+                this.showToast('请输入PK主播名称', 'warning');
               }
             });
           }
           // 连麦提交：发送“与xx进行直播连麦”
-          const submitLinkBtn = appContainer.querySelector('.submit-link-btn');
+          const submitLinkBtn = appContainer.querySelector('#start-connect-live');
           if (submitLinkBtn) {
             submitLinkBtn.addEventListener('click', () => {
-              let linkName = appContainer.querySelector('#link-custom-input').value.trim();
-              // 优先取选择的选项
-              const selectedLinkBtn = appContainer.querySelector('.link-option-btn.active');
-              if (selectedLinkBtn) linkName = selectedLinkBtn.dataset.name;
+              // 优先取预设连麦对象，再取自定义输入
+              let linkName = appContainer.querySelector('#connect-anchor-input').value.trim();
+              const selectedLinkBtn = appContainer.querySelector('.preset-btn.active');
+              if (selectedLinkBtn) linkName = selectedLinkBtn.dataset.anchor;
+           
               if (linkName) {
                 this.hideModal('feature-live-modal');
-                this.startLive(`与${linkName}进行直播连麦`); // 复用startLive方法，传入连麦主题
+                this.hideModal('connect-select-modal'); // 关闭子弹窗
+                this.startLive(`与${linkName}进行直播连麦`); // 向AI发送连麦指令
+              } else {
+                this.showToast('请选择或输入连麦对象', 'warning');
               }
             });
           }
