@@ -1278,16 +1278,13 @@ if (typeof window.LiveApp === 'undefined') {
                 <span class="live-status-bar-heart">💕</span>
                 <span class="live-status-bar-heart">💞</span>
               </div>
-              <!-- PK主播区域（还原180px图片+粉色/蓝色边框） -->
+              <!-- PK主播区域 -->
               <div class="pk-streamer-container">
                 <!-- 左侧：当前主播 -->
                 <div class="streamer-card">
                   <div class="streamer-title pk-a-title">${userPk.type}</div>
                   <div class="streamer-image pk-a-image">
                     <img src="${userPk.imgUrl}" style="width: 100%; height: 100%; object-fit: cover;" alt="${userPk.type}">
-                  </div>
-                  <div class="pk-currency-info pk-a-currency">
-                    <span>欲色币: ${userPk.currency}</span>
                   </div>
                 </div>
                 <!-- 中间：圆形PK图标（还原原版样式） -->
@@ -1300,15 +1297,19 @@ if (typeof window.LiveApp === 'undefined') {
                   <div class="streamer-image pk-b-image">
                     <img src="${rivalPk.imgUrl}" style="width: 100%; height: 100%; object-fit: cover;" alt="${rivalPk.type}">
                   </div>
-                  <div class="pk-currency-info pk-b-currency">
-                    <span>欲色币: ${rivalPk.currency}</span>
-                  </div>
                 </div>
               </div>
               <!-- PK进度条（还原25px高度+渐变） -->
               <div class="pk-progress-bar">
-                <div class="pk-progress-left" style="width: ${userProgress}%;"></div>
-                <div class="pk-progress-right" style="width: ${rivalProgress}%;"></div>
+                <!-- 用户欲色币（左侧） -->
+                <div class="pk-currency-left">${userCurrency}</div>
+                <!-- 进度条内容 -->
+                <div id="pkBar" style="display: flex; height: 100%; width: 100%;">
+                  <div class="pk-progress-left" style="width: ${userProgress}%;"></div>
+                  <div class="pk-progress-right" style="width: ${rivalProgress}%;"></div>
+                </div>
+                <!-- 对手欲色币（右侧） -->
+                <div class="pk-currency-right">${rivalCurrency}</div>
               </div>
               <!-- 系统提示（还原显示，新增high-tide-box容器） -->
               <div class="high-tide-box">
@@ -1342,7 +1343,7 @@ if (typeof window.LiveApp === 'undefined') {
                 <span class="live-status-bar-heart">💕</span>
                 <span class="live-status-bar-heart">💞</span>
               </div>
-              <!-- 连麦主播区域（还原180px图片+心形连接） -->
+              <!-- 连麦主播区域 -->
               <div class="link-streamer-container">
                 <!-- 左侧：主播 -->
                 <div class="streamer-card">
