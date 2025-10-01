@@ -35,6 +35,10 @@
   --link-b-border: 3px solid #b6d5ff; /* 连麦粉丝边框色 */
   --system-tip-color: #A0C4FF; /* 系统提示文字色（还原原版） */
   --high-tide-box-bg: rgba(255,255,255,0.9); /* 高光区域背景（还原原版） */
+  /* 新增：粉蓝渐变（需求1） */
+  --card-gradient: linear-gradient(to bottom, #f6d2dc 0%, #c7d7f1 100%);
+  /* 新增：视频区文字色（需求5） */
+  --video-text-color: #E3D5A5;
 }
 /* 直播应用容器 - 奶油风背景替换 */
 .live-app {
@@ -364,24 +368,24 @@
   font-weight: 500;
   font-size: 16px;
 }
-/* 卡片内容区（还原无最大高度+自适应） */
+/* 卡片内容区（需求4：添加滑动条，限制最大高度） */
 .feature-card-content {
   background: transparent; /* 内容区背景透明，内部区域单独设背景 */
   padding: 15px;
   border-radius: 0 0 12px 12px;
-  max-height: none; /* 去掉最大高度限制，覆盖屏幕 */
+  max-height: 350px; /* 限制最大高度，超出滚动 */
   height: auto;
-  overflow-y: visible; /* 内容过多时自然滚动 */
+  overflow-y: auto; /* 需求4：添加滑动条 */
   scrollbar-width: thin;
   scrollbar-color: var(--live-border) var(--live-bg-main);
 }
-/* PK/连麦主播容器（还原横向布局+渐变背景） */
+/* PK/连麦主播容器（需求1：粉蓝渐变背景） */
 .pk-streamer-container, .link-streamer-container {
   display: flex;
   justify-content: space-between;
   align-items: center;
   padding: 15px;
-  background: linear-gradient(135deg, rgba(227, 213, 165, 0.1), rgba(245, 239, 229, 0.1)); /* 还原背景渐变 */
+  background: var(--card-gradient); /* 需求1：粉蓝渐变背景 */
   position: relative; /* 为连麦心形连接提供定位基准 */
   border-radius: 12px;
   margin-bottom: 15px;
@@ -416,13 +420,13 @@
   background-color: var(--link-b-bg);
   color: var(--link-b-color);
 }
-/* 主播头像（还原180px高度+边框） */
+/* 主播头像（需求3：调大图片尺寸） */
 .streamer-image {
   border: var(--pk-a-border);
   border-radius: 10px;
   overflow: hidden;
-  width: 120px; /* 还原原版图片宽度 */
-  height: 180px; /* 还原原版图片高度 */
+  width: 150px; /* 需求3：调大宽度（原120px） */
+  height: 220px; /* 需求3：调大高度（原180px） */
   margin: 0 auto;
   position: relative;
   z-index: 2; /* 确保头像在小心心上方 */
@@ -458,24 +462,50 @@
   z-index: 3; /* 确保VS图标在最上层 */
   box-shadow: 0 0 10px rgba(255, 105, 180, 0.3); /* 增加阴影，突出立体感 */
 }
-/* PK特有：欲色币信息（还原样式） */
-.pk-currency-info {
-  margin-top: 10px;
+/* PK特有：进度条（需求2：添加欲色币显示，修复蓝色进度） */
+.pk-progress-bar {
+  height: 25px;
+  background: var(--live-bg-main);
+  border-radius: 15px;
+  margin: 0 15px 15px;
+  overflow: hidden;
+  box-shadow: inset 0 0 5px rgba(0,0,0,0.1);
+  position: relative; /* 为欲色币定位 */
+  padding: 0 40px; /* 左右预留欲色币空间 */
+}
+/* 进度条内欲色币（左侧-用户） */
+.pk-currency-left {
+  position: absolute;
+  left: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 14px;
   font-weight: bold;
   color: var(--pk-a-color);
-  transition: color 0.5s ease;
+  z-index: 2;
 }
-.pk-currency-info.pk-b-currency {
+/* 进度条内欲色币（右侧-对手） */
+.pk-currency-right {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 14px;
+  font-weight: bold;
   color: var(--pk-b-color);
+  z-index: 2;
 }
-.pk-currency-info span {
-  background-color: var(--pk-a-bg);
-  padding: 5px 10px;
-  border-radius: 8px;
-  transition: background-color 0.5s ease;
+/* 用户进度条（粉色，正常显示） */
+.pk-progress-left {
+  height: 100%;
+  background: linear-gradient(90deg, #ff66b2, #ffb6d5);
+  border-radius: 15px 0 0 15px;
 }
-.pk-currency-info.pk-b-currency span {
-  background-color: var(--pk-b-bg);
+/* 对手进度条（需求2：修复蓝色显示） */
+.pk-progress-right {
+  height: 100%;
+  background: linear-gradient(90deg, #6699ff, #b6d5ff); /* 需求2：蓝色渐变 */
+  border-radius: 0 15px 15px 0;
 }
 /* 连麦特有：心形连接（完全还原原版） */
 .link-heart-connector {
@@ -501,25 +531,6 @@
 }
 .link-heart-connector svg path {
   stroke: linear-gradient(90deg, #ff66b2, #6699ff);
-}
-/* PK特有：进度条（还原25px高度+渐变） */
-.pk-progress-bar {
-  height: 25px;
-  background: var(--live-bg-main);
-  border-radius: 15px;
-  margin: 0 15px 15px;
-  overflow: hidden;
-  box-shadow: inset 0 0 5px rgba(0,0,0,0.1);
-}
-.pk-progress-left {
-  height: 100%;
-  background: linear-gradient(90deg, #ff66b2, #ffb6d5);
-  border-radius: 15px 0 0 15px;
-}
-.pk-progress-right {
-  height: 100%;
-  background: linear-gradient(90deg, #6699ff, #b6d5ff);
-  border-radius: 0 15px 15px 0;
 }
 /* 小心心动画容器（还原定位） */
 .live-status-bar-heart-container {
@@ -574,7 +585,7 @@
 .night-mode .system-tip-line {
   text-shadow: 0 0 8px var(--system-tip-color);
 }
-/* 视频框 - 保留黑色背景（直播内容区） */
+/* 视频框 - 保留黑色背景（需求5：文字改为暖米白） */
 .video-placeholder {
   width: calc(100% - 20px); /* 减少左右边距 30px → 20px */
   flex: 0 0 40%; /* 使用flex比例：占40%的高度 */
@@ -590,7 +601,16 @@
   padding: 8px; /* 进一步减少内边距 */
   overflow: hidden; /* 确保内容不会溢出 */
 }
-/* LIVE标志（固定左下角） */
+/* 视频区文字（需求5：暖米白，清晰护眼） */
+.live-content-text {
+  color: var(--video-text-color); /* 需求5：暖米白 #E3D5A5 */
+  font-size: 16px;
+  line-height: 1.5;
+  margin: auto;
+  padding: 0 8px;
+  text-shadow: 0 0 2px rgba(0,0,0,0.5); /* 增加文字阴影，更清晰 */
+}
+/* LIVE标志（固定左下角，红色不变） */
 .live-status-bottom {
   position: absolute;
   left: 8px;
@@ -865,8 +885,8 @@ button:disabled:hover,
   }
   /* 特色卡片响应式（含动画元素） */
   .streamer-image {
-    width: 100px;
-    height: 150px;
+    width: 120px; /* 响应式：调小图片（原150px） */
+    height: 180px; /* 响应式：调小图片（原220px） */
   }
   .pk-vs {
     width: 50px;
@@ -879,6 +899,13 @@ button:disabled:hover,
   }
   .live-status-bar-heart {
     font-size: 20px;
+  }
+  /* 进度条响应式 */
+  .pk-progress-bar {
+    padding: 0 30px; /* 响应式：减少左右预留空间 */
+  }
+  .pk-currency-left, .pk-currency-right {
+    font-size: 12px; /* 响应式：减小欲色币文字 */
   }
   /* 其他响应式保留... */
   .live-main-container {
@@ -946,8 +973,8 @@ button:disabled:hover,
   }
   /* 特色卡片响应式（含动画元素） */
   .streamer-image {
-    width: 80px;
-    height: 120px;
+    width: 100px; /* 响应式：进一步调小图片 */
+    height: 150px; /* 响应式：进一步调小图片 */
   }
   .pk-vs {
     width: 40px;
@@ -966,6 +993,10 @@ button:disabled:hover,
   }
   .system-tip-line {
     font-size: 12px;
+  }
+  /* 进度条响应式 */
+  .pk-progress-bar {
+    padding: 0 25px; /* 响应式：进一步减少预留空间 */
   }
   /* 其他响应式保留... */
   .live-main-header h2 {
@@ -1160,7 +1191,7 @@ input:focus-visible {
   }
 }
 /* 3. 高潮次数心跳动画（对齐原版） */
-@keyframes heartPulse {
+@keyframesulse {
   0% {
     transform: scale(1);
   }
@@ -1205,3 +1236,13 @@ input:focus-visible {
     transform: translateY(0);
   }
 }
+/* 7. 加载旋转动画（对齐原版） */
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
