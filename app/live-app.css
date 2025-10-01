@@ -425,40 +425,35 @@
 
 /* 主播头像样式 */
 .streamer-image {
-  border: 2px solid var(--live-primary);
-  border-radius: 8px;
-  overflow: hidden;
-  width: 100px;
-  height: 100px;
-  margin: 0 auto;
-  position: relative;
-  z-index: 2; /* 确保头像在小心心上方 */
+  border: 3px solid var(--live-primary);
+  border-radius: 12px;
+  width: 180px;
+  height: 180px;
+  margin: 0 auto 12px;
 }
 
+.live-status-bar-heart {
+  font-size: 28px; /* 增大心形 */
+  opacity: 0.7;
+  animation: heartFloatBurst 7s ease-out infinite;
+ }
+.live-status-bar-heart:nth-child(1) { left: 5%; bottom: 20px; }
+.live-status-bar-heart:nth-child(2) { left: 35%; bottom: 50px; }
+.live-status-bar-heart:nth-child(3) { left: 65%; bottom: 30px; }
+.live-status-bar-heart:nth-child(4) { left: 90%; bottom: 60px; }
 .streamer-image img {
   width: 100%;
   height: 100%;
   object-fit: cover;
 }
 
-/* PK特有：VS图标（优化样式，确保悬浮居中） */
+/* PK特有：VS图标 */
 .pk-vs {
-  position: absolute;
-  left: 50%;
-  top: 50%;
-  transform: translate(-50%, -50%);
-  background: var(--live-bg-card);
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border: 2px solid var(--live-primary);
-  font-weight: bold;
-  color: var(--live-primary);
-  z-index: 3; /* 确保VS图标在最上层 */
-  box-shadow: 0 0 10px rgba(166, 135, 112, 0.3); /* 增加阴影，突出立体感 */
+   width: 60px; /* 从40px改回60px */
+   height: 60px;
+   border-width: 3px; /* 还原3px边框 */
+   font-size: 20px; /* 增大文字 */
+   box-shadow: 0 0 15px rgba(166, 135, 112, 0.3); /* 增强阴影 */
 }
 
 /* 连麦特有：心形连接（带心跳动画） */
@@ -554,20 +549,13 @@
 
 .feature-card-content {
   background: var(--live-bg-main);
-  padding: 12px;
+  padding: 24px; /* 增加内边距，还原原版间距 */
   border-radius: 0 0 12px 12px;
-  max-height: 240px;
-  overflow-y: auto;
+  height: calc(100vh - 120px); /* 全屏高度，减去头部60px+卡片toggle 60px */
+  overflow-y: auto; /* 内容过多时滚动，非全屏时保持 */
   scrollbar-width: thin;
   scrollbar-color: var(--live-border) var(--live-bg-main);
 }
-/* 新增：小屏幕适配（手机） */
-@media (max-width: 768px) {
-  .feature-card-content {
-    max-height: 180px;
-  }
-}
-
 
 /* 视频框 - 保留黑色背景（直播内容区） */
 .video-placeholder {
@@ -1305,5 +1293,25 @@ input:focus-visible {
   }
   100% {
     transform: rotate(360deg);
+  }
+}
+/* 系统提示专用样式（还原原版渐变背景+圆角） */
+.system-tips-container {
+  font-size: 14px;
+  color: #5D4A3A; /* 深米白色，比secondary更清晰 */
+  line-height: 1.6;
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px dashed rgba(227, 213, 165, 0.5); /* 原版虚线分隔 */
+}
+.system-tips-container p {
+  margin: 4px 0;
+  opacity: 0.9; /* 保留柔和感 */
+  text-shadow: 1px 1px 1px rgba(255, 255, 255, 0.1); /* 黑色背景下增强可读性 */
+}
+/* 新增：全屏适配（覆盖底部安全区） */
+@media (max-width: 768px) {
+  .feature-card-content {
+    height: calc(100vh - 140px); /* 小屏预留底部按钮空间 */
   }
 }
