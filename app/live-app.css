@@ -380,18 +380,18 @@
   scrollbar-width: thin;
   scrollbar-color: var(--live-border) var(--live-bg-main);
 }
-/* PK/连麦主播容器（需求2：卡片本身米白背景改为粉蓝渐变，不影响直播间背景） */
+/* PK/连麦主播容器（需求2：卡片本身米白背景改为粉蓝渐变，不影响直播间背景；需求3：整体卡片应用渐变） */
 .pk-streamer-container, .link-streamer-container {
   display: flex;
   justify-content: space-between;
   align-items: center;
   padding: 12px;
-  background: var(--card-gradient); /* 需求2：卡片本身背景改为粉蓝渐变 */
+  background: var(--card-gradient); /* 需求2&3：整个卡片应用粉蓝渐变 */
   position: relative; /* 为连麦心形连接提供定位基准 */
   border-radius: 12px;
   margin-bottom: 12px;
 }
-/* 主播卡片（需求3：调整内边距确保图片居中，腾出空间放大图片） */
+/* 主播卡片（需求2：调整内边距确保图片居中，腾出空间放大图片） */
 .streamer-card {
   flex: 1;
   text-align: center;
@@ -401,14 +401,14 @@
   flex-direction: column;
   align-items: center; /* 强制子元素居中，解决图片靠右问题 */
 }
-/* 主播标题（需求3：昵称上移、字号缩小，腾出空间放大图片） */
+/* 主播标题（需求4：昵称上移、字号缩小，腾出空间放大图片） */
 .streamer-title {
   background-color: var(--pk-a-bg);
   color: var(--pk-a-color);
   font-weight: bold;
   padding: 4px 8px; /* 减少上下内边距，上移昵称 */
   border-radius: 8px 8px 0 0;
-  margin-bottom: 4px; /* 减少与图片间距，上移昵称 */
+  margin-bottom: 2px; /* 需求4：大幅减少与图片间距，上移昵称 */
   font-size: 14px; /* 需求3：字号缩小（原18px） */
   transition: background-color 0.5s ease, color 0.5s ease;
   width: fit-content; /* 适配文字宽度，避免占用过多横向空间 */
@@ -467,16 +467,16 @@
   z-index: 3; /* 确保VS图标在最上层 */
   box-shadow: 0 0 10px rgba(255, 105, 180, 0.3); /* 增加阴影，突出立体感 */
 }
-/* PK特有：进度条（需求1：欲色币移至进度条内，确保数字不溢出） */
+/* PK特有：进度条（需求1：欲色币移至进度条内，进度条拉长；需求4：确保系统提示可见） */
 .pk-progress-bar {
   height: 25px;
   background: var(--live-bg-main);
   border-radius: 15px;
-  margin: 0 15px 12px;
+  margin: 0 8px 8px; /* 需求1：减少左右边距，拉长进度条视觉 */
   overflow: hidden;
   box-shadow: inset 0 0 5px rgba(0,0,0,0.1);
   position: relative; /* 为欲色币定位 */
-  padding: 0 60px; /* 需求1：增加左右内边距，确保长数字不溢出（原40px） */
+  padding: 0 40px; /* 需求1：减少左右内边距，拉长进度条 */
 }
 /* 进度条内欲色币（左侧-用户，完全在进度条内） */
 .pk-currency-left {
@@ -546,7 +546,7 @@
   left: 0;
   width: 100%;
   height: 100%;
-  z-index: 0;
+  z-index: 11; /* 需求3：提高层级，确保爱心在卡片上方 */
   pointer-events: none;
 }
 /* 小心心动画元素（还原从底部上升+样式） */
@@ -557,7 +557,7 @@
   filter: drop-shadow(0 0 4px rgba(255,255,255,0.8));
   animation: heartFloatBurst 8s ease-out infinite;
   pointer-events: none;
-  z-index: 0;
+  z-index: 11; /* 需求3：提高层级，确保爱心在卡片上方 */
   bottom: 0; /* 从底部开始 */
 }
 .live-status-bar-heart:nth-child(1) { left: 5%; animation-delay: 0s; transform: scale(0.7);}
@@ -570,13 +570,13 @@
   border-radius: 18px;
   padding: 12px 20px; /* 缩小内边距（原15px 25px），适配手机屏 */
   text-align: center;
-  margin-top: 12px;
+  margin-top: 8px; /* 需求4：减少上边距，确保系统提示可见 */
   box-shadow: 0 5px 15px rgba(0,0,0,0.2);
   border: 1px solid rgba(255,255,255,0.7);
   position: relative;
   overflow: hidden;
 }
-/* 系统提示文字（需求4：缩小字号，适配手机屏） */
+/* 系统提示文字（需求4：确保完全显示） */
 .system-tip-line {
   color: var(--system-tip-color);
   font-size: 13px; /* 缩小字号（原14px），适配手机屏 */
@@ -588,6 +588,7 @@
   padding: 2px 0;
   white-space: pre-wrap;
   display: block; /* 确保显示 */
+  margin: 0; /* 清除默认边距，确保完全显示 */
 }
 .night-mode .system-tip-line {
   text-shadow: 0 0 8px var(--system-tip-color);
@@ -910,7 +911,7 @@ button:disabled:hover,
   }
   /* 进度条响应式 */
   .pk-progress-bar {
-    padding: 0 50px; /* 响应式：减少左右预留空间（原60px） */
+    padding: 0 30px; /* 响应式：减少左右预留空间（原40px） */
   }
   .pk-currency-left, .pk-currency-right {
     font-size: 12px; /* 响应式：减小欲色币文字 */
@@ -1004,7 +1005,7 @@ button:disabled:hover,
   }
   /* 进度条响应式 */
   .pk-progress-bar {
-    padding: 0 40px; /* 响应式：进一步减少预留空间 */
+    padding: 0 20px; /* 响应式：进一步减少预留空间 */
   }
   /* 其他响应式保留... */
   .live-main-header h2 {
