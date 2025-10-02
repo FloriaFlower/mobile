@@ -371,43 +371,46 @@
 }
 /* 卡片内容区（需求4：添加滑动条，限制最大高度适配手机屏 + 顶部padding减少，让内容上移） */
 .feature-card-content {
-  background: transparent; /* 内容区背景透明，内部区域单独设背景 */
-  padding: 8px 15px; /* 进一步减少顶部padding，让昵称/图片上移 */
+  background: var(--card-gradient); /* 修复：整个卡片内容区用粉蓝渐变，覆盖所有元素 */
+  padding: 4px 15px; /* 修复：减少顶部padding至4px，让内容上移 */
   border-radius: 0 0 12px 12px;
   max-height: 420px; /* 限制最大高度适配手机模拟器，确保元素紧凑 */
   height: auto;
   overflow-y: auto; /* 需求4：添加滑动条备用 */
   scrollbar-width: thin;
   scrollbar-color: var(--live-border) var(--live-bg-main);
+  position: relative; /* 为爱心动画提供定位基准 */
 }
 /* PK/连麦主播容器（需求2：整个卡片用粉蓝渐变 + 增加z-index避免遮挡爱心，原12px padding保留） */
 .pk-streamer-container, .link-streamer-container {
   display: flex;
-  justify-content: space-between;
+  justify-content: space-between; /* 确保左右对称，避免整体偏移 */
   align-items: center;
-  padding: 12px;
-  background: var(--card-gradient); /* 需求2：整个卡片背景为粉蓝渐变 */
+  padding: 8px 12px; /* 修复：减少顶部padding至8px，上移内容 */
+  background: transparent; /* 修复：取消单独背景，继承父容器渐变 */
   position: relative; /* 为连麦心形连接提供定位基准 */
   border-radius: 12px;
-  margin-bottom: 12px;
+  margin-bottom: 8px; /* 修复：减少底部间距至8px，拉近与进度条距离 */
   z-index: 1; /* 低于爱心z-index(0)和图片z-index(2)，不遮挡爱心 */
 }
 /* 主播卡片（需求2：调整内边距居中 + 顶部padding让内容上移，原flex:1保留） */
 .streamer-card {
   flex: 1;
   text-align: center;
-  padding: 8px 4px 0; /* 顶部加8px padding上移内容，左右减为4px避免偏移 */
+  padding: 4px 0 0; /* 修复：左右padding设为0避免偏移，顶部padding减至4px上移 */
   position: relative; /* 为小心心动画提供定位基准 */
   display: flex;
   flex-direction: column;
   align-items: center; /* 强制子元素居中，解决图片靠右问题 */
+  max-width: 45%; /* 修复：限制最大宽度，避免过宽导致偏移 */
+  margin: 0 auto; /* 修复：自动居中，消除左右偏移 */
 }
 /* 主播标题（需求4：减少底部margin，让昵称更靠上，原14px字号保留） */
 .streamer-title {
   background-color: var(--pk-a-bg);
   color: var(--pk-a-color);
   font-weight: bold;
-  padding: 4px 8px; /* 减少上下内边距，上移昵称 */
+  padding: 3px 8px; /* 修复：减少上下内边距至3px，上移昵称 */
   border-radius: 8px 8px 0 0;
   margin-bottom: 0; /* 完全取消与图片间距，进一步上移昵称 */
   font-size: 14px; /* 需求3：字号缩小（原18px） */
@@ -473,7 +476,7 @@
   height: 25px;
   background: var(--live-bg-main);
   border-radius: 15px;
-  margin: 0 2px 12px; /* 进一步减少左右margin，让进度条整体拉长 */
+  margin: 0 2px 8px; /* 修复：减少底部margin至8px，拉近与系统提示距离 */
   overflow: hidden;
   box-shadow: inset 0 0 5px rgba(0,0,0,0.1);
   position: relative; /* 为欲色币定位 */
@@ -547,7 +550,7 @@
   left: 0;
   width: 100%;
   height: 100%;
-  z-index: 0;
+  z-index: 0; /* 修复：低于卡片内容z-index，不被渐变和内容盖住 */
   pointer-events: none;
 }
 /* 小心心动画元素（还原从底部上升+样式） */
@@ -569,9 +572,9 @@
 .high-tide-box {
   background-color: var(--high-tide-box-bg);
   border-radius: 18px;
-  padding: 10px 20px; /* 缩小内边距，适配手机屏 */
+  padding: 8px 20px; /* 修复：减少上下内边距至8px，缩小占用空间 */
   text-align: center;
-  margin-top: 8px; /* 减少上边距，让系统提示更靠上 */
+  margin-top: 4px; /* 修复：减少上边距至4px，上移系统提示 */
   box-shadow: 0 5px 15px rgba(0,0,0,0.2);
   border: 1px solid rgba(255,255,255,0.7);
   position: relative;
@@ -585,7 +588,7 @@
   letter-spacing: 0.5px;
   text-shadow: 0 0 4px rgba(255,255,255,0.5);
   text-align: center;
-  line-height: 1.5; /* 调整行高，避免换行过多 */
+  line-height: 1.4; /* 调整行高，避免换行过多 */
   padding: 2px 0;
   white-space: pre-wrap;
   display: block; /* 确保显示 */
@@ -912,7 +915,7 @@ button:disabled:hover,
   /* 进度条响应式 */
   .pk-progress-bar {
     padding: 0 50px; /* 响应式：减少左右预留空间（原60px） */
-    margin: 0 3px 12px; /* 响应式：进一步减少左右margin，保持进度条拉长 */
+    margin: 0 3px 8px; /* 响应式：进一步减少左右margin，保持进度条拉长 + 减少底部margin */
   }
   .pk-currency-left, .pk-currency-right {
     font-size: 12px; /* 响应式：减小欲色币文字 */
@@ -999,7 +1002,8 @@ button:disabled:hover,
     font-size: 18px;
   }
   .high-tide-box {
-    padding: 10px 15px;
+    padding: 6px 15px; /* 响应式：进一步减少内边距 */
+    margin-top: 2px; /* 响应式：进一步减少上边距 */
   }
   .system-tip-line {
     font-size: 12px;
@@ -1007,7 +1011,7 @@ button:disabled:hover,
   /* 进度条响应式 */
   .pk-progress-bar {
     padding: 0 40px; /* 响应式：进一步减少预留空间 */
-    margin: 0 2px 12px; /* 响应式：最小化左右margin，保持进度条拉长 */
+    margin: 0 2px 8px; /* 响应式：最小化左右margin，保持进度条拉长 + 减少底部margin */
   }
   /* 其他响应式保留... */
   .live-main-header h2 {
