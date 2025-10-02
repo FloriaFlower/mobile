@@ -372,7 +372,7 @@
 /* 卡片内容区（需求4：添加滑动条，限制最大高度适配手机屏 + 顶部padding减少，让内容上移） */
 .feature-card-content {
   background: transparent; /* 内容区背景透明，内部区域单独设背景 */
-  padding: 10px 15px; /* 减少顶部padding（原15px），让昵称/图片上移 */
+  padding: 8px 15px; /* 进一步减少顶部padding，让昵称/图片上移 */
   border-radius: 0 0 12px 12px;
   max-height: 420px; /* 限制最大高度适配手机模拟器，确保元素紧凑 */
   height: auto;
@@ -396,7 +396,7 @@
 .streamer-card {
   flex: 1;
   text-align: center;
-  padding: 5px 4px 0; /* 顶部加5px padding上移内容，左右减为4px避免偏移 */
+  padding: 8px 4px 0; /* 顶部加8px padding上移内容，左右减为4px避免偏移 */
   position: relative; /* 为小心心动画提供定位基准 */
   display: flex;
   flex-direction: column;
@@ -409,7 +409,7 @@
   font-weight: bold;
   padding: 4px 8px; /* 减少上下内边距，上移昵称 */
   border-radius: 8px 8px 0 0;
-  margin-bottom: 2px; /* 减少与图片间距（原4px），进一步上移昵称 */
+  margin-bottom: 0; /* 完全取消与图片间距，进一步上移昵称 */
   font-size: 14px; /* 需求3：字号缩小（原18px） */
   transition: background-color 0.5s ease, color 0.5s ease;
   width: fit-content; /* 适配文字宽度，避免占用过多横向空间 */
@@ -473,11 +473,11 @@
   height: 25px;
   background: var(--live-bg-main);
   border-radius: 15px;
-  margin: 0 5px 12px; /* 减少左右margin（原15px），让进度条整体拉长 */
+  margin: 0 2px 12px; /* 进一步减少左右margin，让进度条整体拉长 */
   overflow: hidden;
   box-shadow: inset 0 0 5px rgba(0,0,0,0.1);
   position: relative; /* 为欲色币定位 */
-  padding: 0 60px; /* 需求1：保留左右内边距，确保长数字不溢出（原40px） */
+  padding: 0 60px; /* 需求1：保留左右内边距，确保长数字不溢出 */
 }
 /* 进度条内欲色币（左侧-用户，完全在进度条内） */
 .pk-currency-left {
@@ -569,9 +569,9 @@
 .high-tide-box {
   background-color: var(--high-tide-box-bg);
   border-radius: 18px;
-  padding: 12px 20px; /* 缩小内边距（原15px 25px），适配手机屏 */
+  padding: 10px 20px; /* 缩小内边距，适配手机屏 */
   text-align: center;
-  margin-top: 12px;
+  margin-top: 8px; /* 减少上边距，让系统提示更靠上 */
   box-shadow: 0 5px 15px rgba(0,0,0,0.2);
   border: 1px solid rgba(255,255,255,0.7);
   position: relative;
@@ -580,7 +580,7 @@
 /* 系统提示文字（需求4：字号保留，内容上移后可完全显示） */
 .system-tip-line {
   color: var(--system-tip-color);
-  font-size: 13px; /* 缩小字号（原14px），适配手机屏 */
+  font-size: 13px; /* 缩小字号，适配手机屏 */
   font-weight: 500;
   letter-spacing: 0.5px;
   text-shadow: 0 0 4px rgba(255,255,255,0.5);
