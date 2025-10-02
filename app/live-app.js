@@ -1270,8 +1270,7 @@ if (typeof window.LiveApp === 'undefined') {
             <div class="feature-card-toggle" id="pk-card-toggle">
               🆚 PK封面卡片 <span class="toggle-icon">▼</span>
             </div>
-            <div class="feature-card-content" id="pk-card-content" style="display: none; padding: 15px; height: auto; overflow: visible;">
-              <!-- 原版小心心背景动画（从底部上升） -->
+            <div class="feature-card-content" id="pk-card-content" style="display: none; padding: 5px 15px; background: var(--card-gradient);">
               <div class="live-status-bar-heart-container">
                 <span class="live-status-bar-heart">💖</span>
                 <span class="live-status-bar-heart">💗</span>
@@ -1279,28 +1278,28 @@ if (typeof window.LiveApp === 'undefined') {
                 <span class="live-status-bar-heart">💞</span>
               </div>
               <!-- PK主播区域 -->
-              <div class="pk-streamer-container">
+              <div class="pk-streamer-container" style="margin-bottom: 5px; background: transparent;">
                 <!-- 左侧：当前主播 -->
-                <div class="streamer-card">
-                  <div class="streamer-title pk-a-title">${userPk.type}</div>
+                <div class="streamer-card" style="flex: 1; margin: 0 auto;">
+                  <div class="streamer-title pk-a-title" style="margin-bottom: 2px;">${userPk.type}</div>
                   <div class="streamer-image pk-a-image">
-                    <img src="${userPk.imgUrl}" style="width: 100%; height: 100%; object-fit: cover;" alt="${userPk.type}">
+                    <img src="${userPk.imgUrl}" alt="${userPk.type}">
                   </div>
                 </div>
                 <!-- 中间：圆形PK图标 -->
-                <div class="pk-vs">
+                <div class="pk-vs" style="z-index: 3;">
                   <span style="font-size: 24px; font-weight: bold; background: linear-gradient(to right, #ff66b2, #6699ff); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">PK</span>
                 </div>
                 <!-- 右侧：对手主播 -->
-                <div class="streamer-card">
-                  <div class="streamer-title pk-b-title">${rivalPk.type}</div>
+                <div class="streamer-card" style="flex: 1; margin: 0 auto;">
+                  <div class="streamer-title pk-b-title" style="margin-bottom: 2px;">${rivalPk.type}</div>
                   <div class="streamer-image pk-b-image">
-                    <img src="${rivalPk.imgUrl}" style="width: 100%; height: 100%; object-fit: cover;" alt="${rivalPk.type}">
+                    <img src="${rivalPk.imgUrl}" alt="${rivalPk.type}">
                   </div>
                 </div>
               </div>
               <!-- PK进度条 -->
-              <div class="pk-progress-bar">
+              <div class="pk-progress-bar" style="margin: 3px 0 8px; padding: 0 60px;">
                 <!-- 进度条内容 -->
                 <div id="pkBar" style="display: flex; height: 100%; width: 100%;">
                   <div class="pk-currency-left">${userCurrency}</div>
@@ -1310,12 +1309,12 @@ if (typeof window.LiveApp === 'undefined') {
                 </div>
               </div>
               <!-- 系统提示 -->
-              <div class="high-tide-box">
-                <div style="font-size: 18px; font-weight: 700; color: #E3D5A5; margin-bottom: 8px; animation: heartPulse 1.5s infinite alternate;">
-                  🔥 高光次数: <span style="font-size: 28px; color: #E3D5A5; display: inline-block; animation: heartPulse 1s infinite alternate;">${highLightCount}</span> 次
+              <div class="high-tide-box" style="margin-top: 5px; padding: 8px 15px;">
+                <div style="font-size: 18px; font-weight: 700; color: #E3D5A5; margin-bottom: 5px; animation: heartPulse 1.5s infinite alternate;">
+                  🔥 高光次数: <span style="font-size: 28px; color: #E3D5A5; animation: heartPulse 1s infinite alternate;">${highLightCount}</span> 次
                 </div>
-                <div style="margin-top: 10px; padding-top: 10px; border-top: 1px dashed rgba(220,220,220,0.7);">
-                  <div style="color: #A0C4FF; font-size: 14px; font-weight: 500; letter-spacing: 0.5px; text-shadow: 0 0 5px rgba(255,255,255,0.6); margin-bottom: 8px;">系统提示：</div>
+                <div style="margin-top: 5px; padding-top: 5px; border-top: 1px dashed rgba(220,220,220,0.7);">
+                  <div style="color: #A0C4FF; font-size: 14px; font-weight: 500; margin-bottom: 5px;">系统提示：</div>
                   <div class="system-tip-line">${systemTips.tip1}</div>
                   <div class="system-tip-line">${systemTips.tip2}</div>
                   <div class="system-tip-line">${systemTips.tip3}</div>
@@ -1325,7 +1324,7 @@ if (typeof window.LiveApp === 'undefined') {
           </div>
         `;
       }
-      // 2. 还原 连麦卡片样式（完全对齐原版 regex-直播-粉丝连麦.json）
+      // 2. 连麦卡片样式
       else if (linkCoverData) {
         const { userLink, fanLink } = linkCoverData;
         featureCardHtml = `
@@ -1333,8 +1332,7 @@ if (typeof window.LiveApp === 'undefined') {
             <div class="feature-card-toggle" id="link-card-toggle">
               🎤 连麦直播卡片 <span class="toggle-icon">▼</span>
             </div>
-            <div class="feature-card-content" id="link-card-content" style="display: none; padding: 15px; height: auto; overflow: visible; position: relative;">
-              <!-- 原版小心心背景动画（从底部上升） -->
+            <div class="feature-card-content" id="link-card-content" style="display: none; padding: 5px 15px; background: var(--card-gradient);">
               <div class="live-status-bar-heart-container">
                 <span class="live-status-bar-heart">💖</span>
                 <span class="live-status-bar-heart">💗</span>
@@ -1342,16 +1340,16 @@ if (typeof window.LiveApp === 'undefined') {
                 <span class="live-status-bar-heart">💞</span>
               </div>
               <!-- 连麦主播区域 -->
-              <div class="link-streamer-container">
+              <div class="link-streamer-container" style="margin-bottom: 5px; background: transparent;">
                 <!-- 左侧：主播 -->
-                <div class="streamer-card">
-                  <div class="streamer-title link-a-title">${userLink.type}</div>
+                <div class="streamer-card" style="flex: 1; margin: 0 auto;">
+                  <div class="streamer-title link-a-title" style="margin-bottom: 2px;">${userLink.type}</div>
                   <div class="streamer-image link-a-image">
-                    <img src="${userLink.imgUrl}" style="width: 100%; height: 100%; object-fit: cover;" alt="${userLink.type}">
+                    <img src="${userLink.imgUrl}" alt="${userLink.type}">
                   </div>
                 </div>
-                <!-- 中间：心形连接（完全还原原版SVG） -->
-                <div class="link-heart-connector">
+                <!-- 中间：心形连接 -->
+                <div class="link-heart-connector" style="z-index: 2;">
                   <svg class="heartbeat-svg" viewBox="0 0 100 40" preserveAspectRatio="xMidYMid meet">
                     <defs>
                       <clipPath id="heart-clip-shape" clipPathUnits="objectBoundingBox">
@@ -1370,20 +1368,20 @@ if (typeof window.LiveApp === 'undefined') {
                   </svg>
                 </div>
                 <!-- 右侧：粉丝 -->
-                <div class="streamer-card">
-                  <div class="streamer-title link-b-title">${fanLink.type}</div>
+                <div class="streamer-card" style="flex: 1; margin: 0 auto;">
+                  <div class="streamer-title link-b-title" style="margin-bottom: 2px;">${fanLink.type}</div>
                   <div class="streamer-image link-b-image">
                     <img src="${fanLink.imgUrl}" style="width: 100%; height: 100%; object-fit: cover;" alt="${fanLink.type}">
                   </div>
                 </div>
               </div>
               <!-- 系统提示 -->
-              <div class="high-tide-box">
-                <div style="font-size: 18px; font-weight: 700; color: #E3D5A5; margin-bottom: 8px; animation: heartPulse 1.5s infinite alternate;">
-                  🔥 高光次数: <span style="font-size: 28px; color: #E3D5A5; display: inline-block; animation: heartPulse 1s infinite alternate;">${highLightCount}</span> 次
+              <div class="high-tide-box" style="margin-top: 5px; padding: 8px 15px;">
+                <div style="font-size: 18px; font-weight: 700; color: #E3D5A5; margin-bottom: 5px; animation: heartPulse 1.5s infinite alternate;">
+                  🔥 高光次数: <span style="font-size: 28px; color: #E3D5A5; animation: heartPulse 1s infinite alternate;">${highLightCount}</span> 次
                 </div>
-                <div style="margin-top: 10px; padding-top: 10px; border-top: 1px dashed rgba(220,220,220,0.7);">
-                  <div style="color: #A0C4FF; font-size: 14px; font-weight: 500; letter-spacing: 0.5px; text-shadow: 0 0 5px rgba(255,255,255,0.6); margin-bottom: 8px;">系统提示：</div>
+                <div style="margin-top: 5px; padding-top: 5px; border-top: 1px dashed rgba(220,220,220,0.7);">
+                  <div style="color: #A0C4FF; font-size: 14px; font-weight: 500; margin-bottom: 5px;">系统提示：</div>
                   <div class="system-tip-line">${systemTips.tip1}</div>
                   <div class="system-tip-line">${systemTips.tip2}</div>
                   <div class="system-tip-line">${systemTips.tip3}</div>
