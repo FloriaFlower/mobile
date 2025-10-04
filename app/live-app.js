@@ -1257,7 +1257,7 @@ if (typeof window.LiveApp === 'undefined') {
       const { pkCoverData, linkCoverData, highLightCount, systemTips } = state;
       let featureCardHtml = '';
 
-      // 1. PK 卡片样式
+      // 1. 还原 PK 卡片样式（完全对齐原版 regex-直播-PK.json）
       if (pkCoverData) {
         const { userPk, rivalPk } = pkCoverData;
         const userCurrency = parseInt(userPk.currency) || 0;
@@ -1278,11 +1278,11 @@ if (typeof window.LiveApp === 'undefined') {
                 <span class="live-status-bar-heart">💞</span>
               </div>
               <!-- PK主播区域 -->
-              <div class="pk-streamer-container" style="margin-bottom: 5px; background: transparent; justify-content: center; gap: 10px;">
+              <div class="pk-streamer-container" style="margin-bottom: 5px; background: transparent; justify-content: space-around;">
                 <!-- 左侧：当前主播 -->
-                <div class="streamer-card" style="flex: 0 0 45%; margin: 0; padding: 4px 0 0; display: flex; flex-direction: column; align-items: center;">
-                  <div class="streamer-title pk-a-title" style="margin-bottom: 0; font-size: 14px;">${userPk.type}</div>
-                  <div class="streamer-image pk-a-image" style="width: 180px; height: 250px; margin: 0 auto;">
+                <div class="streamer-card" style="flex: 1; max-width: 48%; margin: 0 auto; padding: 4px 0 0;">
+                  <div class="streamer-title pk-a-title" style="margin-bottom: 2px;">${userPk.type}</div>
+                  <div class="streamer-image pk-a-image">
                     <img src="${userPk.imgUrl}" alt="${userPk.type}">
                   </div>
                 </div>
@@ -1291,9 +1291,9 @@ if (typeof window.LiveApp === 'undefined') {
                   <span style="font-size: 24px; font-weight: bold; background: linear-gradient(to right, #ff66b2, #6699ff); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">PK</span>
                 </div>
                 <!-- 右侧：对手主播 -->
-                <div class="streamer-card" style="flex: 0 0 45%; margin: 0; padding: 4px 0 0; display: flex; flex-direction: column; align-items: center;">
-                  <div class="streamer-title pk-b-title" style="margin-bottom: 0; font-size: 14px;">${rivalPk.type}</div>
-                  <div class="streamer-image pk-b-image" style="width: 180px; height: 250px; margin: 0 auto;">
+                <div class="streamer-card" style="flex: 1; margin: 0 auto;">
+                  <div class="streamer-title pk-b-title" style="margin-bottom: 2px;">${rivalPk.type}</div>
+                  <div class="streamer-image pk-b-image">
                     <img src="${rivalPk.imgUrl}" alt="${rivalPk.type}">
                   </div>
                 </div>
@@ -1340,9 +1340,9 @@ if (typeof window.LiveApp === 'undefined') {
                 <span class="live-status-bar-heart">💞</span>
               </div>
               <!-- 连麦主播区域 -->
-              <div class="link-streamer-container" style="margin-bottom: 5px; background: transparent;">
+              <div class="link-streamer-container" style="margin-bottom: 5px; background: transparent; justify-content: space-around;">
                 <!-- 左侧：主播 -->
-                <div class="streamer-card" style="flex: 1; margin: 0 auto;">
+                <div class="streamer-card" style="flex: 1; max-width: 48%; margin: 0 auto; padding: 4px 0 0;">
                   <div class="streamer-title link-a-title" style="margin-bottom: 2px;">${userLink.type}</div>
                   <div class="streamer-image link-a-image">
                     <img src="${userLink.imgUrl}" alt="${userLink.type}">
