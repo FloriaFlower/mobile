@@ -1278,11 +1278,11 @@ if (typeof window.LiveApp === 'undefined') {
                 <span class="live-status-bar-heart">💞</span>
               </div>
               <!-- PK主播区域 -->
-              <div class="pk-streamer-container" style="margin-bottom: 5px; background: transparent; justify-content: space-between; padding: 8px 2px 8px 6px;">
+              <div class="pk-streamer-container" style="margin-bottom: 5px; background: transparent; justify-content: space-between; padding: 8px 0;">
                 <!-- 左侧：当前主播 -->
                 <div class="streamer-card" style="flex: 1; margin: 0; padding: 4px 0 0; max-width: 45%;">
                   <div class="streamer-title pk-a-title" style="margin-bottom: 2px;">${userPk.type}</div>
-                  <div class="streamer-image pk-a-image">
+                  <div class="streamer-image pk-a-image" style="margin-left: -8px;">
                     <img src="${userPk.imgUrl}" alt="${userPk.type}">
                   </div>
                 </div>
@@ -1293,7 +1293,7 @@ if (typeof window.LiveApp === 'undefined') {
                 <!-- 右侧：对手主播 -->
                 <div class="streamer-card" style="flex: 1; margin: 0; padding: 4px 0 0; max-width: 45%;">
                   <div class="streamer-title pk-b-title" style="margin-bottom: 2px;">${rivalPk.type}</div>
-                  <div class="streamer-image pk-b-image">
+                  <div class="streamer-image pk-b-image" style="margin-left: -8px;">
                     <img src="${rivalPk.imgUrl}" alt="${rivalPk.type}">
                   </div>
                 </div>
@@ -1340,11 +1340,11 @@ if (typeof window.LiveApp === 'undefined') {
                 <span class="live-status-bar-heart">💞</span>
               </div>
               <!-- 连麦主播区域 -->
-              <div class="link-streamer-container" style="margin-bottom: 5px; background: transparent; justify-content: space-between; padding: 8px 2px 8px 6px;">
+              <div class="link-streamer-container" style="margin-bottom: 5px; background: transparent; justify-content: space-between; padding: 8px 0;">
                 <!-- 左侧：主播 -->
                 <div class="streamer-card" style="flex: 1; margin: 0; padding: 4px 0 0; max-width: 45%;">
                   <div class="streamer-title link-a-title" style="margin-bottom: 2px;">${userLink.type}</div>
-                  <div class="streamer-image link-a-image">
+                  <div class="streamer-image link-a-image" style="margin-left: -8px;">
                     <img src="${userLink.imgUrl}" alt="${userLink.type}">
                   </div>
                 </div>
@@ -1370,7 +1370,7 @@ if (typeof window.LiveApp === 'undefined') {
                 <!-- 右侧：粉丝 -->
                 <div class="streamer-card" style="flex: 1; margin: 0; padding: 4px 0 0; max-width: 45%;">
                   <div class="streamer-title link-b-title" style="margin-bottom: 2px;">${fanLink.type}</div>
-                  <div class="streamer-image link-b-image">
+                  <div class="streamer-image link-b-image" style="margin-left: -8px;">
                     <img src="${fanLink.imgUrl}" style="width: 100%; height: 100%; object-fit: cover;" alt="${fanLink.type}">
                   </div>
                 </div>
