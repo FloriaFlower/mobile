@@ -346,9 +346,9 @@
 /* 【核心：还原特色卡片样式 - 对齐原版regex文件】 */
 /* 卡片基础样式（透明背景+无额外边框，提高层级覆盖屏幕） */
 .feature-card {
-  margin-bottom: 12px;
+  margin-bottom: 0;
   border-radius: 12px;
-  overflow: visible;
+  overflow: hidden;
   background: var(--live-bg-card); /* 卡片本身透明 */
   border: none; /* 去掉边框 */
   box-shadow: none; /* 去掉阴影 */
@@ -384,12 +384,6 @@
   box-sizing: border-box; /* 确保padding不压缩内容高度 */
   margin-bottom: 0; /* 消除父容器底部冗余间距 */
   overflow: hidden; /* 确保渐变不被内容截断 */
-}
-/* 同步修改父容器，消除底部间距影响 */
-.feature-card {
-  margin-bottom: 0; /* 去掉底部冗余间距，避免渐变漏缝 */
-  border-radius: 12px; /* 与内容区圆角一致，避免边缘漏缝 */
-  overflow: hidden; /* 确保内容区渐变完全包裹 */
 }
 
 /* PK/连麦主播容器 */
