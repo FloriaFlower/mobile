@@ -1263,8 +1263,8 @@ if (typeof window.LiveApp === 'undefined') {
         const userCurrency = parseInt(userPk.currency) || 0;
         const rivalCurrency = parseInt(rivalPk.currency) || 0;
         const total = userCurrency + rivalCurrency;
-        const userProgress = total ? Math.min(Math.round((userCurrency / total) * 100), 100) : 100; // 保底100%
-        const rivalProgress = total ? 100 - userProgress : 0; // 强制补全剩余宽度
+        const userProgress = total ? Math.round((userCurrency / total) * 100) : 50; // 初始各50%
+        const rivalProgress = 100 - userProgress;
         featureCardHtml = `
           <div class="feature-card ${liveTheme}-card">
             <div class="feature-card-toggle" id="pk-card-toggle">
