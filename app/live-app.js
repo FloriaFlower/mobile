@@ -903,7 +903,10 @@ if (typeof window.LiveApp === 'undefined') {
         const message = `用户开始直播，初始互动为（${initialInteraction}），请按照正确的直播格式要求生成本场人数，直播内容，弹幕，打赏和推荐互动。此次回复内仅生成一次本场人数和直播内容格式，直播内容需要简洁。最后需要生成四条推荐互动。禁止使用错误格式。`;
 
         await this.sendToSillyTavern(message);
-
+        setTimeout(async () => {
+          await this.parseNewLiveData(); // 主动解析最新PK/连麦数据
+          this.updateAppContent(); // 强制更新界面
+        }, 1000);
         // 更新界面
         this.updateAppContent();
 
@@ -1303,7 +1306,7 @@ if (typeof window.LiveApp === 'undefined') {
                 <div class="pk-currency-left">${userCurrency}</div>
                 <div class="pk-progress-left" style="width: ${userProgress}%;"></div>
                 <div class="pk-progress-right" style="width: ${rivalProgress}%;"></div>
-                <div class="pk-currency-right">${userCurrency}</div>
+                <div class="pk-currency-right">${rivalCurrency}</div>
               </div>
               <!-- 系统提示 -->
               <div class="high-tide-box" style="margin-top: 5px; padding: 8px 15px;">
