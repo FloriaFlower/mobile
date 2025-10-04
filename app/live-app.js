@@ -1263,8 +1263,8 @@ if (typeof window.LiveApp === 'undefined') {
         const userCurrency = parseInt(userPk.currency) || 0;
         const rivalCurrency = parseInt(rivalPk.currency) || 0;
         const total = userCurrency + rivalCurrency;
-        const userProgress = total ? Math.round((userCurrency / total) * 100) : 60;
-        const rivalProgress = total ? Math.round((rivalCurrency / total) * 100) : 40;
+        const userProgress = total ? Math.min(Math.round((userCurrency / total) * 100), 100) : 100; // 保底100%
+        const rivalProgress = total ? 100 - userProgress : 0; // 强制补全剩余宽度
         featureCardHtml = `
           <div class="feature-card ${liveTheme}-card">
             <div class="feature-card-toggle" id="pk-card-toggle">
@@ -1299,14 +1299,11 @@ if (typeof window.LiveApp === 'undefined') {
                 </div>
               </div>
               <!-- PK进度条 -->
-              <div class="pk-progress-bar" style="margin: 3px 0 8px; padding: 0 60px;">
-                <!-- 进度条内容 -->
-                <div id="pkBar" style="display: flex; height: 100%; width: 100%;">
-                  <div class="pk-currency-left">${userCurrency}</div>
-                  <div class="pk-progress-left" style="width: ${userProgress}%;"></div>
-                  <div class="pk-progress-right" style="width: ${rivalProgress}%;"></div>
-                  <div class="pk-currency-right">${userCurrency}</div>
-                </div>
+              <div class="pk-progress-bar" style="margin: 3px 0 8px; padding: 0 60px;">           
+                <div class="pk-currency-left">${userCurrency}</div>
+                <div class="pk-progress-left" style="width: ${userProgress}%;"></div>
+                <div class="pk-progress-right" style="width: ${rivalProgress}%;"></div>
+                <div class="pk-currency-right">${userCurrency}</div>
               </div>
               <!-- 系统提示 -->
               <div class="high-tide-box" style="margin-top: 5px; padding: 8px 15px;">
