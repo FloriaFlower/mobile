@@ -497,13 +497,13 @@
 .pk-progress-left {
   left: 0;
   width: 100%; /* 初始占满，由JS动态修改 */
-  background: pink; /* 粉色进度条颜色 */
+  background: linear-gradient(to right, #ff66b2, #ff85b8) ;
   border-radius: 15px 0 0 15px;
 }
 .pk-progress-right {
   right: 0;
   width: 100%; /* 初始占满，由JS动态修改 */
-  background: lightblue; /* 蓝色进度条颜色 */
+  background: linear-gradient(to left, #6699ff, #85b8ff); /* 蓝色进度条颜色 */
   border-radius: 0 15px 15px 0;
 }
 
