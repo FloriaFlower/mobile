@@ -1278,10 +1278,10 @@ if (typeof window.LiveApp === 'undefined') {
                 <span class="live-status-bar-heart">💞</span>
               </div>
               <!-- PK主播区域 -->
-              <div class="pk-streamer-container" style="margin: 2px auto 4px 0; background: transparent; justify-content: space-around; padding: 4px 4px 4px 8px;">
+              <div class="pk-streamer-container" style="margin-bottom: 5px; background: transparent; justify-content: space-between; padding: 8px 2px 8px 6px;">
                 <!-- 左侧：当前主播 -->
-                <div class="streamer-card" style="flex: 1; margin: 0; padding: 2px 0 0; max-width: 45%;">
-                  <div class="streamer-title pk-a-title" style="margin-bottom: 1px; font-size: 13px;">${userPk.type}</div>
+                <div class="streamer-card" style="flex: 1; margin: 0; padding: 4px 0 0; max-width: 45%;">
+                  <div class="streamer-title pk-a-title" style="margin-bottom: 2px;">${userPk.type}</div>
                   <div class="streamer-image pk-a-image">
                     <img src="${userPk.imgUrl}" alt="${userPk.type}">
                   </div>
@@ -1291,15 +1291,15 @@ if (typeof window.LiveApp === 'undefined') {
                   <span style="font-size: 24px; font-weight: bold; background: linear-gradient(to right, #ff66b2, #6699ff); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">PK</span>
                 </div>
                 <!-- 右侧：对手主播 -->
-                <div class="streamer-card" style="flex: 1; margin: 0; padding: 2px 0 0; max-width: 45%;">
-                  <div class="streamer-title pk-b-title" style="margin-bottom: 1px; font-size: 13px;">${rivalPk.type}</div>
+                <div class="streamer-card" style="flex: 1; margin: 0; padding: 4px 0 0; max-width: 45%;">
+                  <div class="streamer-title pk-b-title" style="margin-bottom: 2px;">${rivalPk.type}</div>
                   <div class="streamer-image pk-b-image">
                     <img src="${rivalPk.imgUrl}" alt="${rivalPk.type}">
                   </div>
                 </div>
               </div>
               <!-- PK进度条 -->
-              <div class="pk-progress-bar" style="margin: 1px 0 4px; padding: 0 60px;">
+              <div class="pk-progress-bar" style="margin: 3px 0 8px; padding: 0 60px;">
                 <!-- 进度条内容 -->
                 <div id="pkBar" style="display: flex; height: 100%; width: 100%;">
                   <div class="pk-currency-left">${userCurrency}</div>
@@ -1340,10 +1340,10 @@ if (typeof window.LiveApp === 'undefined') {
                 <span class="live-status-bar-heart">💞</span>
               </div>
               <!-- 连麦主播区域 -->
-              <div class="link-streamer-container" style="margin: 2px auto 4px 0; background: transparent; justify-content: space-around; padding: 4px 4px 4px 8px;">
+              <div class="link-streamer-container" style="margin-bottom: 5px; background: transparent; justify-content: space-between; padding: 8px 2px 8px 6px;">
                 <!-- 左侧：主播 -->
-                <div class="streamer-card" style="flex: 1; margin: 0; padding: 2px 0 0; max-width: 45%;">
-                  <div class="streamer-title link-a-title" style="margin-bottom: 1px; font-size: 13px;">${userLink.type}</div>
+                <div class="streamer-card" style="flex: 1; margin: 0; padding: 4px 0 0; max-width: 45%;">
+                  <div class="streamer-title link-a-title" style="margin-bottom: 2px;">${userLink.type}</div>
                   <div class="streamer-image link-a-image">
                     <img src="${userLink.imgUrl}" alt="${userLink.type}">
                   </div>
@@ -1368,8 +1368,8 @@ if (typeof window.LiveApp === 'undefined') {
                   </svg>
                 </div>
                 <!-- 右侧：粉丝 -->
-                <div class="streamer-card" style="flex: 1; margin: 0; padding: 2px 0 0; max-width: 45%;">
-                  <div class="streamer-title link-b-title" style="margin-bottom: 1px; font-size: 13px;">${fanLink.type}</div>
+                <div class="streamer-card" style="flex: 1; margin: 0; padding: 4px 0 0; max-width: 45%;">
+                  <div class="streamer-title link-b-title" style="margin-bottom: 2px;">${fanLink.type}</div>
                   <div class="streamer-image link-b-image">
                     <img src="${fanLink.imgUrl}" style="width: 100%; height: 100%; object-fit: cover;" alt="${fanLink.type}">
                   </div>
