@@ -1260,10 +1260,10 @@ if (typeof window.LiveApp === 'undefined') {
       // 1. 还原 PK 卡片样式（完全对齐原版 regex-直播-PK.json）
       if (pkCoverData) {
         const { userPk, rivalPk } = pkCoverData;
-        const userCurrency = parseInt(userPk.currency) || 0;
-        const rivalCurrency = parseInt(rivalPk.currency) || 0;
+        const userCurrency = parseInt(userPk.currency || '0', 10);
+        const rivalCurrency = parseInt(rivalPk.currency || '0', 10);
         const total = userCurrency + rivalCurrency;
-        const userProgress = total ? Math.round((userCurrency / total) * 100) : 50; // 初始各50%
+        cconst userProgress = total > 0 ? Math.round((userCurrency / total) * 100) : 50;
         const rivalProgress = 100 - userProgress;
         featureCardHtml = `
           <div class="feature-card ${liveTheme}-card">
