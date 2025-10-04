@@ -525,7 +525,8 @@
   overflow: hidden;
   box-shadow: inset 0 0 5px rgba(0,0,0,0.1);
   position: relative;
-  padding: 0; /* 清除左右内边距，让数字容器完全控制宽度 */
+  display: flex; 
+  padding: 0;
 }
 
 /* 用户进度条（粉色，正常显示） */
