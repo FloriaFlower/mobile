@@ -478,41 +478,45 @@
   z-index: 3; /* 确保VS图标在最上层 */
   box-shadow: 0 0 10px rgba(255, 105, 180, 0.3); /* 增加阴影，突出立体感 */
 }
-/* 进度条内欲色币（左侧-用户，嵌在粉色进度条内） */
+/* 进度条内欲色币（左侧-用户） */
 .pk-currency-left {
   position: absolute;
-  left: 15px; /* 调整左偏移，确保嵌在进度条内 */
-  top: 0; /* 改为顶部对齐，让背景完全覆盖数字区域 */
-  height: 100%; /* 高度铺满进度条，背景完全覆盖 */
-  padding: 0 8px; /* 左右内边距，避免数字贴边 */
+  left: 0; /* 调整为左对齐，完全嵌入进度条 */
+  top: 0;
+  height: 100%;
+  padding: 0 12px; /* 减少内边距，避免宽度溢出 */
+  min-width: 60px; /* 保证数字区域最小宽度 */
   display: flex;
-  align-items: center; /* 垂直居中 */
+  align-items: center;
+  justify-content: center; /* 水平居中数字 */
   font-size: 14px;
   font-weight: bold;
-  color: #fff; /* 文字改为白色，与渐变背景对比更清晰 */
-  z-index: 2; /* 确保在进度条之上 */
+  color: #fff;
+  z-index: 2;
   white-space: nowrap;
-  background: linear-gradient(90deg, #ff66b2, #ffb6d5); /* 继承用户进度条渐变 */
-  border-radius: 15px 0 0 15px; /* 左圆角匹配进度条 */
+  background: linear-gradient(90deg, #ff66b2, #ffb6d5);
+  border-radius: 15px 0 0 15px;
 }
-/* 进度条内欲色币（右侧-对手，嵌在蓝色进度条内） */
+/* 进度条内欲色币（右侧-对手） */
 .pk-currency-right {
   position: absolute;
-  right: 15px; /* 调整右偏移，确保嵌在进度条内 */
-  top: 0; /* 改为顶部对齐，让背景完全覆盖数字区域 */
-  height: 100%; /* 高度铺满进度条，背景完全覆盖 */
-  padding: 0 8px; /* 左右内边距，避免数字贴边 */
+  right: 0; /* 调整为右对齐，完全嵌入进度条 */
+  top: 0;
+  height: 100%;
+  padding: 0 12px; /* 减少内边距，避免宽度溢出 */
+  min-width: 60px; /* 保证数字区域最小宽度 */
   display: flex;
-  align-items: center; /* 垂直居中 */
+  align-items: center;
+  justify-content: center; /* 水平居中数字 */
   font-size: 14px;
   font-weight: bold;
-  color: #fff; /* 文字改为白色，与渐变背景对比更清晰 */
-  z-index: 2; /* 确保在进度条之上 */
+  color: #fff;
+  z-index: 2;
   white-space: nowrap;
-  background: linear-gradient(90deg, #6699ff, #b6d5ff); /* 继承对手进度条渐变 */
-  border-radius: 0 15px 15px 0; /* 右圆角匹配进度条 */
+  background: linear-gradient(90deg, #6699ff, #b6d5ff);
+  border-radius: 0 15px 15px 0;
 }
-/* 调整进度条内边距，避免数字超出进度条范围 */
+/* 进度条容器调整（还原内边距，避免挤压） */
 .pk-progress-bar {
   height: 25px;
   background: var(--live-bg-main);
@@ -521,7 +525,7 @@
   overflow: hidden;
   box-shadow: inset 0 0 5px rgba(0,0,0,0.1);
   position: relative;
-  padding: 0 75px; /* 左右内边距从60px增至75px，给数字预留足够空间 */
+  padding: 0; /* 清除左右内边距，让数字容器完全控制宽度 */
 }
 
 /* 用户进度条（粉色，正常显示） */
