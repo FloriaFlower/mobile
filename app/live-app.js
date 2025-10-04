@@ -673,7 +673,7 @@ if (typeof window.LiveApp === 'undefined') {
      */
     updateLiveData(liveData) {
       if (!this.isLiveActive) return;
-
+      
       // 更新观看人数（仅保留最新的）
       if (liveData.viewerCount !== undefined && liveData.viewerCount !== 0) {
         this.currentViewerCount = liveData.viewerCount;
@@ -733,7 +733,14 @@ if (typeof window.LiveApp === 'undefined') {
       this.pkCoverData = liveData.pkCoverData;
       this.linkCoverData = liveData.linkCoverData;
       this.highLightCount = liveData.highLightCount;
+      this.systemTips = liveData.systemTips;
+      this.pkCoverData = liveData.pkCoverData;
+      this.linkCoverData = liveData.linkCoverData;
+      this.highLightCount = liveData.highLightCount;
       this.systemTips = liveData.systemTips;      
+      if (window.liveApp) {
+      window.liveApp.updateAppContentDebounced(); // 强制刷新界面
+      }      
     }
 
     /**
