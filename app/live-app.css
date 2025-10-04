@@ -44,9 +44,12 @@
 .live-app {
   display: flex;
   flex-direction: column;
-  height: 100%; /* 使用父容器高度，而不是视口高度 */
-  background: var(--live-bg-main); /* 替换原线性渐变 */
+  height: 100%;
+  min-height: 100vh;
+  background: var(--live-bg-main);
   font-family: -apple-system, BlinkMacSystemFont, 'Helvetica Neue', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+  margin: 0;
+  padding: 0;
 }
 /* 禁用直播应用的整体页面滚动条 */
 .live-app .app-content,
@@ -339,12 +342,15 @@
 .live-container {
   display: flex;
   flex-direction: column;
-  height: 100%; /* 使用父容器高度，即 calc(100% - 48px) */
-  overflow: hidden; /* 禁用整体滚动 */
-  background: var(--live-bg-main); /* 容器背景替换 */
+  height: 100%;
+  min-height: calc(100vh - 48px);
+  overflow: hidden;
+  background: var(--live-bg-main);
+  margin: 0;
+  padding: 0;
 }
-/* 【核心：还原特色卡片样式 - 对齐原版regex文件】 */
-/* 卡片基础样式（透明背景+无额外边框，提高层级覆盖屏幕） */
+
+/* 卡片基础样式*/
 .feature-card {
   margin-bottom: 12px;
   border-radius: 12px;
@@ -352,26 +358,26 @@
   background: var(--live-bg-card); /* 卡片本身透明 */
   border: none; /* 去掉边框 */
   box-shadow: none; /* 去掉阴影 */
-  position: relative; /* 为动画元素（小心心、PK图标）提供定位基准 */
+  position: relative;
   width: 100%;
-  z-index: 10; /* 提高层级，确保覆盖下方屏幕框 */
+  z-index: 10;
 }
-/* 卡片切换按钮（还原文字色） */
+/* 卡片切换按钮 */
 .feature-card-toggle {
   background: linear-gradient(135deg, rgba(227, 213, 165, 0.1), rgba(245, 239, 229, 0.1)); /* 切换条背景还原 */
-  border-bottom: 1px solid var(--live-border); /* 切换条边框色替换 */
+  border-bottom: 1px solid var(--live-border);
   padding: 10px 16px;
   cursor: pointer;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  color: var(--live-text-primary); /* 切换条文字色替换 */
+  color: var(--live-text-primary);
   font-weight: 500;
   font-size: 16px;
 }
-/* 卡片内容区（需求4：添加滑动条，限制最大高度适配手机屏 + 顶部padding减少，让内容上移） */
+/* 卡片内容区 */
 .feature-card-content {
-  background: var(--card-gradient); /* 修复：整个卡片内容区用粉蓝渐变，覆盖所有元素 */
+  background: var(--card-gradient);
   padding: 4px 15px; /* 修复：减少顶部padding至4px，让内容上移 */
   border-radius: 0 0 12px 12px;
   max-height: 420px; /* 限制最大高度适配手机模拟器，确保元素紧凑 */
@@ -598,22 +604,23 @@
 }
 /* 视频框 - 保留黑色背景（需求5：文字改为暖米白） */
 .video-placeholder {
-  width: calc(100% - 20px); /* 减少左右边距 30px → 20px */
-  flex: 0 0 40%; /* 使用flex比例：占40%的高度 */
+  width: calc(100% - 20px); 
+  flex: 0 0 40%; 
   background-color: #000;
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 80 80' width='80' height='80'%3E%3Crect fill='%23050505' width='80' height='80'/%3E%3Cg fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.03'%3E%3Cpath d='M10 10 L60 10 L60 60 L10 60 Z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
-  border-radius: 10px; /* 减小圆角 12px → 10px */
-  margin: 8px auto 0 auto; /* 减少上边距 15px → 8px */
+  border-radius: 10px; 
+  margin: 8px auto 0 auto; /* 仅保留上下内边距，底部设为 0 */
   display: flex;
   flex-direction: column;
-  justify-content: stretch; /* 让内容拉伸填满空间 */
+  justify-content: stretch; 
   text-align: center;
-  position: relative; /* 为LIVE标志固定定位 */
-  padding: 8px; /* 进一步减少内边距 */
-  overflow: hidden; /* 确保内容不会溢出 */
-  z-index: 1; /* 低于卡片层级，确保被卡片覆盖 */
+  position: relative; 
+  padding: 8px; 
+  overflow: hidden; 
+  z-index: 1;
 }
-/* 视频区文字（需求5：暖米白，清晰护眼） */
+
+/* 视频区文字 */
 .live-content-text {
   color: var(--video-text-color); /* 需求5：暖米白 #E3D5A5 */
   font-size: 16px;
@@ -622,7 +629,7 @@
   padding: 0 8px;
   text-shadow: 0 0 2px rgba(0,0,0,0.5); /* 增加文字阴影，更清晰 */
 }
-/* LIVE标志（固定左下角，红色不变） */
+/* LIVE标志 */
 .live-status-bottom {
   position: absolute;
   left: 8px;
