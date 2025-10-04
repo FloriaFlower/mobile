@@ -372,7 +372,7 @@
 /* 卡片内容区 */
 .feature-card-content {
   background: var(--card-gradient);
-  padding: 4px 15px 12px; 
+  padding: 2px 15px 16px; /* 底部padding增至16px，覆盖漏缝；顶部padding减至2px上移内容 */
   border-radius: 0 0 12px 12px;
   max-height: 420px; 
   height: auto;
@@ -381,21 +381,23 @@
   scrollbar-color: var(--live-border) var(--live-bg-main);
   position: relative;
   box-sizing: border-box;
-  margin-bottom: 0
+  margin-bottom: 0;
+  border-bottom: 1px solid transparent; /* 消除可能的边框间隙 */
 }
 
 /* PK/连麦主播容器 */
 .pk-streamer-container, .link-streamer-container {
   display: flex;
-  justify-content: space-between; /* 确保左右对称，避免整体偏移 */
-  align-items: center;
-  padding: 8px 12px; /* 修复：减少顶部padding至8px，上移内容 */
-  background: transparent; /* 修复：取消单独背景，继承父容器渐变 */
-  position: relative; /* 为连麦心形连接提供定位基准 */
+  justify-content: space-around; /* 替换space-between，确保左右空间均匀，避免整体偏右 */
+  align-items: flex-start; /* 顶部对齐，减少垂直间隙 */
+  padding: 4px 4px 4px 8px; /* 顶部padding减至4px上移 */
+  background: transparent;
+  position: relative;
   border-radius: 12px;
-  margin-bottom: 8px;
-  z-index: 1; /* 低于爱心z-index(0)和图片z-index(2)，不遮挡爱心 */
+  margin: 2px 0 4px; /* 底部margin减至4px，拉近与进度条距离 */
+  z-index: 1;
 }
+
 /* 主播卡片（需求2：调整内边距居中 + 顶部padding让内容上移，原flex:1保留） */
 .streamer-card {
   flex: 1;
@@ -474,16 +476,16 @@
   z-index: 3; /* 确保VS图标在最上层 */
   box-shadow: 0 0 10px rgba(255, 105, 180, 0.3); /* 增加阴影，突出立体感 */
 }
-/* PK特有：进度条（需求1：左右margin减少，让进度条拉长，原padding保留） */
+/* PK进度条 */
 .pk-progress-bar {
   height: 25px;
   background: var(--live-bg-main);
   border-radius: 15px;
-  margin: 0 2px 8px; /* 修复：减少底部margin至8px，拉近与系统提示距离 */
+  margin: 1px 2px 4px; /* 顶部margin减至1px上移 */
   overflow: hidden;
   box-shadow: inset 0 0 5px rgba(0,0,0,0.1);
-  position: relative; /* 为欲色币定位 */
-  padding: 0 60px; /* 需求1：保留左右内边距，确保长数字不溢出 */
+  position: relative;
+  padding: 0 60px;
 }
 /* 进度条内欲色币（左侧-用户，完全在进度条内） */
 .pk-currency-left {
@@ -571,18 +573,20 @@
 .live-status-bar-heart:nth-child(2) { left: 25%; bottom: -10px; animation-delay: 2s; transform: scale(0.9);}
 .live-status-bar-heart:nth-child(3) { left: 50%; bottom: 0; animation-delay: 4s; transform: scale(0.8);}
 .live-status-bar-heart:nth-child(4) { left: 75%; bottom: -5px; animation-delay: 6s; transform: scale(1.0);}
-/* 高光区域（需求4：内边距保留，内容上移后可完全露出） */
+/* 高光区域（消除底部间隙） */
 .high-tide-box {
   background-color: var(--high-tide-box-bg);
   border-radius: 18px;
-  padding: 8px 20px; /* 修复：减少上下内边距至8px，缩小占用空间 */
+  padding: 6px 20px; 
   text-align: center;
-  margin-top: 4px; /* 修复：减少上边距至4px，上移系统提示 */
+  margin-top: 2px; /* 上移2px */
+  margin-bottom: 0; /* 消除底部多余间隙 */
   box-shadow: 0 5px 15px rgba(0,0,0,0.2);
   border: 1px solid rgba(255,255,255,0.7);
   position: relative;
   overflow: hidden;
 }
+
 /* 系统提示文字（需求4：字号保留，内容上移后可完全显示） */
 .system-tip-line {
   color: var(--system-tip-color);
@@ -1171,8 +1175,8 @@ input:focus-visible {
   height: 100%;
   object-fit: cover;
 }
-/* 【补全：还原原版动画关键帧】 */
-/* 1. 小心心浮动+爆裂动画（从底部上升，对齐原版） */
+/* 【动画关键帧】 */
+/* 1. 心形浮动+爆裂动画*/
 @keyframes heartFloatBurst {
   0% {
     opacity: 0;
@@ -1180,21 +1184,33 @@ input:focus-visible {
   }
   25% {
     opacity: 0.9;
-    transform: translateY(-30px) rotate(-10deg) scale(0.8);
+    transform: translateY(-50px) rotate(-10deg) scale(0.8); /* 上升距离增加 */
   }
   50% {
     opacity: 0.8;
-    transform: translateY(-70px) rotate(10deg) scale(1.0);
+    transform: translateY(-100px) rotate(10deg) scale(1.0); /* 上升至卡片中部 */
   }
   75% {
     opacity: 0.4;
-    transform: translateY(-120px) rotate(-20deg) scale(1.1);
+    transform: translateY(-200px) rotate(-20deg) scale(1.1); /* 上升至接近名字位置 */
   }
   100% {
     opacity: 0;
-    transform: translateY(-180px) rotate(30deg) scale(0.9);
+    transform: translateY(-300px) rotate(30deg) scale(0.9); /* 上升至卡片顶部后消失 */
   }
 }
+/* 调整小心心初始位置（贴近底部） */
+.live-status-bar-heart {
+  position: absolute;
+  font-size: 25px;
+  color: rgba(255,105,180,0.7);
+  filter: drop-shadow(0 0 4px rgba(255,255,255,0.8));
+  animation: heartFloatBurst 10s ease-out infinite; /* 动画时长延长至10s，确保上升完整 */
+  pointer-events: none;
+  z-index: 0;
+  bottom: 20px; /* 初始位置贴近卡片底部，增加上升距离 */
+}
+
 /* 2. 连麦心形连接心跳动画（对齐原版） */
 @keyframes heartbeat {
   0%, 100% {
