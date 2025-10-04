@@ -1263,7 +1263,7 @@ if (typeof window.LiveApp === 'undefined') {
         const userCurrency = parseInt(userPk.currency || '0', 10);
         const rivalCurrency = parseInt(rivalPk.currency || '0', 10);
         const total = userCurrency + rivalCurrency;
-        cconst userProgress = total > 0 ? Math.round((userCurrency / total) * 100) : 50;
+        const userProgress = total > 0 ? Math.round((userCurrency / total) * 100) : 50;
         const rivalProgress = 100 - userProgress;
         featureCardHtml = `
           <div class="feature-card ${liveTheme}-card">
