@@ -339,16 +339,17 @@
 .live-container {
   display: flex;
   flex-direction: column;
-  height: 100%; /* 使用父容器高度，即 calc(100% - 48px) */
-  overflow: hidden; /* 禁用整体滚动 */
-  background: var(--live-bg-main); /* 容器背景替换 */
+  height: 100%; 
+  overflow: hidden; 
+  background: var(--live-bg-main); 
+  padding: 0; /* 清除父容器内边距，避免卡片被挤压 */
 }
 /* 【核心：还原特色卡片样式 - 对齐原版regex文件】 */
 /* 卡片基础样式（透明背景+无额外边框，提高层级覆盖屏幕） */
 .feature-card {
-  margin-bottom: 0;
+  margin-bottom: 12px;
   border-radius: 12px;
-  overflow: hidden;
+  overflow: visible;
   background: var(--live-bg-card); /* 卡片本身透明 */
   border: none; /* 去掉边框 */
   box-shadow: none; /* 去掉阴影 */
@@ -371,19 +372,20 @@
 }
 /* 卡片内容区 */
 .feature-card-content {
-  background: var(--card-gradient); /* 粉蓝渐变完全覆盖 */
-  padding: 4px 15px 18px; /* 底部padding增至18px，覆盖漏缝区域 */
+  background: var(--card-gradient);
+  padding: 4px 15px 22px; /* 底部padding从12px增至22px，覆盖漏缝区域 */
   border-radius: 0 0 12px 12px;
   max-height: 420px; 
-  height: 100%; /* 强制高度继承父容器，避免内容不足导致漏缝 */
-  min-height: 380px; /* 设置最小高度，适配手机模拟器 */
+  min-height: 100%; /* 确保高度足够覆盖容器 */
+  height: auto;
   overflow-y: auto;
   scrollbar-width: thin;
   scrollbar-color: var(--live-border) var(--live-bg-main);
   position: relative;
-  box-sizing: border-box; /* 确保padding不压缩内容高度 */
-  margin-bottom: 0; /* 消除父容器底部冗余间距 */
-  overflow: hidden; /* 确保渐变不被内容截断 */
+  box-sizing: border-box;
+  margin-bottom: 0;
+  width: 100%; /* 强制满铺父容器宽度，无侧边空隙 */
+  overflow: hidden; /* 防止内部元素溢出导致漏缝 */
 }
 
 /* PK/连麦主播容器 */
@@ -548,7 +550,16 @@
 .link-heart-connector svg path {
   stroke: linear-gradient(90deg, #ff66b2, #6699ff);
 }
-
+/* 小心心动画容器 */
+.live-status-bar-heart-container {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%; /* 覆盖卡片完整高度，动画不被截断 */
+  z-index: 0;
+  pointer-events: none;
+}
 /* 小心心动画元素（还原从底部上升+样式） */
 .live-status-bar-heart {
   position: absolute;
@@ -1166,38 +1177,28 @@ input:focus-visible {
 }
 /* 【补全：还原原版动画关键帧】 */
 /* 1. 小心心浮动+爆裂动画（从底部上升，对齐原版） */
-/* 1. 小心心浮动+爆裂动画（修改后：上升至顶部再消失） */
+/* 1. 小心心浮动+爆裂动画（延长上升距离至顶部） */
 @keyframes heartFloatBurst {
   0% {
     opacity: 0;
-    transform: translateY(0) rotate(0deg) scale(0.6); /* 从底部开始 */
+    transform: translateY(0) rotate(0deg) scale(0.6);
   }
   25% {
     opacity: 0.9;
-    transform: translateY(-80px) rotate(-10deg) scale(0.8); /* 上升1/4高度 */
+    transform: translateY(-60px) rotate(-10deg) scale(0.8); /* 上升距离增大 */
   }
   50% {
     opacity: 0.8;
-    transform: translateY(-160px) rotate(10deg) scale(1.0); /* 上升1/2高度 */
+    transform: translateY(-150px) rotate(10deg) scale(1.0); /* 上升距离增大 */
   }
   75% {
-    opacity: 0.6;
-    transform: translateY(-240px) rotate(-20deg) scale(1.1); /* 上升3/4高度 */
+    opacity: 0.4;
+    transform: translateY(-220px) rotate(-20deg) scale(1.1); /* 上升距离增大 */
   }
   100% {
     opacity: 0;
-    transform: translateY(-320px) rotate(30deg) scale(0.9); /* 上升至顶部（根据卡片高度调整，确保覆盖顶部） */
+    transform: translateY(-320px) rotate(30deg) scale(0.9); /* 上升至顶部后消失 */
   }
-}
-/* 同步调整心形容器高度，确保动画范围覆盖整个卡片 */
-.live-status-bar-heart-container {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%; /* 强制容器高度与卡片一致 */
-  z-index: 0;
-  pointer-events: none;
 }
 
 /* 2. 连麦心形连接心跳动画（对齐原版） */
