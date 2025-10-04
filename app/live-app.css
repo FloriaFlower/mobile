@@ -369,19 +369,22 @@
   font-weight: 500;
   font-size: 16px;
 }
-/* 卡片内容区（需求4：添加滑动条，限制最大高度适配手机屏 + 顶部padding减少，让内容上移） */
+/* 卡片内容区 */
 .feature-card-content {
-  background: var(--card-gradient); /* 修复：整个卡片内容区用粉蓝渐变，覆盖所有元素 */
-  padding: 4px 15px; /* 修复：减少顶部padding至4px，让内容上移 */
+  background: var(--card-gradient);
+  padding: 4px 15px 12px; 
   border-radius: 0 0 12px 12px;
-  max-height: 420px; /* 限制最大高度适配手机模拟器，确保元素紧凑 */
+  max-height: 420px; 
   height: auto;
-  overflow-y: auto; /* 需求4：添加滑动条备用 */
+  overflow-y: auto;
   scrollbar-width: thin;
   scrollbar-color: var(--live-border) var(--live-bg-main);
-  position: relative; /* 为爱心动画提供定位基准 */
+  position: relative;
+  box-sizing: border-box;
+  margin-bottom: 0
 }
-/* PK/连麦主播容器（需求2：整个卡片用粉蓝渐变 + 增加z-index避免遮挡爱心，原12px padding保留） */
+
+/* PK/连麦主播容器 */
 .pk-streamer-container, .link-streamer-container {
   display: flex;
   justify-content: space-between; /* 确保左右对称，避免整体偏移 */
@@ -390,7 +393,7 @@
   background: transparent; /* 修复：取消单独背景，继承父容器渐变 */
   position: relative; /* 为连麦心形连接提供定位基准 */
   border-radius: 12px;
-  margin-bottom: 8px; /* 修复：减少底部间距至8px，拉近与进度条距离 */
+  margin-bottom: 8px;
   z-index: 1; /* 低于爱心z-index(0)和图片z-index(2)，不遮挡爱心 */
 }
 /* 主播卡片（需求2：调整内边距居中 + 顶部padding让内容上移，原flex:1保留） */
