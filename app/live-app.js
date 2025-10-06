@@ -650,7 +650,7 @@ if (typeof window.LiveApp === 'undefined') {
       this.danmakuList = [];
       this.giftList = [];
       this.recommendedInteractions = [];
-      // 移除弹幕数量限制，显示所有历史弹幕
+      this.systemTips = { tip1: '', tip2: '', tip3: '' };
     }
 
     /**
