@@ -918,16 +918,13 @@ if (typeof window.LiveApp === 'undefined') {
         await this.sendToSillyTavern(message);
         setTimeout(() => {
           this.parseNewLiveData(); // 强制拉取首次加载的 PK/连麦数据
-        }, 500); // 延迟确保消息已返回
-     
-        this.updateAppContent();
-      } catch (error) {
+        }, 500); // 延迟确保消息已返回     
 
         // 更新界面
         this.updateAppContent();
-
         console.log('[Live App] 直播已开始');
       } catch (error) {
+        this.updateAppContent();
         console.error('[Live App] 开始直播失败:', error);
         this.showToast('开始直播失败: ' + error.message, 'error');
       }
