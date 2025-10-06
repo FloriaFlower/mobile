@@ -438,14 +438,21 @@ if (typeof window.LiveApp === 'undefined') {
       matches.forEach(match => {
         const type = match[1]?.trim();
         const imgUrl = match[2]?.trim();
-        const currency = match[3]?.trim() || '0';
+        const currency = match[3]?.trim() || '0'; 
         if (type && imgUrl) {
           pkCovers.push({ type, imgUrl, currency });
         }
       });
-      // 提取用户和对手数据（容错：不足2条时补默认值）
-      const userPk = pkCovers[0] || { type: '主播', imgUrl: '默认主播图链接', currency: '0' };
-      const rivalPk = pkCovers[1] || { type: '未知对手', imgUrl: '默认对手图链接', currency: '0' };
+      const userPk = pkCovers.find(item => item.type.includes('主播') || pkCovers[0]) || { 
+        type: '主播', 
+        imgUrl: '默认主播图链接', 
+        currency: '0' 
+      };
+      const rivalPk = pkCovers.find(item => item.type.includes('对手') || pkCovers[1]) || { 
+        type: '未知对手', 
+        imgUrl: '默认对手图链接', 
+        currency: '0' 
+      };
       return { userPk, rivalPk };
     }
     // 新增：解析连麦封面动态数据（用户/粉丝信息）
@@ -673,7 +680,7 @@ if (typeof window.LiveApp === 'undefined') {
      */
     updateLiveData(liveData) {
       if (!this.isLiveActive) return;
-      
+
       // 更新观看人数（仅保留最新的）
       if (liveData.viewerCount !== undefined && liveData.viewerCount !== 0) {
         this.currentViewerCount = liveData.viewerCount;
@@ -730,18 +737,17 @@ if (typeof window.LiveApp === 'undefined') {
           console.log(`[Live App] 添加 ${newGifts.length} 个新礼物，总计 ${this.giftList.length} 个`);
         }
       }
-      this.pkCoverData = liveData.pkCoverData;
+      if (liveData.pkCoverData) {
+        this.pkCoverData = liveData.pkCoverData;
+        if (this.liveApp && this.liveApp.updateAppContentDebounced) {
+          this.liveApp.updateAppContentDebounced();
+        }
+      }
+   
       this.linkCoverData = liveData.linkCoverData;
       this.highLightCount = liveData.highLightCount;
       this.systemTips = liveData.systemTips;
-      this.pkCoverData = liveData.pkCoverData;
-      this.linkCoverData = liveData.linkCoverData;
-      this.highLightCount = liveData.highLightCount;
-      this.systemTips = liveData.systemTips;      
-      if (window.liveApp) {
-      window.liveApp.updateAppContentDebounced(); // 强制刷新界面
-      }      
-    }
+    }      
 
     /**
      * 获取当前直播状态
@@ -783,6 +789,7 @@ if (typeof window.LiveApp === 'undefined') {
       this.eventListener = new LiveEventListener(this);
       this.dataParser = new LiveDataParser();
       this.stateManager = new LiveStateManager();
+      this.stateManager.liveApp = this;
       this.currentView = 'start'; // 'start', 'live'
       this.isInitialized = false;
       this.lastRenderTime = 0;
@@ -908,12 +915,14 @@ if (typeof window.LiveApp === 'undefined') {
 
         // 发送开始直播消息到SillyTavern
         const message = `用户开始直播，初始互动为（${initialInteraction}），请按照正确的直播格式要求生成本场人数，直播内容，弹幕，打赏和推荐互动。此次回复内仅生成一次本场人数和直播内容格式，直播内容需要简洁。最后需要生成四条推荐互动。禁止使用错误格式。`;
-
         await this.sendToSillyTavern(message);
-        setTimeout(async () => {
-          await this.parseNewLiveData(); // 主动解析最新PK/连麦数据
-          this.updateAppContent(); // 强制更新界面
-        }, 1000);
+        setTimeout(() => {
+          this.parseNewLiveData(); // 强制拉取首次加载的 PK/连麦数据
+        }, 500); // 延迟确保消息已返回
+     
+        this.updateAppContent();
+      } catch (error) {
+
         // 更新界面
         this.updateAppContent();
 
@@ -1267,10 +1276,10 @@ if (typeof window.LiveApp === 'undefined') {
       const { pkCoverData, linkCoverData, highLightCount, systemTips } = state;
       let featureCardHtml = '';
 
-      // 1. 还原 PK 卡片样式（完全对齐原版 regex-直播-PK.json）
+      // 1. PK 卡片样式
       if (pkCoverData) {
         const { userPk, rivalPk } = pkCoverData;
-        const userCurrency = parseInt(userPk.currency || '0', 10);
+        const userCurrency = parseInt(userPk.currency || '0', 10); 
         const rivalCurrency = parseInt(rivalPk.currency || '0', 10);
         const total = userCurrency + rivalCurrency;
         const userProgress = total > 0 ? Math.round((userCurrency / total) * 100) : 50;
@@ -1313,7 +1322,7 @@ if (typeof window.LiveApp === 'undefined') {
                 <div class="pk-currency-left">${userCurrency}</div>
                 <div class="pk-progress-left" style="width: ${userProgress}%;"></div>
                 <div class="pk-progress-right" style="width: ${rivalProgress}%;"></div>
-                <div class="pk-currency-right">${rivalCurrency}</div>
+                <div class="pk-currency-right">${userCurrency}</div>
               </div>
               <!-- 系统提示 -->
               <div class="high-tide-box" style="margin-top: 5px; padding: 8px 15px;">
