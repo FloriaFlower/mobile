@@ -1658,27 +1658,32 @@ if (typeof window.LiveApp === 'undefined') {
         }
 
         // 直播中相关事件
-        if (this.currentView === 'live') {
-          // PK卡片展开/收起
-          const pkCardToggle = appContainer.querySelector('#pk-card-toggle');
-          if (pkCardToggle) {
-            pkCardToggle.addEventListener('click', () => {
+        if (this.currentView === 'live') {          
+          appContainer.addEventListener('click', (e) => {
+            // 1. 处理PK卡片展开/收起
+            const pkToggle = e.target.closest('#pk-card-toggle'); // 找到点击的toggle元素（包括内部子元素）
+            if (pkToggle) {
               const content = appContainer.querySelector('#pk-card-content');
-              const icon = pkCardToggle.querySelector('.toggle-icon');
-              content.style.display = content.style.display === 'none' ? 'block' : 'none';
-              icon.textContent = content.style.display === 'none' ? '▼' : '▲';
-            });
-          }
-          // 连麦卡片展开/收起
-          const linkCardToggle = appContainer.querySelector('#link-card-toggle');
-          if (linkCardToggle) {
-            linkCardToggle.addEventListener('click', () => {
+              const icon = pkToggle.querySelector('.toggle-icon');
+              if (content && icon) {
+                content.style.display = content.style.display === 'none' ? 'block' : 'none';
+                icon.textContent = content.style.display === 'none' ? '▼' : '▲';
+              }
+              return; // 避免触发其他点击事件
+            }
+
+            // 2. 处理连麦卡片展开/收起
+            const linkToggle = e.target.closest('#link-card-toggle');
+            if (linkToggle) {
               const content = appContainer.querySelector('#link-card-content');
-              const icon = linkCardToggle.querySelector('.toggle-icon');
-              content.style.display = content.style.display === 'none' ? 'block' : 'none';
-              icon.textContent = content.style.display === 'none' ? '▼' : '▲';
-            });
-          }
+              const icon = linkToggle.querySelector('.toggle-icon');
+              if (content && icon) {
+                content.style.display = content.style.display === 'none' ? 'block' : 'none';
+                icon.textContent = content.style.display === 'none' ? '▼' : '▲';
+              }
+              return;
+            }
+          });
 
           // 推荐互动按钮
           appContainer.querySelectorAll('.rec-btn').forEach(btn => {
