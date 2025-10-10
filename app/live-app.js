@@ -307,6 +307,13 @@ if (typeof window.LiveApp === 'undefined') {
       const pkThemeRegex = /\[.*PK封面/i;
       const linkThemeRegex = /\[.*连麦封面/i;
       const liveTheme = pkThemeRegex.test(content) ? 'pk' : (linkThemeRegex.test(content) ? 'link' : '');
+      if (liveTheme === 'pk') {
+        liveData.pkCoverData = this.parsePkCover(content);
+        console.log(`[Live App] 解析到PK封面数据:`, liveData.pkCoverData);
+      } else if (liveTheme === 'link') {
+        liveData.linkCoverData = this.parseLinkCover(content);
+        console.log(`[Live App] 解析到连麦封面数据:`, liveData.linkCoverData);
+      }
       // 6. 解析高光次数和系统提示
       liveData.highLightCount = this.parseHighLight(content, liveTheme);
       liveData.systemTips = this.parseSystemTips(content, liveTheme);
@@ -735,7 +742,7 @@ if (typeof window.LiveApp === 'undefined') {
         console.log(`[Live App] 更新系统提示:`, this.systemTips);
       }
       if (liveData.pkCoverData) {
-        this.pkCoverData = { ...liveData.pkCoverData }; // 深拷贝，确保新数据替换旧值
+        this.pkCoverData = { ...liveData.pkCoverData }; 
         console.log(`[Live App] 更新PK封面数据:`, this.pkCoverData);
         if (this.liveApp && this.liveApp.updateAppContentDebounced) {
           this.liveApp.updateAppContentDebounced();
