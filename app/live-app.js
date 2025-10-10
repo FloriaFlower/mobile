@@ -443,12 +443,12 @@ if (typeof window.LiveApp === 'undefined') {
           pkCovers.push({ type, imgUrl, currency });
         }
       });
-      const userPk = pkCovers.find(item => item.type.includes('主播') || pkCovers[0]) || { 
+      const userPk = pkCovers[0] || {
         type: '主播', 
         imgUrl: '默认主播图链接', 
         currency: '0' 
       };
-      const rivalPk = pkCovers.find(item => item.type.includes('对手') || pkCovers[1]) || { 
+      const rivalPk = pkCovers[1] || { 
         type: '未知对手', 
         imgUrl: '默认对手图链接', 
         currency: '0' 
@@ -1020,6 +1020,10 @@ if (typeof window.LiveApp === 'undefined') {
           danmakuCount: liveData.danmakuList.length,
           giftCount: liveData.giftList.length,
           interactionCount: liveData.recommendedInteractions.length,
+          hasPkCover: !!liveData.pkCoverData,
+          hasLinkCover: !!liveData.linkCoverData,
+          pkCoverData: liveData.pkCoverData ? JSON.stringify(liveData.pkCoverData) : 'null',
+          linkCoverData: liveData.linkCoverData ? JSON.stringify(liveData.linkCoverData) : 'null'
         });        
         if (liveData.pkCoverData) {
           this.stateManager.pkCoverData = liveData.pkCoverData;
@@ -1077,17 +1081,16 @@ if (typeof window.LiveApp === 'undefined') {
       if (currentTime - this.lastRenderTime < this.renderCooldown) {
         return;
       }
-
       this.lastRenderTime = currentTime;
       this.updateAppContent();
-      this.updateHeader(); // 同时更新header
+      this.updateHeader(); 
       setTimeout(() => {
-        this.bindEvents();
         if (this.stateManager.pkCoverData || this.stateManager.linkCoverData) {
           this.runAppearSequence();
         }
       }, 100);
     }
+
 
     /**
      * 更新应用内容
