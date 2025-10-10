@@ -1020,7 +1020,12 @@ if (typeof window.LiveApp === 'undefined') {
           danmakuCount: liveData.danmakuList.length,
           giftCount: liveData.giftList.length,
           interactionCount: liveData.recommendedInteractions.length,
-        });
+        });        
+        if (liveData.pkCoverData) {
+          this.stateManager.pkCoverData = liveData.pkCoverData;
+        } else if (liveData.linkCoverData) {
+          this.stateManager.linkCoverData = liveData.linkCoverData;
+        }
 
         // 更新状态
         this.stateManager.updateLiveData(liveData);
@@ -1076,6 +1081,12 @@ if (typeof window.LiveApp === 'undefined') {
       this.lastRenderTime = currentTime;
       this.updateAppContent();
       this.updateHeader(); // 同时更新header
+      setTimeout(() => {
+        this.bindEvents();
+        if (this.stateManager.pkCoverData || this.stateManager.linkCoverData) {
+          this.runAppearSequence();
+        }
+      }, 100);
     }
 
     /**
