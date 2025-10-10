@@ -443,11 +443,17 @@ if (typeof window.LiveApp === 'undefined') {
         const type = match[1]?.trim() || '未知主播';
         const imgUrl = match[2]?.trim() || '默认主播图链接';
         const currency = match[3]?.trim() || '0';
-        pkCovers.push({ type, imgUrl, currency });
-        console.log(`[Live App] PK封面数据项:`, { type, imgUrl, currency });
+        if (type.includes('系统提示') || imgUrl.includes('系统提示')) {
+          console.log('[Live App] 过滤PK封面中的系统提示格式:', match);
+          return;
+        }
+        if (type && imgUrl && !isNaN(Number(currency))) {
+          pkCovers.push({ type, imgUrl, currency });
+          console.log(`[Live App] PK封面主播数据项:`, { type, imgUrl, currency });
+        }
       });
-      const userPk = pkCovers[0] || { type: '当前主播', imgUrl: '默认主播图链接', currency: '0' };
-      const rivalPk = pkCovers[1] || { type: '对手主播', imgUrl: '默认对手图链接', currency: '0' };
+      const userPk = pkCovers[0] || { type: '', imgUrl: '', currency: '0' };
+      const rivalPk = pkCovers[1] || { type: '', imgUrl: '', currency: '0' };
       return { userPk, rivalPk };
     }
     // 新增：解析连麦封面动态数据（用户/粉丝信息）
@@ -479,11 +485,35 @@ if (typeof window.LiveApp === 'undefined') {
     // 新增：解析系统提示（兼容PK/连麦）
     parseSystemTips(content, liveTheme) {
       if (liveTheme === 'pk') {
-        const matches = [...content.matchAll(this.patterns.pkTips)];
-        return matches.length ? { tip1: matches[0][1].trim(), tip2: matches[0][2].trim(), tip3: matches[0][3].trim() } : { tip1: 'PK加油！', tip2: '注意观众互动', tip3: '保持节奏' };
+        const tipRegex = /\[PK封面\|系统提示1\|\s*(.*?)\s*\|系统提示2\|\s*(.*?)\s*\|系统提示3\|\s*(.*?)\s*\]/g;
+        const matches = [...content.matchAll(tipRegex)];
+        if (matches.length) {
+          return {
+            tip1: matches[0][1].trim() || '',
+            tip2: matches[0][2].trim() || '',
+            tip3: matches[0][3].trim() || ''
+          };
+        }
+        const pkMatches = [...content.matchAll(this.patterns.pkCover)];
+        const tipMatch = pkMatches.find(match => match[1]?.includes('系统提示1'));
+        if (tipMatch) {
+          const tips = tipMatch[3]?.split('|') || [];
+          return {
+            tip1: tipMatch[2]?.trim() || '',
+            tip2: tips[0]?.trim() || '',
+            tip3: tips[1]?.trim() || ''
+          };
+        }
+        return { tip1: '', tip2: '', tip3: '' };
       } else {
-        const matches = [...content.matchAll(this.patterns.linkTips)];
-        return matches.length ? { tip1: matches[0][1].trim(), tip2: matches[0][2].trim(), tip3: matches[0][3].trim() } : { tip1: '连麦愉快！', tip2: '倾听粉丝想法', tip3: '分享更多趣事' };
+        // 连麦系统提示同理，保持逻辑一致
+        const tipRegex = /\[连麦封面\|系统提示1\|\s*(.*?)\s*\|系统提示2\|\s*(.*?)\s*\|系统提示3\|\s*(.*?)\s*\]/g;
+        const matches = [...content.matchAll(tipRegex)];
+        return matches.length ? {
+          tip1: matches[0][1].trim() || '',
+          tip2: matches[0][2].trim() || '',
+          tip3: matches[0][3].trim() || ''
+        } : { tip1: '', tip2: '', tip3: '' };
       }
     }
     
@@ -1298,7 +1328,8 @@ if (typeof window.LiveApp === 'undefined') {
 
       // 1. PK 卡片样式
       if (pkCoverData) {
-        const { userPk, rivalPk } = pkCoverData;
+        const userPk = JSON.parse(JSON.stringify(pkCoverData.userPk));
+        const rivalPk = JSON.parse(JSON.stringify(pkCoverData.rivalPk));
         const userCurrency = parseInt(userPk.currency || '0', 10); 
         const rivalCurrency = parseInt(rivalPk.currency || '0', 10);
         const total = userCurrency + rivalCurrency;
@@ -1342,7 +1373,7 @@ if (typeof window.LiveApp === 'undefined') {
                 <div class="pk-currency-left">${userCurrency}</div>
                 <div class="pk-progress-left" style="width: ${userProgress}%;"></div>
                 <div class="pk-progress-right" style="width: ${rivalProgress}%;"></div>
-                <div class="pk-currency-right">${userCurrency}</div>
+                <div class="pk-currency-right">${rivalCurrency}</div>
               </div>
               <!-- 系统提示 -->
               <div class="high-tide-box" style="margin-top: 5px; padding: 8px 15px;">
