@@ -1522,6 +1522,41 @@ if (typeof window.LiveApp === 'undefined') {
         </div>
       `;
     }
+    
+    /**
+     * 直播中界面的点击事件处理器（单独提取，避免重复绑定）
+     */
+    handleLiveClick(e) {
+      const appContainer = document.getElementById('app-content');
+      if (!appContainer) return;
+
+      // 1. 处理PK卡片展开/收起
+      const pkToggle = e.target.closest('#pk-card-toggle');
+      if (pkToggle) {
+        const content = appContainer.querySelector('#pk-card-content');
+        const icon = pkToggle.querySelector('.toggle-icon');
+        if (content && icon) {
+          content.style.display = content.style.display === 'none' ? 'block' : 'none';
+          icon.textContent = content.style.display === 'none' ? '▼' : '▲';
+        }
+        e.stopPropagation(); // 阻止事件冒泡到其他处理器
+        return;
+      }
+
+      // 2. 处理连麦卡片展开/收起
+      const linkToggle = e.target.closest('#link-card-toggle');
+      if (linkToggle) {
+        const content = appContainer.querySelector('#link-card-content');
+        const icon = linkToggle.querySelector('.toggle-icon');
+        if (content && icon) {
+          content.style.display = content.style.display === 'none' ? 'block' : 'none';
+          icon.textContent = content.style.display === 'none' ? '▼' : '▲';
+        }
+        e.stopPropagation();
+        return;
+      }
+    }
+
 
     /**
      * 绑定事件
@@ -1673,31 +1708,13 @@ if (typeof window.LiveApp === 'undefined') {
 
         // 直播中相关事件
         if (this.currentView === 'live') {          
-          appContainer.addEventListener('click', (e) => {
-            // 1. 处理PK卡片展开/收起
-            const pkToggle = e.target.closest('#pk-card-toggle'); // 找到点击的toggle元素（包括内部子元素）
-            if (pkToggle) {
-              const content = appContainer.querySelector('#pk-card-content');
-              const icon = pkToggle.querySelector('.toggle-icon');
-              if (content && icon) {
-                content.style.display = content.style.display === 'none' ? 'block' : 'none';
-                icon.textContent = content.style.display === 'none' ? '▼' : '▲';
-              }
-              return; // 避免触发其他点击事件
-            }
-
-            // 2. 处理连麦卡片展开/收起
-            const linkToggle = e.target.closest('#link-card-toggle');
-            if (linkToggle) {
-              const content = appContainer.querySelector('#link-card-content');
-              const icon = linkToggle.querySelector('.toggle-icon');
-              if (content && icon) {
-                content.style.display = content.style.display === 'none' ? 'block' : 'none';
-                icon.textContent = content.style.display === 'none' ? '▼' : '▲';
-              }
-              return;
-            }
-          });
+          const appContainer = document.getElementById('app-content');
+          if (appContainer) {
+            // 移除旧事件（使用单独的handleLiveClick方法）
+            appContainer.removeEventListener('click', this.handleLiveClick.bind(this));
+            // 添加新事件（绑定this上下文）
+            appContainer.addEventListener('click', this.handleLiveClick.bind(this));
+          }
 
           // 推荐互动按钮
           appContainer.querySelectorAll('.rec-btn').forEach(btn => {
