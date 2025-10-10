@@ -304,12 +304,9 @@ if (typeof window.LiveApp === 'undefined') {
       // 4. 解析推荐互动
       liveData.recommendedInteractions = this.parseRecommendedInteractions(content);
       // 5. 判断直播主题（PK/连麦），解析对应动态数据
-      const liveTheme = content.includes('[PK封面') ? 'pk' : (content.includes('[连麦封面') ? 'link' : '');
-      if (liveTheme === 'pk') {
-        liveData.pkCoverData = this.parsePkCover(content);
-      } else if (liveTheme === 'link') {
-        liveData.linkCoverData = this.parseLinkCover(content);
-      }
+      const pkThemeRegex = /\[.*PK封面/i;
+      const linkThemeRegex = /\[.*连麦封面/i;
+      const liveTheme = pkThemeRegex.test(content) ? 'pk' : (linkThemeRegex.test(content) ? 'link' : '');
       // 6. 解析高光次数和系统提示
       liveData.highLightCount = this.parseHighLight(content, liveTheme);
       liveData.systemTips = this.parseSystemTips(content, liveTheme);
@@ -436,23 +433,14 @@ if (typeof window.LiveApp === 'undefined') {
       const pkCovers = [];
       const matches = [...content.matchAll(this.patterns.pkCover)];
       matches.forEach(match => {
-        const type = match[1]?.trim();
-        const imgUrl = match[2]?.trim();
-        const currency = match[3]?.trim() || '0'; 
-        if (type && imgUrl) {
-          pkCovers.push({ type, imgUrl, currency });
-        }
+        const type = match[1]?.trim() || '未知主播';
+        const imgUrl = match[2]?.trim() || '默认主播图链接';
+        const currency = match[3]?.trim() || '0';
+        pkCovers.push({ type, imgUrl, currency });
+        console.log(`[Live App] PK封面数据项:`, { type, imgUrl, currency });
       });
-      const userPk = pkCovers[0] || {
-        type: '主播', 
-        imgUrl: '默认主播图链接', 
-        currency: '0' 
-      };
-      const rivalPk = pkCovers[1] || { 
-        type: '未知对手', 
-        imgUrl: '默认对手图链接', 
-        currency: '0' 
-      };
+      const userPk = pkCovers[0] || { type: '当前主播', imgUrl: '默认主播图链接', currency: '0' };
+      const rivalPk = pkCovers[1] || { type: '对手主播', imgUrl: '默认对手图链接', currency: '0' };
       return { userPk, rivalPk };
     }
     // 新增：解析连麦封面动态数据（用户/粉丝信息）
@@ -737,14 +725,24 @@ if (typeof window.LiveApp === 'undefined') {
           console.log(`[Live App] 添加 ${newGifts.length} 个新礼物，总计 ${this.giftList.length} 个`);
         }
       }
+      
+      if (liveData.highLightCount !== undefined) {
+        this.highLightCount = liveData.highLightCount;
+        console.log(`[Live App] 更新高光次数: ${this.highLightCount}`);
+      }
+      if (liveData.systemTips && typeof liveData.systemTips === 'object') {
+        this.systemTips = { ...liveData.systemTips }; // 深拷贝避免引用问题
+        console.log(`[Live App] 更新系统提示:`, this.systemTips);
+      }
       if (liveData.pkCoverData) {
-        this.pkCoverData = liveData.pkCoverData;
+        this.pkCoverData = { ...liveData.pkCoverData }; // 深拷贝，确保新数据替换旧值
+        console.log(`[Live App] 更新PK封面数据:`, this.pkCoverData);
         if (this.liveApp && this.liveApp.updateAppContentDebounced) {
           this.liveApp.updateAppContentDebounced();
         }
       }
    
-      this.linkCoverData = liveData.linkCoverData;
+      this.linkCoverData = liveData.linkCoverData ? { ...liveData.linkCoverData } : this.linkCoverData;
       this.highLightCount = liveData.highLightCount;
       this.systemTips = liveData.systemTips;
     }      
