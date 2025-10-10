@@ -764,36 +764,29 @@ if (typeof window.LiveApp === 'undefined') {
       }
       
       if (liveData.highLightCount !== undefined) {
-        this.highLightCount = liveData.highLightCount;
-        console.log(`[Live App] 更新高光次数: ${this.highLightCount}`);
-      } else {
-        this.highLightCount = '0';
-      }
+        this.highLightCount = liveData.highLightCount !== undefined 
+        ? liveData.highLightCount 
+        : '0';
       if (liveData.systemTips && typeof liveData.systemTips === 'object') {
-        this.systemTips = { ...liveData.systemTips }; // 深拷贝避免引用问题
-        console.log(`[Live App] 更新系统提示:`, this.systemTips);
+        this.systemTips = { ...liveData.systemTips };
       }
-
+      let shouldForceRender = false;
       if (liveData.pkCoverData) {
-        this.pkCoverData = JSON.parse(JSON.stringify(liveData.pkCoverData)); // 深拷贝，彻底切断旧数据引用
-        console.log(`[Live App] 强制更新PK封面数据:`, this.pkCoverData);
-        if (this.liveApp && this.liveApp.updateAppContentDebounced) {
-          this.liveApp.updateAppContentDebounced();
+        const newPkData = JSON.parse(JSON.stringify(liveData.pkCoverData));
+        if (JSON.stringify(newPkData) !== JSON.stringify(this.pkCoverData)) {
+          this.pkCoverData = newPkData;
+          shouldForceRender = true; // 标记强制渲染
         }
-      } else {
-        this.pkCoverData = null;
+      } else if (liveData.linkCoverData) {
+        const newLinkData = JSON.parse(JSON.stringify(liveData.linkCoverData));
+        if (JSON.stringify(newLinkData) !== JSON.stringify(this.linkCoverData)) {
+          this.linkCoverData = newLinkData;
+          shouldForceRender = true;
+        }
       }
-
-      if (liveData.linkCoverData) {
-        this.linkCoverData = JSON.parse(JSON.stringify(liveData.linkCoverData));
-      } else {
-        this.linkCoverData = null;
+      if (shouldForceRender && this.liveApp?.updateAppContentDebounced) {
+        this.liveApp.updateAppContentDebounced(); // 立即触发防抖更新
       }
-
-      console.log(`[Live App] 状态管理器更新后的数据:`, {
-        pkCoverData: this.pkCoverData,
-        highLightCount: this.highLightCount
-      });
     }      
 
     /**
