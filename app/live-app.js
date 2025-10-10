@@ -729,11 +729,11 @@ if (typeof window.LiveApp === 'undefined') {
       const needForceRender = false;
       if (liveData.pkCoverData) {
         // 结构化克隆（比JSON更安全）
-        this.pkCoverData = structuredClone(liveData.pkCoverData);
+        this.pkCoverData = JSON.parse(JSON.stringify(liveData.pkCoverData));
         this.linkCoverData = null; // 切换主题时清空另一主题数据
         needForceRender = true; // 标记需要强制渲染
       } else if (liveData.linkCoverData) {
-        this.linkCoverData = structuredClone(liveData.linkCoverData);
+        this.linkCoverData = JSON.parse(JSON.stringify(liveData.linkCoverData));
         this.pkCoverData = null;
         needForceRender = true;
       }
@@ -1410,7 +1410,7 @@ if (typeof window.LiveApp === 'undefined') {
                     <path d="M10,20 L25,20 L30,15 L40,25 L50,5 L60,35 L65,20 L90,20" 
                       stroke="url(#heartbeatGradient)" stroke-width="2.5" stroke-linecap="round" 
                       stroke-linejoin="round" fill="none" stroke-dasharray="300" stroke-dashoffset="300" 
-                      animation="draw-heartbeat 2.5s linear infinite" />
+                      animate="draw-heartbeat 2.5s linear infinite" />
                   </svg>
                 </div>
                 <!-- 右侧：粉丝 -->
