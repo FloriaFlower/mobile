@@ -706,88 +706,59 @@ if (typeof window.LiveApp === 'undefined') {
     updateLiveData(liveData) {
       if (!this.isLiveActive) return;
 
-      // 更新观看人数（仅保留最新的）
+      // 1. 观看人数（保留最新）
       if (liveData.viewerCount !== undefined && liveData.viewerCount !== 0) {
         this.currentViewerCount = liveData.viewerCount;
-        console.log(`[Live App] 更新观看人数: ${this.currentViewerCount}`);
       }
 
-      // 更新直播内容（仅保留最新的）
-      if (liveData.liveContent && liveData.liveContent.trim() !== '') {
+      // 2. 直播内容（保留最新）
+      if (liveData.liveContent?.trim()) {
         this.currentLiveContent = liveData.liveContent;
-        console.log(`[Live App] 更新直播内容: ${this.currentLiveContent.substring(0, 50)}...`);
       }
 
-      // 更新推荐互动（仅保留最新的）
-      if (liveData.recommendedInteractions && liveData.recommendedInteractions.length > 0) {
-        this.recommendedInteractions = liveData.recommendedInteractions;
-        console.log(`[Live App] 更新推荐互动: ${this.recommendedInteractions.length} 个`);
-      }     
-
-      // 添加新弹幕（累积所有历史弹幕）
-      if (liveData.danmakuList && liveData.danmakuList.length > 0) {
-        // 过滤掉已存在的弹幕（基于内容和用户名）
-        const newDanmaku = liveData.danmakuList.filter(newItem => {
-          return !this.danmakuList.some(
-            existingItem =>
-              existingItem.username === newItem.username &&
-              existingItem.content === newItem.content &&
-              existingItem.type === newItem.type,
-          );
-        });
-
-        if (newDanmaku.length > 0) {
-          this.danmakuList = this.danmakuList.concat(newDanmaku);
-          console.log(`[Live App] 添加 ${newDanmaku.length} 条新弹幕，总计 ${this.danmakuList.length} 条`);
-
-          // 移除弹幕数量限制，保留所有历史弹幕
-          console.log(`[Live App] 保留所有弹幕，当前总数: ${this.danmakuList.length}`);
-        }
+      // 3. 推荐互动（保留最新4条）
+      if (liveData.recommendedInteractions?.length > 0) {
+        this.recommendedInteractions = liveData.recommendedInteractions.slice(-4);
       }
 
-      // 添加新礼物（累积所有历史礼物）
-      if (liveData.giftList && liveData.giftList.length > 0) {
-        // 过滤掉已存在的礼物
-        const newGifts = liveData.giftList.filter(newGift => {
-          return !this.giftList.some(
-            existingGift =>
-              existingGift.username === newGift.username &&
-              existingGift.gift === newGift.gift &&
-              existingGift.timestamp === newGift.timestamp,
-          );
-        });
+      // 4. 弹幕/礼物（去重累加）
+      this.danmakuList = this.filterDuplicateDanmaku(this.danmakuList, liveData.danmakuList);
+      this.giftList = this.filterDuplicateGifts(this.giftList, liveData.giftList);
 
-        if (newGifts.length > 0) {
-          this.giftList = this.giftList.concat(newGifts);
-          console.log(`[Live App] 添加 ${newGifts.length} 个新礼物，总计 ${this.giftList.length} 个`);
-        }
-      }
-      
-      if (liveData.highLightCount !== undefined) {
-        this.highLightCount = liveData.highLightCount !== undefined 
-        ? liveData.highLightCount 
-        : '0';
-      if (liveData.systemTips && typeof liveData.systemTips === 'object') {
-        this.systemTips = { ...liveData.systemTips };
-      }
-      let shouldForceRender = false;
+      // 5. 封面数据（核心修复点：使用结构化克隆+强制触发渲染）
+      const needForceRender = false;
       if (liveData.pkCoverData) {
-        const newPkData = JSON.parse(JSON.stringify(liveData.pkCoverData));
-        if (JSON.stringify(newPkData) !== JSON.stringify(this.pkCoverData)) {
-          this.pkCoverData = newPkData;
-          shouldForceRender = true; // 标记强制渲染
-        }
+        // 结构化克隆（比JSON更安全）
+        this.pkCoverData = structuredClone(liveData.pkCoverData);
+        this.linkCoverData = null; // 切换主题时清空另一主题数据
+        needForceRender = true; // 标记需要强制渲染
       } else if (liveData.linkCoverData) {
-        const newLinkData = JSON.parse(JSON.stringify(liveData.linkCoverData));
-        if (JSON.stringify(newLinkData) !== JSON.stringify(this.linkCoverData)) {
-          this.linkCoverData = newLinkData;
-          shouldForceRender = true;
-        }
+        this.linkCoverData = structuredClone(liveData.linkCoverData);
+        this.pkCoverData = null;
+        needForceRender = true;
       }
-      if (shouldForceRender && this.liveApp?.updateAppContentDebounced) {
-        this.liveApp.updateAppContentDebounced(); // 立即触发防抖更新
+
+      // 6. 高光次数（整合逻辑，避免重复赋值）
+      this.highLightCount = liveData.highLightCount || '0';
+
+      // 7. 系统提示（直接赋值，无需额外判断）
+      this.systemTips = { ...liveData.systemTips };
+
+      // 8. 强制触发渲染（解决防抖遮挡）
+      if (needForceRender && this.liveApp?.updateAppContentDebounced) {
+        this.liveApp.updateAppContentDebounced(); // 立即执行防抖
       }
-    }      
+    },
+
+    // 新增去重工具方法（避免重复代码）
+    filterDuplicateDanmaku(existing, incoming) {
+      const sigSet = new Set(existing.map(d => `${d.username}|${d.content}|${d.type}`));
+      return [...existing, ...incoming.filter(d => !sigSet.has(`${d.username}|${d.content}|${d.type}`))];
+    },
+    filterDuplicateGifts(existing, incoming) {
+      const sigSet = new Set(existing.map(g => `${g.username}|${g.gift}`));
+      return [...existing, ...incoming.filter(g => !sigSet.has(`${g.username}|${g.gift}`))];
+    }   
 
     /**
      * 获取当前直播状态
@@ -1073,6 +1044,11 @@ if (typeof window.LiveApp === 'undefined') {
 
         // 更新状态
         this.stateManager.updateLiveData(liveData);
+        this.stateManager.liveApp?.updateAppContentDebounced();
+          if (liveData.pkCoverData || liveData.linkCoverData) {
+            this.updateAppContent(); // 立即渲染封面
+          }
+        }        
 
         // 计算需要动画显示的"新增弹幕/礼物"（仅来自最新楼层）
         if (latestNewDanmaku.length > 0) {
@@ -1369,11 +1345,12 @@ if (typeof window.LiveApp === 'undefined') {
                 </div>
               </div>
               <!-- PK进度条 -->
-              <div class="pk-progress-bar" style="margin: 3px 0 8px; padding: 0 60px;">           
-                <div class="pk-currency-left">${userCurrency}</div>
-                <div class="pk-progress-left" style="width: ${userProgress}%;"></div>
-                <div class="pk-progress-right" style="width: ${rivalProgress}%;"></div>
-                <div class="pk-currency-right">${rivalCurrency}</div>
+              <div class="pk-currency-left">
+                {parseInt(userPk.currency || 0, 10)} {/* 关键修复：转为数字 */}
+              </div>
+              <div class="pk-progress-left" style="width: ${userProgress}%;"></div>
+              <div class="pk-currency-right">
+                {parseInt(rivalPk.currency || 0, 10)} {/* 关键修复：转为数字 */}
               </div>
               <!-- 系统提示 -->
               <div class="high-tide-box" style="margin-top: 5px; padding: 8px 15px;">
