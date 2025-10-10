@@ -749,9 +749,14 @@ if (typeof window.LiveApp === 'undefined') {
         }
       }
    
-      this.linkCoverData = liveData.linkCoverData ? { ...liveData.linkCoverData } : this.linkCoverData;
-      this.highLightCount = liveData.highLightCount;
-      this.systemTips = liveData.systemTips;
+      this.pkCoverData = liveData.pkCoverData ? { ...liveData.pkCoverData } : null;
+      this.linkCoverData = liveData.linkCoverData ? { ...liveData.linkCoverData } : null;
+      this.highLightCount = liveData.highLightCount || '0';
+      this.systemTips = { ...liveData.systemTips };
+      console.log(`[Live App] 状态管理器更新后的数据:`, {
+        pkCoverData: this.pkCoverData,
+        highLightCount: this.highLightCount
+      });
     }      
 
     /**
@@ -804,7 +809,7 @@ if (typeof window.LiveApp === 'undefined') {
       this.isTyping = false; // 是否正在打字机效果
       this.pendingAppearDanmakuSigs = new Set(); // 待逐条出现的弹幕签名
       this.pendingAppearGiftSigs = new Set(); // 待逐条出现的礼物签名
-
+      this.boundHandleLiveClick = this.handleLiveClick.bind(this);
       this.init();
     }
 
@@ -1031,9 +1036,9 @@ if (typeof window.LiveApp === 'undefined') {
           linkCoverData: liveData.linkCoverData ? JSON.stringify(liveData.linkCoverData) : 'null'
         });        
         if (liveData.pkCoverData) {
-          this.stateManager.pkCoverData = liveData.pkCoverData;
+          this.stateManager.pkCoverData = { ...liveData.pkCoverData }; // 深拷贝避免引用问题
         } else if (liveData.linkCoverData) {
-          this.stateManager.linkCoverData = liveData.linkCoverData;
+          this.stateManager.linkCoverData = { ...liveData.linkCoverData };
         }
 
         // 更新状态
@@ -1715,10 +1720,8 @@ if (typeof window.LiveApp === 'undefined') {
         if (this.currentView === 'live') {          
           const appContainer = document.getElementById('app-content');
           if (appContainer) {
-            // 移除旧事件（使用单独的handleLiveClick方法）
-            appContainer.removeEventListener('click', this.handleLiveClick.bind(this));
-            // 添加新事件（绑定this上下文）
-            appContainer.addEventListener('click', this.handleLiveClick.bind(this));
+            appContainer.removeEventListener('click', this.boundHandleLiveClick);
+            appContainer.addEventListener('click', this.boundHandleLiveClick);
           }
 
           // 推荐互动按钮
