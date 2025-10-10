@@ -748,13 +748,13 @@ if (typeof window.LiveApp === 'undefined') {
       if (needForceRender && this.liveApp?.updateAppContentDebounced) {
         this.liveApp.updateAppContentDebounced(); // 立即执行防抖
       }
-    },
+    }
 
     // 新增去重工具方法（避免重复代码）
     filterDuplicateDanmaku(existing, incoming) {
       const sigSet = new Set(existing.map(d => `${d.username}|${d.content}|${d.type}`));
       return [...existing, ...incoming.filter(d => !sigSet.has(`${d.username}|${d.content}|${d.type}`))];
-    },
+    }
     filterDuplicateGifts(existing, incoming) {
       const sigSet = new Set(existing.map(g => `${g.username}|${g.gift}`));
       return [...existing, ...incoming.filter(g => !sigSet.has(`${g.username}|${g.gift}`))];
@@ -1042,12 +1042,11 @@ if (typeof window.LiveApp === 'undefined') {
           this.stateManager.linkCoverData = { ...liveData.linkCoverData };
         }
 
-        // 更新状态
-        this.stateManager.updateLiveData(liveData);
-        this.stateManager.liveApp?.updateAppContentDebounced();
-          if (liveData.pkCoverData || liveData.linkCoverData) {
-            this.updateAppContent(); // 立即渲染封面
-          }
+       // 更新状态
+       this.stateManager.updateLiveData(liveData);
+       this.stateManager.liveApp?.updateAppContentDebounced();
+        if (liveData.pkCoverData || liveData.linkCoverData) {
+          this.updateAppContent(); // 立即渲染封面
         }        
 
         // 计算需要动画显示的"新增弹幕/礼物"（仅来自最新楼层）
@@ -1346,11 +1345,14 @@ if (typeof window.LiveApp === 'undefined') {
               </div>
               <!-- PK进度条 -->
               <div class="pk-currency-left">
-                {parseInt(userPk.currency || 0, 10)} {/* 关键修复：转为数字 */}
+                ${parseInt(userPk.currency || 0, 10)}
               </div>
-              <div class="pk-progress-left" style="width: ${userProgress}%;"></div>
+              <div class="pk-progress-bar" style="margin: 3px 0 8px; padding: 0 60px;">
+                <div class="pk-progress-left" style="width: ${userProgress}%;"></div>
+                <div class="pk-progress-right" style="width: ${rivalProgress}%;"></div>
+              </div>
               <div class="pk-currency-right">
-                {parseInt(rivalPk.currency || 0, 10)} {/* 关键修复：转为数字 */}
+                ${parseInt(rivalPk.currency || 0, 10)}
               </div>
               <!-- 系统提示 -->
               <div class="high-tide-box" style="margin-top: 5px; padding: 8px 15px;">
