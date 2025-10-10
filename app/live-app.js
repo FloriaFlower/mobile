@@ -766,23 +766,30 @@ if (typeof window.LiveApp === 'undefined') {
       if (liveData.highLightCount !== undefined) {
         this.highLightCount = liveData.highLightCount;
         console.log(`[Live App] 更新高光次数: ${this.highLightCount}`);
+      } else {
+        this.highLightCount = '0';
       }
       if (liveData.systemTips && typeof liveData.systemTips === 'object') {
         this.systemTips = { ...liveData.systemTips }; // 深拷贝避免引用问题
         console.log(`[Live App] 更新系统提示:`, this.systemTips);
       }
+
       if (liveData.pkCoverData) {
-        this.pkCoverData = { ...liveData.pkCoverData }; 
-        console.log(`[Live App] 更新PK封面数据:`, this.pkCoverData);
+        this.pkCoverData = JSON.parse(JSON.stringify(liveData.pkCoverData)); // 深拷贝，彻底切断旧数据引用
+        console.log(`[Live App] 强制更新PK封面数据:`, this.pkCoverData);
         if (this.liveApp && this.liveApp.updateAppContentDebounced) {
           this.liveApp.updateAppContentDebounced();
         }
+      } else {
+        this.pkCoverData = null;
       }
-   
-      this.pkCoverData = liveData.pkCoverData ? { ...liveData.pkCoverData } : null;
-      this.linkCoverData = liveData.linkCoverData ? { ...liveData.linkCoverData } : null;
-      this.highLightCount = liveData.highLightCount || '0';
-      this.systemTips = { ...liveData.systemTips };
+
+      if (liveData.linkCoverData) {
+        this.linkCoverData = JSON.parse(JSON.stringify(liveData.linkCoverData));
+      } else {
+        this.linkCoverData = null;
+      }
+
       console.log(`[Live App] 状态管理器更新后的数据:`, {
         pkCoverData: this.pkCoverData,
         highLightCount: this.highLightCount
