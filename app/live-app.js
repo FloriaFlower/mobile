@@ -803,7 +803,8 @@ if (typeof window.LiveApp === 'undefined') {
       this.dataParser = new LiveDataParser();
       this.stateManager = new LiveStateManager();
       this.stateManager.liveApp = this;
-      this.currentView = 'start'; // 'start', 'live'
+      this.handleLiveClickBind = this.handleLiveClick.bind(this);
+      this.currentView = 'start';
       this.isInitialized = false;
       this.lastRenderTime = 0;
       this.renderCooldown = 500; // 渲染冷却时间
@@ -1725,10 +1726,8 @@ if (typeof window.LiveApp === 'undefined') {
         if (this.currentView === 'live') {          
           const appContainer = document.getElementById('app-content');
           if (appContainer) {
-            // 移除旧事件（使用单独的handleLiveClick方法）
-            appContainer.removeEventListener('click', this.handleLiveClick.bind(this));
-            // 添加新事件（绑定this上下文）
-            appContainer.addEventListener('click', this.handleLiveClick.bind(this));
+            appContainer.removeEventListener('click', this.handleLiveClickBind);
+            appContainer.addEventListener('click', this.handleLiveClickBind);
           }
 
           // 推荐互动按钮
