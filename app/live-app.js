@@ -304,11 +304,15 @@ if (typeof window.LiveApp === 'undefined') {
       // 4. 解析推荐互动
       liveData.recommendedInteractions = this.parseRecommendedInteractions(content);
       // 5. 判断直播主题（PK/连麦），解析对应动态数据
-      const liveTheme = content.includes('[PK封面') ? 'pk' : (content.includes('[连麦封面') ? 'link' : '');
+      const pkThemeRegex = /\[.*PK封面/i;
+      const linkThemeRegex = /\[.*连麦封面/i;
+      const liveTheme = pkThemeRegex.test(content) ? 'pk' : (linkThemeRegex.test(content) ? 'link' : '');
       if (liveTheme === 'pk') {
         liveData.pkCoverData = this.parsePkCover(content);
+        console.log(`[Live App] 解析到PK封面数据:`, liveData.pkCoverData);
       } else if (liveTheme === 'link') {
         liveData.linkCoverData = this.parseLinkCover(content);
+        console.log(`[Live App] 解析到连麦封面数据:`, liveData.linkCoverData);
       }
       // 6. 解析高光次数和系统提示
       liveData.highLightCount = this.parseHighLight(content, liveTheme);
@@ -431,21 +435,22 @@ if (typeof window.LiveApp === 'undefined') {
 
       return { danmakuList, giftList };
     }
-    // 新增：解析PK封面动态数据（用户/对手信息、欲色币）
+    // 解析PK封面动态数据（用户/对手信息、欲色币）
     parsePkCover(content) {
       const pkCovers = [];
       const matches = [...content.matchAll(this.patterns.pkCover)];
       matches.forEach(match => {
-        const type = match[1]?.trim();
-        const imgUrl = match[2]?.trim();
+        const type = match[1]?.trim() || '未知主播';
+        const imgUrl = match[2]?.trim() || '默认主播图链接';
         const currency = match[3]?.trim() || '0';
-        if (type && imgUrl) {
-          pkCovers.push({ type, imgUrl, currency });
+        // 过滤无效数据，确保欲色币为数字
+        if (!type.includes('系统提示') && !isNaN(Number(currency))) {
+          pkCovers.push({ type, imgUrl, currency: Number(currency) }); // 转为数字类型
         }
       });
-      // 提取用户和对手数据（容错：不足2条时补默认值）
-      const userPk = pkCovers[0] || { type: '主播', imgUrl: '默认主播图链接', currency: '0' };
-      const rivalPk = pkCovers[1] || { type: '未知对手', imgUrl: '默认对手图链接', currency: '0' };
+      // 确保用户和对手数据默认值为数字0（避免进度条计算NaN）
+      const userPk = pkCovers[0] || { type: '', imgUrl: '', currency: 0 };
+      const rivalPk = pkCovers[1] || { type: '', imgUrl: '', currency: 0 };
       return { userPk, rivalPk };
     }
     // 新增：解析连麦封面动态数据（用户/粉丝信息）
@@ -477,11 +482,35 @@ if (typeof window.LiveApp === 'undefined') {
     // 新增：解析系统提示（兼容PK/连麦）
     parseSystemTips(content, liveTheme) {
       if (liveTheme === 'pk') {
-        const matches = [...content.matchAll(this.patterns.pkTips)];
-        return matches.length ? { tip1: matches[0][1].trim(), tip2: matches[0][2].trim(), tip3: matches[0][3].trim() } : { tip1: 'PK加油！', tip2: '注意观众互动', tip3: '保持节奏' };
+        const tipRegex = /\[PK封面\|系统提示1\|\s*(.*?)\s*\|系统提示2\|\s*(.*?)\s*\|系统提示3\|\s*(.*?)\s*\]/g;
+        const matches = [...content.matchAll(tipRegex)];
+        if (matches.length) {
+          return {
+            tip1: matches[0][1].trim() || '',
+            tip2: matches[0][2].trim() || '',
+            tip3: matches[0][3].trim() || ''
+          };
+        }
+        const pkMatches = [...content.matchAll(this.patterns.pkCover)];
+        const tipMatch = pkMatches.find(match => match[1]?.includes('系统提示1'));
+        if (tipMatch) {
+          const tips = tipMatch[3]?.split('|') || [];
+          return {
+            tip1: tipMatch[2]?.trim() || '',
+            tip2: tips[0]?.trim() || '',
+            tip3: tips[1]?.trim() || ''
+          };
+        }
+        return { tip1: '', tip2: '', tip3: '' };
       } else {
-        const matches = [...content.matchAll(this.patterns.linkTips)];
-        return matches.length ? { tip1: matches[0][1].trim(), tip2: matches[0][2].trim(), tip3: matches[0][3].trim() } : { tip1: '连麦愉快！', tip2: '倾听粉丝想法', tip3: '分享更多趣事' };
+        // 连麦系统提示同理，保持逻辑一致
+        const tipRegex = /\[连麦封面\|系统提示1\|\s*(.*?)\s*\|系统提示2\|\s*(.*?)\s*\|系统提示3\|\s*(.*?)\s*\]/g;
+        const matches = [...content.matchAll(tipRegex)];
+        return matches.length ? {
+          tip1: matches[0][1].trim() || '',
+          tip2: matches[0][2].trim() || '',
+          tip3: matches[0][3].trim() || ''
+        } : { tip1: '', tip2: '', tip3: '' };
       }
     }
     
@@ -643,7 +672,7 @@ if (typeof window.LiveApp === 'undefined') {
       this.danmakuList = [];
       this.giftList = [];
       this.recommendedInteractions = [];
-      // 移除弹幕数量限制，显示所有历史弹幕
+      this.systemTips = { tip1: '', tip2: '', tip3: '' };
     }
 
     /**
@@ -674,67 +703,55 @@ if (typeof window.LiveApp === 'undefined') {
     updateLiveData(liveData) {
       if (!this.isLiveActive) return;
 
-      // 更新观看人数（仅保留最新的）
+      // 1. 观看人数（保留最新）
       if (liveData.viewerCount !== undefined && liveData.viewerCount !== 0) {
         this.currentViewerCount = liveData.viewerCount;
-        console.log(`[Live App] 更新观看人数: ${this.currentViewerCount}`);
       }
 
-      // 更新直播内容（仅保留最新的）
-      if (liveData.liveContent && liveData.liveContent.trim() !== '') {
+      // 2. 直播内容（保留最新）
+      if (liveData.liveContent?.trim()) {
         this.currentLiveContent = liveData.liveContent;
-        console.log(`[Live App] 更新直播内容: ${this.currentLiveContent.substring(0, 50)}...`);
       }
 
-      // 更新推荐互动（仅保留最新的）
-      if (liveData.recommendedInteractions && liveData.recommendedInteractions.length > 0) {
-        this.recommendedInteractions = liveData.recommendedInteractions;
-        console.log(`[Live App] 更新推荐互动: ${this.recommendedInteractions.length} 个`);
-      }     
-
-      // 添加新弹幕（累积所有历史弹幕）
-      if (liveData.danmakuList && liveData.danmakuList.length > 0) {
-        // 过滤掉已存在的弹幕（基于内容和用户名）
-        const newDanmaku = liveData.danmakuList.filter(newItem => {
-          return !this.danmakuList.some(
-            existingItem =>
-              existingItem.username === newItem.username &&
-              existingItem.content === newItem.content &&
-              existingItem.type === newItem.type,
-          );
-        });
-
-        if (newDanmaku.length > 0) {
-          this.danmakuList = this.danmakuList.concat(newDanmaku);
-          console.log(`[Live App] 添加 ${newDanmaku.length} 条新弹幕，总计 ${this.danmakuList.length} 条`);
-
-          // 移除弹幕数量限制，保留所有历史弹幕
-          console.log(`[Live App] 保留所有弹幕，当前总数: ${this.danmakuList.length}`);
-        }
+      // 3. 推荐互动（保留最新4条）
+      if (liveData.recommendedInteractions?.length > 0) {
+        this.recommendedInteractions = liveData.recommendedInteractions.slice(-4);
       }
 
-      // 添加新礼物（累积所有历史礼物）
-      if (liveData.giftList && liveData.giftList.length > 0) {
-        // 过滤掉已存在的礼物
-        const newGifts = liveData.giftList.filter(newGift => {
-          return !this.giftList.some(
-            existingGift =>
-              existingGift.username === newGift.username &&
-              existingGift.gift === newGift.gift &&
-              existingGift.timestamp === newGift.timestamp,
-          );
-        });
+      // 4. 弹幕/礼物（去重累加）
+      this.danmakuList = this.filterDuplicateDanmaku(this.danmakuList, liveData.danmakuList);
+      this.giftList = this.filterDuplicateGifts(this.giftList, liveData.giftList);
 
-        if (newGifts.length > 0) {
-          this.giftList = this.giftList.concat(newGifts);
-          console.log(`[Live App] 添加 ${newGifts.length} 个新礼物，总计 ${this.giftList.length} 个`);
-        }
+      // 5. 封面数据（核心修复点：使用结构化克隆+强制触发渲染）
+      let needForceRender = false;
+      if (liveData.pkCoverData) {
+        this.pkCoverData = structuredClone(liveData.pkCoverData); // 确保深拷贝
+        this.linkCoverData = null;
+        needForceRender = true;
+      } else if (liveData.linkCoverData) {
+        this.linkCoverData = structuredClone(liveData.linkCoverData);
+        this.pkCoverData = null;
+        needForceRender = true;
       }
-      this.pkCoverData = liveData.pkCoverData;
-      this.linkCoverData = liveData.linkCoverData;
-      this.highLightCount = liveData.highLightCount;
-      this.systemTips = liveData.systemTips;      
+      // 高光次数
+      this.highLightCount = liveData.highLightCount || '0';
+      // 系统提示更新
+      this.systemTips = { ...liveData.systemTips };
+      // 强制触发渲染
+      if (needForceRender && this.liveApp?.updateAppContentDebounced) {
+        this.liveApp.updateAppContentDebounced();
+      }
     }
+
+    // 新增去重工具方法（避免重复代码）
+    filterDuplicateDanmaku(existing, incoming) {
+      const sigSet = new Set(existing.map(d => `${d.username}|${d.content}|${d.type}`));
+      return [...existing, ...incoming.filter(d => !sigSet.has(`${d.username}|${d.content}|${d.type}`))];
+    }
+    filterDuplicateGifts(existing, incoming) {
+      const sigSet = new Set(existing.map(g => `${g.username}|${g.gift}`));
+      return [...existing, ...incoming.filter(g => !sigSet.has(`${g.username}|${g.gift}`))];
+    }   
 
     /**
      * 获取当前直播状态
@@ -776,6 +793,7 @@ if (typeof window.LiveApp === 'undefined') {
       this.eventListener = new LiveEventListener(this);
       this.dataParser = new LiveDataParser();
       this.stateManager = new LiveStateManager();
+      this.stateManager.liveApp = this;
       this.currentView = 'start'; // 'start', 'live'
       this.isInitialized = false;
       this.lastRenderTime = 0;
@@ -785,7 +803,7 @@ if (typeof window.LiveApp === 'undefined') {
       this.isTyping = false; // 是否正在打字机效果
       this.pendingAppearDanmakuSigs = new Set(); // 待逐条出现的弹幕签名
       this.pendingAppearGiftSigs = new Set(); // 待逐条出现的礼物签名
-
+      this.boundHandleLiveClick = this.handleLiveClick.bind(this);
       this.init();
     }
 
@@ -901,14 +919,15 @@ if (typeof window.LiveApp === 'undefined') {
 
         // 发送开始直播消息到SillyTavern
         const message = `用户开始直播，初始互动为（${initialInteraction}），请按照正确的直播格式要求生成本场人数，直播内容，弹幕，打赏和推荐互动。此次回复内仅生成一次本场人数和直播内容格式，直播内容需要简洁。最后需要生成四条推荐互动。禁止使用错误格式。`;
-
         await this.sendToSillyTavern(message);
-
+        setTimeout(() => {
+          this.parseNewLiveData(); // 强制拉取首次加载的 PK/连麦数据
+        }, 500); // 延迟确保消息已返回
+             
         // 更新界面
         this.updateAppContent();
-
-        console.log('[Live App] 直播已开始');
       } catch (error) {
+        this.updateAppContent();
         console.error('[Live App] 开始直播失败:', error);
         this.showToast('开始直播失败: ' + error.message, 'error');
       }
@@ -1005,10 +1024,18 @@ if (typeof window.LiveApp === 'undefined') {
           danmakuCount: liveData.danmakuList.length,
           giftCount: liveData.giftList.length,
           interactionCount: liveData.recommendedInteractions.length,
-        });
+          hasPkCover: !!liveData.pkCoverData,
+          hasLinkCover: !!liveData.linkCoverData,
+          pkCoverData: liveData.pkCoverData ? JSON.stringify(liveData.pkCoverData) : 'null',
+          linkCoverData: liveData.linkCoverData ? JSON.stringify(liveData.linkCoverData) : 'null'
+        });                
 
-        // 更新状态
-        this.stateManager.updateLiveData(liveData);
+       // 更新状态
+       this.stateManager.updateLiveData(liveData);
+       this.stateManager.liveApp?.updateAppContentDebounced();
+        if (liveData.pkCoverData || liveData.linkCoverData) {
+          this.updateAppContent(); // 立即渲染封面
+        }        
 
         // 计算需要动画显示的"新增弹幕/礼物"（仅来自最新楼层）
         if (latestNewDanmaku.length > 0) {
@@ -1057,11 +1084,16 @@ if (typeof window.LiveApp === 'undefined') {
       if (currentTime - this.lastRenderTime < this.renderCooldown) {
         return;
       }
-
       this.lastRenderTime = currentTime;
       this.updateAppContent();
-      this.updateHeader(); // 同时更新header
+      this.updateHeader(); 
+      setTimeout(() => {
+        if (this.stateManager.pkCoverData || this.stateManager.linkCoverData) {
+          this.runAppearSequence();
+        }
+      }, 100);
     }
+
 
     /**
      * 更新应用内容
@@ -1257,14 +1289,15 @@ if (typeof window.LiveApp === 'undefined') {
       const { pkCoverData, linkCoverData, highLightCount, systemTips } = state;
       let featureCardHtml = '';
 
-      // 1. 还原 PK 卡片样式（完全对齐原版 regex-直播-PK.json）
+      // 1. PK 卡片样式
       if (pkCoverData) {
-        const { userPk, rivalPk } = pkCoverData;
-        const userCurrency = parseInt(userPk.currency) || 0;
-        const rivalCurrency = parseInt(rivalPk.currency) || 0;
+        const userPk = JSON.parse(JSON.stringify(pkCoverData.userPk));
+        const rivalPk = JSON.parse(JSON.stringify(pkCoverData.rivalPk));
+        const userCurrency = parseInt(state.pkCoverData?.userPk?.currency || 0, 10); 
+        const rivalCurrency = parseInt(state.pkCoverData?.rivalPk?.currency || 0, 10);
         const total = userCurrency + rivalCurrency;
-        const userProgress = total ? Math.round((userCurrency / total) * 100) : 60;
-        const rivalProgress = total ? Math.round((rivalCurrency / total) * 100) : 40;
+        const userProgress = total > 0 ? Math.round((userCurrency / total) * 100) : 50;
+        const rivalProgress = 100 - userProgress;
         featureCardHtml = `
           <div class="feature-card ${liveTheme}-card">
             <div class="feature-card-toggle" id="pk-card-toggle">
@@ -1299,14 +1332,15 @@ if (typeof window.LiveApp === 'undefined') {
                 </div>
               </div>
               <!-- PK进度条 -->
+              <div class="pk-currency-left">
+                ${parseInt(userPk.currency || 0, 10)}
+              </div>
               <div class="pk-progress-bar" style="margin: 3px 0 8px; padding: 0 60px;">
-                <!-- 进度条内容 -->
-                <div id="pkBar" style="display: flex; height: 100%; width: 100%;">
-                  <div class="pk-currency-left">${userCurrency}</div>
-                  <div class="pk-progress-left" style="width: ${userProgress}%;"></div>
-                  <div class="pk-progress-right" style="width: ${rivalProgress}%;"></div>
-                  <div class="pk-currency-right">${userCurrency}</div>
-                </div>
+                <div class="pk-progress-left" style="width: ${userProgress}%;"></div>
+                <div class="pk-progress-right" style="width: ${rivalProgress}%;"></div>
+              </div>
+              <div class="pk-currency-right">
+                ${parseInt(rivalPk.currency || 0, 10)}
               </div>
               <!-- 系统提示 -->
               <div class="high-tide-box" style="margin-top: 5px; padding: 8px 15px;">
@@ -1496,6 +1530,41 @@ if (typeof window.LiveApp === 'undefined') {
         </div>
       `;
     }
+    
+    /**
+     * 直播中界面的点击事件处理器（单独提取，避免重复绑定）
+     */
+    handleLiveClick(e) {
+      const appContainer = document.getElementById('app-content');
+      if (!appContainer) return;
+
+      // 1. 处理PK卡片展开/收起
+      const pkToggle = e.target.closest('#pk-card-toggle');
+      if (pkToggle) {
+        const content = appContainer.querySelector('#pk-card-content');
+        const icon = pkToggle.querySelector('.toggle-icon');
+        if (content && icon) {
+          content.style.display = content.style.display === 'none' ? 'block' : 'none';
+          icon.textContent = content.style.display === 'none' ? '▼' : '▲';
+        }
+        e.stopPropagation(); // 阻止事件冒泡到其他处理器
+        return;
+      }
+
+      // 2. 处理连麦卡片展开/收起
+      const linkToggle = e.target.closest('#link-card-toggle');
+      if (linkToggle) {
+        const content = appContainer.querySelector('#link-card-content');
+        const icon = linkToggle.querySelector('.toggle-icon');
+        if (content && icon) {
+          content.style.display = content.style.display === 'none' ? 'block' : 'none';
+          icon.textContent = content.style.display === 'none' ? '▼' : '▲';
+        }
+        e.stopPropagation();
+        return;
+      }
+    }
+
 
     /**
      * 绑定事件
@@ -1646,26 +1715,11 @@ if (typeof window.LiveApp === 'undefined') {
         }
 
         // 直播中相关事件
-        if (this.currentView === 'live') {
-          // PK卡片展开/收起
-          const pkCardToggle = appContainer.querySelector('#pk-card-toggle');
-          if (pkCardToggle) {
-            pkCardToggle.addEventListener('click', () => {
-              const content = appContainer.querySelector('#pk-card-content');
-              const icon = pkCardToggle.querySelector('.toggle-icon');
-              content.style.display = content.style.display === 'none' ? 'block' : 'none';
-              icon.textContent = content.style.display === 'none' ? '▼' : '▲';
-            });
-          }
-          // 连麦卡片展开/收起
-          const linkCardToggle = appContainer.querySelector('#link-card-toggle');
-          if (linkCardToggle) {
-            linkCardToggle.addEventListener('click', () => {
-              const content = appContainer.querySelector('#link-card-content');
-              const icon = linkCardToggle.querySelector('.toggle-icon');
-              content.style.display = content.style.display === 'none' ? 'block' : 'none';
-              icon.textContent = content.style.display === 'none' ? '▼' : '▲';
-            });
+        if (this.currentView === 'live') {          
+          const appContainer = document.getElementById('app-content');
+          if (appContainer) {
+            appContainer.removeEventListener('click', this.boundHandleLiveClick);
+            appContainer.addEventListener('click', this.boundHandleLiveClick);
           }
 
           // 推荐互动按钮
