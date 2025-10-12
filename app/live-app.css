@@ -478,53 +478,57 @@
   z-index: 3; /* 确保VS图标在最上层 */
   box-shadow: 0 0 10px rgba(255, 105, 180, 0.3); /* 增加阴影，突出立体感 */
 }
-/* PK特有：进度条（需求1：左右margin减少，让进度条拉长，原padding保留） */
+/* 进度条容器：清除默认背景，仅作为定位容器 */
 .pk-progress-bar {
-  height: 25px;
-  background: var(--live-bg-main);
-  border-radius: 15px;
-  margin: 0 2px 8px; /* 修复：减少底部margin至8px，拉近与系统提示距离 */
-  overflow: hidden;
-  box-shadow: inset 0 0 5px rgba(0,0,0,0.1);
-  position: relative; /* 为欲色币定位 */
-  padding: 0 60px; /* 需求1：保留左右内边距，确保长数字不溢出 */
+  background: transparent !important; /* 彻底清除底色 */
+  position: relative; /* 作为绝对定位的参考容器 */
+  height: 30px; /* 可根据设计调整高度 */
+  border-radius: 15px; /* 保持圆角一致性 */
+  overflow: hidden; /* 隐藏超出容器的内容 */
 }
-/* 进度条内欲色币（左侧-用户，完全在进度条内） */
-.pk-currency-left {
+
+/* 左右填充元素：绝对定位+100%宽度，强制覆盖 */
+.pk-progress-left, .pk-progress-right {
   position: absolute;
-  left: 10px; /* 距离左侧边缘10px，确保在进度条内 */
-  top: 50%;
-  transform: translateY(-50%);
-  font-size: 14px;
-  font-weight: bold;
-  color: var(--pk-a-color);
-  z-index: 2;
-  white-space: nowrap; /* 防止数字换行 */
-}
-/* 进度条内欲色币（右侧-对手，完全在进度条内） */
-.pk-currency-right {
-  position: absolute;
-  right: 10px; /* 距离右侧边缘10px，确保在进度条内 */
-  top: 50%;
-  transform: translateY(-50%);
-  font-size: 14px;
-  font-weight: bold;
-  color: var(--pk-b-color);
-  z-index: 2;
-  white-space: nowrap; /* 防止数字换行 */
-}
-/* 用户进度条（粉色，正常显示） */
-.pk-progress-left {
+  top: 0;
   height: 100%;
-  background: linear-gradient(90deg, #ff66b2, #ffb6d5);
+  z-index: 1; /* 低于数字容器，不遮挡文字 */
+}
+.pk-progress-left {
+  left: 0;
+  width: 100%; /* 初始占满，由JS动态修改 */
+  background: linear-gradient(to right, #ff66b2, #ff85b8) ;
   border-radius: 15px 0 0 15px;
 }
-/* 对手进度条（需求2：修复蓝色显示） */
 .pk-progress-right {
-  height: 100%;
-  background: linear-gradient(90deg, #6699ff, #b6d5ff); /* 需求2：蓝色渐变 */
+  right: 0;
+  width: 100%; /* 初始占满，由JS动态修改 */
+  background: linear-gradient(to left, #6699ff, #85b8ff); /* 蓝色进度条颜色 */
   border-radius: 0 15px 15px 0;
 }
+
+/* 数字容器：定位到两端，确保不被遮挡 */
+.pk-currency-left, .pk-currency-right {
+  position: absolute;
+  top: 0;
+  height: 100%;
+  padding: 0 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2; /* 文字在最上层 */
+  min-width: 60px; /* 保证数字不被压缩 */
+  color: #fff; /* 文字颜色 */
+}
+.pk-currency-left {
+  left: 0;
+  border-radius: 15px 0 0 15px;
+}
+.pk-currency-right {
+  right: 0;
+  border-radius: 0 15px 15px 0;
+}
+
 /* 连麦特有：心形连接（完全还原原版） */
 .link-heart-connector {
   position: absolute;
@@ -603,23 +607,25 @@
 .night-mode .system-tip-line {
   text-shadow: 0 0 8px var(--system-tip-color);
 }
-/* 视频框 - 保留黑色背景（需求5：文字改为暖米白） */
+
+/* 视频框 */
 .video-placeholder {
-  width: calc(100% - 20px); /* 减少左右边距 30px → 20px */
-  flex: 0 0 40%; /* 使用flex比例：占40%的高度 */
+  width: calc(100% - 20px);
+  flex: 0 0 30%; /* 纵向占比从40%降至30%，减少对弹幕容器的挤压 */
   background-color: #000;
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 80 80' width='80' height='80'%3E%3Crect fill='%23050505' width='80' height='80'/%3E%3Cg fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.03'%3E%3Cpath d='M10 10 L60 10 L60 60 L10 60 Z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
-  border-radius: 10px; /* 减小圆角 12px → 10px */
-  margin: 8px auto 0 auto; /* 减少上边距 15px → 8px */
+  border-radius: 10px;
+  margin: 8px auto 0 auto;
   display: flex;
   flex-direction: column;
-  justify-content: stretch; /* 让内容拉伸填满空间 */
+  justify-content: center; /* 内容垂直居中，替代原stretch，避免文字拉伸导致高度冗余 */
   text-align: center;
-  position: relative; /* 为LIVE标志固定定位 */
-  padding: 8px; /* 进一步减少内边距 */
-  overflow: hidden; /* 确保内容不会溢出 */
-  z-index: 1; /* 低于卡片层级，确保被卡片覆盖 */
+  position: relative;
+  padding: 8px;
+  overflow: hidden;
+  z-index: 1;
 }
+
 /* 视频区文字（需求5：暖米白，清晰护眼） */
 .live-content-text {
   color: var(--video-text-color); /* 需求5：暖米白 #E3D5A5 */
@@ -736,7 +742,7 @@
   padding: 15px;
   overflow-y: auto;
   background: #FFFFFF; /* 背景替换 */
-  min-height: 0; /* 允许flex收缩 */
+  min-height: 120px; /* 允许flex收缩 */
   display: flex; /* 设置为flex容器 */
   flex-direction: column; /* 垂直布局 */
 }
