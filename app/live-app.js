@@ -681,27 +681,58 @@ if (typeof window.LiveApp === 'undefined') {
     updateLiveData(liveData) {
       if (!this.isLiveActive) return;
 
-      // 更新观看人数（仅保留最新的）
-      if (liveData.viewerCount !== undefined && liveData.viewerCount !== 0) {
+      let hasChanged = false;
+
+      // 更新观看人数
+      if (liveData.viewerCount !== undefined && liveData.viewerCount !== 0 && this.currentViewerCount !== liveData.viewerCount) {
         this.currentViewerCount = liveData.viewerCount;
+        hasChanged = true;
         console.log(`[Live App] 更新观看人数: ${this.currentViewerCount}`);
       }
 
-      // 更新直播内容（仅保留最新的）
-      if (liveData.liveContent && liveData.liveContent.trim() !== '') {
+      // 更新直播内容
+      if (liveData.liveContent && liveData.liveContent.trim() !== '' && this.currentLiveContent !== liveData.liveContent) {
         this.currentLiveContent = liveData.liveContent;
+        hasChanged = true;
         console.log(`[Live App] 更新直播内容: ${this.currentLiveContent.substring(0, 50)}...`);
       }
 
-      // 更新推荐互动（仅保留最新的）
-      if (liveData.recommendedInteractions && liveData.recommendedInteractions.length > 0) {
+      // 更新推荐互动
+      if (liveData.recommendedInteractions && JSON.stringify(this.recommendedInteractions) !== JSON.stringify(liveData.recommendedInteractions)) {
         this.recommendedInteractions = liveData.recommendedInteractions;
+        hasChanged = true;
         console.log(`[Live App] 更新推荐互动: ${this.recommendedInteractions.length} 个`);
-      }     
+      }
 
-      // 添加新弹幕（累积所有历史弹幕）
+      // 更新PK或连麦数据
+      if (liveData.pkCoverData && JSON.stringify(this.pkCoverData) !== JSON.stringify(liveData.pkCoverData)) {
+        this.pkCoverData = liveData.pkCoverData;
+        this.linkCoverData = null; // PK时清空连麦数据
+        hasChanged = true;
+        console.log('[Live App] 更新PK封面数据');
+      } else if (liveData.linkCoverData && JSON.stringify(this.linkCoverData) !== JSON.stringify(liveData.linkCoverData)) {
+        this.linkCoverData = liveData.linkCoverData;
+        this.pkCoverData = null; // 连麦时清空PK数据
+        hasChanged = true;
+        console.log('[Live App] 更新连麦封面数据');
+      }
+
+      // 更新高光次数
+      if (liveData.highLightCount !== undefined && this.highLightCount !== liveData.highLightCount) {
+        this.highLightCount = liveData.highLightCount;
+        hasChanged = true;
+        console.log(`[Live App] 更新高光次数: ${this.highLightCount}`);
+      }
+
+      // 更新系统提示
+      if (liveData.systemTips && JSON.stringify(this.systemTips) !== JSON.stringify(liveData.systemTips)) {
+        this.systemTips = liveData.systemTips;
+        hasChanged = true;
+        console.log('[Live App] 更新系统提示', this.systemTips);
+      }
+
+      // 添加新弹幕
       if (liveData.danmakuList && liveData.danmakuList.length > 0) {
-        // 过滤掉已存在的弹幕（基于内容和用户名）
         const newDanmaku = liveData.danmakuList.filter(newItem => {
           return !this.danmakuList.some(
             existingItem =>
@@ -710,19 +741,15 @@ if (typeof window.LiveApp === 'undefined') {
               existingItem.type === newItem.type,
           );
         });
-
         if (newDanmaku.length > 0) {
           this.danmakuList = this.danmakuList.concat(newDanmaku);
+          hasChanged = true;
           console.log(`[Live App] 添加 ${newDanmaku.length} 条新弹幕，总计 ${this.danmakuList.length} 条`);
-
-          // 移除弹幕数量限制，保留所有历史弹幕
-          console.log(`[Live App] 保留所有弹幕，当前总数: ${this.danmakuList.length}`);
         }
       }
 
-      // 添加新礼物（累积所有历史礼物）
+      // 添加新礼物
       if (liveData.giftList && liveData.giftList.length > 0) {
-        // 过滤掉已存在的礼物
         const newGifts = liveData.giftList.filter(newGift => {
           return !this.giftList.some(
             existingGift =>
@@ -731,36 +758,22 @@ if (typeof window.LiveApp === 'undefined') {
               existingGift.timestamp === newGift.timestamp,
           );
         });
-
         if (newGifts.length > 0) {
           this.giftList = this.giftList.concat(newGifts);
+          hasChanged = true;
           console.log(`[Live App] 添加 ${newGifts.length} 个新礼物，总计 ${this.giftList.length} 个`);
         }
       }
-      if (liveData.pkCoverData) {
-        this.pkCoverData = liveData.pkCoverData;
-        if (this.liveApp && this.liveApp.updateAppContentDebounced) {
-          this.liveApp.updateAppContentDebounced();
-        }
+
+      // 如果有任何数据变化，则触发界面更新
+      if (hasChanged) {
+          if (this.liveApp && this.liveApp.updateAppContentDebounced) {
+              console.log('[Live App] 检测到状态变化，触发界面更新');
+              this.liveApp.updateAppContentDebounced();
+          }
       }
-   
-      this.linkCoverData = liveData.linkCoverData;
-      this.highLightCount = liveData.highLightCount;
-      this.systemTips = liveData.systemTips;
-      const hasPkChange = 
-        JSON.stringify(this.pkCoverData) !== JSON.stringify(liveData.pkCoverData) ||
-        this.highLightCount !== liveData.highLightCount ||
-        JSON.stringify(this.systemTips) !== JSON.stringify(liveData.systemTips);   
-      const hasLinkChange = 
-        JSON.stringify(this.linkCoverData) !== JSON.stringify(liveData.linkCoverData) ||
-        this.highLightCount !== liveData.highLightCount ||
-        JSON.stringify(this.systemTips) !== JSON.stringify(liveData.systemTips);
-      if (hasPkChange || hasLinkChange) {
-        if (this.liveApp && this.liveApp.updateAppContentDebounced) {
-          this.liveApp.updateAppContentDebounced(); // 强制刷新
-        }
-      }
-    }      
+    }
+      
 
     /**
      * 获取当前直播状态
@@ -1003,91 +1016,73 @@ if (typeof window.LiveApp === 'undefined') {
       try {
         console.log('[Live App] 开始解析新的直播数据');
 
-        // 获取聊天内容
+        // 获取完整的聊天内容
         const chatContent = this.dataParser.getChatContent();
         if (!chatContent) {
-          console.warn('[Live App] 无法获取聊天内容');
+          console.warn('[Live App] 无法获取聊天内容，跳过解析');
           return;
         }
 
-        // 双通道：在更新前记录现有弹幕签名，用于识别"真正新增"
+        // 记录现有弹幕和礼物的签名，用于识别新增项以实现动画
         const existingDanmakuSigs = new Set(
-          (this.stateManager.danmakuList || []).map(item => this.createDanmakuSignature(item)),
+            (this.stateManager.danmakuList || []).map(item => this.createDanmakuSignature(item)),
+        );
+        const existingGiftSigs = new Set(
+            (this.stateManager.giftList || []).map(item => this.createGiftSignature(item)),
         );
 
-        // 单独解析"最新楼层"的内容（仅用于决定动画）
-        const latestFloorText = this.getLatestFloorTextSafe();
-        let latestNewDanmaku = [];
-        let latestNewGifts = [];
-        if (latestFloorText) {
-          // 优先解析最新楼层的PK/连麦数据（覆盖全局解析结果）
-          const latestLiveData = this.dataParser.parseLiveData(latestFloorText);
-          if (latestLiveData.pkCoverData) this.stateManager.pkCoverData = latestLiveData.pkCoverData;
-          if (latestLiveData.linkCoverData) this.stateManager.linkCoverData = latestLiveData.linkCoverData;
-          this.stateManager.highLightCount = latestLiveData.highLightCount;
-          this.stateManager.systemTips = latestLiveData.systemTips;
-        }
-
-        // 解析直播数据
+        // 从完整的聊天内容中一次性解析所有类型的直播数据
         const liveData = this.dataParser.parseLiveData(chatContent);
-        console.log('[Live App] 解析到的直播数据:', {
+
+        console.log('[Live App] 解析到的完整直播数据:', {
           viewerCount: liveData.viewerCount,
           liveContent: liveData.liveContent ? liveData.liveContent.substring(0, 50) + '...' : '',
           danmakuCount: liveData.danmakuList.length,
           giftCount: liveData.giftList.length,
           interactionCount: liveData.recommendedInteractions.length,
-          hasPkCover: !!liveData.pkCoverData,
-          hasLinkCover: !!liveData.linkCoverData,
-          pkCoverData: liveData.pkCoverData ? JSON.stringify(liveData.pkCoverData) : 'null',
-          linkCoverData: liveData.linkCoverData ? JSON.stringify(liveData.linkCoverData) : 'null'
-        });        
-        if (liveData.pkCoverData) {
-          this.stateManager.pkCoverData = liveData.pkCoverData;
-        } else if (liveData.linkCoverData) {
-          this.stateManager.linkCoverData = liveData.linkCoverData;
-        }
+          pkCoverData: liveData.pkCoverData,
+          linkCoverData: liveData.linkCoverData,
+          highLightCount: liveData.highLightCount,
+          systemTips: liveData.systemTips
+        });
 
-        // 更新状态
+        // 将解析出的新数据交给状态管理器去统一处理更新逻辑
         this.stateManager.updateLiveData(liveData);
 
-        // 计算需要动画显示的"新增弹幕/礼物"（仅来自最新楼层）
-        if (latestNewDanmaku.length > 0) {
-          latestNewDanmaku.forEach(item => {
-            const sig = this.createDanmakuSignature(item);
-            if (!existingDanmakuSigs.has(sig)) {
-              this.pendingAppearDanmakuSigs.add(sig);
-            }
-          });
+        // 仅从最新楼层判断需要播放动画的新增弹幕和礼物
+        const latestFloorText = this.getLatestFloorTextSafe();
+        if (latestFloorText) {
+            const latestLiveData = this.dataParser.parseLiveData(latestFloorText);
+
+            latestLiveData.danmakuList.forEach(item => {
+                const sig = this.createDanmakuSignature(item);
+                if (!existingDanmakuSigs.has(sig)) {
+                    this.pendingAppearDanmakuSigs.add(sig);
+                }
+            });
+
+            latestLiveData.giftList.forEach(item => {
+                const sig = this.createGiftSignature(item);
+                if (!existingGiftSigs.has(sig)) {
+                    this.pendingAppearGiftSigs.add(sig);
+                }
+            });
         }
 
-        if (latestNewGifts.length > 0) {
-          const existingGiftSigs = new Set(
-            (this.stateManager.giftList || []).map(item => this.createGiftSignature(item)),
-          );
-          latestNewGifts.forEach(item => {
-            const sig = this.createGiftSignature(item);
-            if (!existingGiftSigs.has(sig)) {
-              this.pendingAppearGiftSigs.add(sig);
-            }
-          });
-        }
-
-        // 更新界面（带防抖）
-        this.updateAppContentDebounced();
-
-        // 若有新的弹幕，刷新后进行一次"必要时跳底"
+        // 弹幕滚动和动画效果
         setTimeout(() => {
-          // 先处理需要动画的节点为隐藏状态，避免定位到空白
           this.runAppearSequence();
           const danmakuContainer = document.getElementById('danmaku-container');
           if (danmakuContainer) {
             this.jumpToBottomIfNeeded(danmakuContainer);
           }
-        }, 30);
+        }, 50);
+
       } catch (error) {
         console.error('[Live App] 解析直播数据失败:', error);
       }
     }
+
 
     /**
      * 防抖更新界面内容
