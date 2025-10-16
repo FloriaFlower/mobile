@@ -681,70 +681,73 @@ if (typeof window.LiveApp === 'undefined') {
     updateLiveData(liveData) {
       if (!this.isLiveActive) return;
 
-      const hasPkDataChanged = JSON.stringify(this.pkCoverData) !== JSON.stringify(liveData.pkCoverData);
-      const hasLinkDataChanged = JSON.stringify(this.linkCoverData) !== JSON.stringify(liveData.linkCoverData);
-      const hasHighlightChanged = this.highLightCount !== liveData.highLightCount;
-      const hasTipsChanged = JSON.stringify(this.systemTips) !== JSON.stringify(liveData.systemTips);
+      // 标记是否有任何数据发生了变化
+      let hasChanged = false;
 
-      this.pkCoverData = liveData.pkCoverData;
-      this.linkCoverData = liveData.linkCoverData;
-      this.highLightCount = liveData.highLightCount;
-      this.systemTips = liveData.systemTips;
+      // 更新所有数据，并检查是否有变化
+      if (JSON.stringify(this.pkCoverData) !== JSON.stringify(liveData.pkCoverData)) {
+        this.pkCoverData = liveData.pkCoverData;
+        hasChanged = true;
+      }
+      if (JSON.stringify(this.linkCoverData) !== JSON.stringify(liveData.linkCoverData)) {
+        this.linkCoverData = liveData.linkCoverData;
+        hasChanged = true;
+      }
+      if (this.highLightCount !== liveData.highLightCount) {
+        this.highLightCount = liveData.highLightCount;
+        hasChanged = true;
+      }
+      if (JSON.stringify(this.systemTips) !== JSON.stringify(liveData.systemTips)) {
+        this.systemTips = liveData.systemTips;
+        hasChanged = true;
+      }
+      if (liveData.viewerCount !== undefined && this.currentViewerCount !== liveData.viewerCount) {
+        this.currentViewerCount = liveData.viewerCount;
+        hasChanged = true;
+      }
+      if (liveData.liveContent && this.currentLiveContent !== liveData.liveContent) {
+        this.currentLiveContent = liveData.liveContent;
+        hasChanged = true;
+      }
+      if (liveData.recommendedInteractions && JSON.stringify(this.recommendedInteractions) !== JSON.stringify(liveData.recommendedInteractions)) {
+        this.recommendedInteractions = liveData.recommendedInteractions;
+        hasChanged = true;
+      }
 
-      if (hasPkDataChanged || hasLinkDataChanged || hasHighlightChanged || hasTipsChanged) {
+      // 检查并添加新弹幕
+      if (liveData.danmakuList && liveData.danmakuList.length > 0) {
+        const newDanmaku = liveData.danmakuList.filter(newItem =>
+            !this.danmakuList.some(existingItem =>
+                existingItem.username === newItem.username && existingItem.content === newItem.content && existingItem.type === newItem.type
+            )
+        );
+        if (newDanmaku.length > 0) {
+          this.danmakuList.push(...newDanmaku);
+          hasChanged = true;
+        }
+      }
+
+      // 检查并添加新礼物
+      if (liveData.giftList && liveData.giftList.length > 0) {
+        const newGifts = liveData.giftList.filter(newGift =>
+            !this.giftList.some(existingGift =>
+                existingGift.username === newGift.username && existingGift.gift === newGift.gift
+            )
+        );
+        if (newGifts.length > 0) {
+          this.giftList.push(...newGifts);
+          hasChanged = true;
+        }
+      }
+
+      // 只要有任何数据变化，就毫不犹豫地触发UI更新
+      if (hasChanged) {
+        console.log('[Live App] 检测到数据变化，触发UI更新。');
         if (this.liveApp && this.liveApp.updateAppContentDebounced) {
-          console.log('[Live App] 检测到PK/连麦数据变化，强制更新UI。');
           this.liveApp.updateAppContentDebounced();
         }
       }
-
-      if (liveData.viewerCount !== undefined && liveData.viewerCount !== 0) {
-        this.currentViewerCount = liveData.viewerCount;
-        console.log(`[Live App] 更新观看人数: ${this.currentViewerCount}`);
-      }
-
-      if (liveData.liveContent && liveData.liveContent.trim() !== '') {
-        this.currentLiveContent = liveData.liveContent;
-        console.log(`[Live App] 更新直播内容: ${this.currentLiveContent.substring(0, 50)}...`);
-      }
-
-      if (liveData.recommendedInteractions && liveData.recommendedInteractions.length > 0) {
-        this.recommendedInteractions = liveData.recommendedInteractions;
-        console.log(`[Live App] 更新推荐互动: ${this.recommendedInteractions.length} 个`);
-      }
-
-      if (liveData.danmakuList && liveData.danmakuList.length > 0) {
-        const newDanmaku = liveData.danmakuList.filter(newItem => {
-          return !this.danmakuList.some(
-            existingItem =>
-              existingItem.username === newItem.username &&
-              existingItem.content === newItem.content &&
-              existingItem.type === newItem.type,
-          );
-        });
-
-        if (newDanmaku.length > 0) {
-          this.danmakuList = this.danmakuList.concat(newDanmaku);
-          console.log(`[Live App] 添加 ${newDanmaku.length} 条新弹幕，总计 ${this.danmakuList.length} 条`);
-        }
-      }
-
-      if (liveData.giftList && liveData.giftList.length > 0) {
-        const newGifts = liveData.giftList.filter(newGift => {
-          return !this.giftList.some(
-            existingGift =>
-              existingGift.username === newGift.username &&
-              existingGift.gift === newGift.gift &&
-              existingGift.timestamp === newGift.timestamp,
-          );
-        });
-
-        if (newGifts.length > 0) {
-          this.giftList = this.giftList.concat(newGifts);
-          console.log(`[Live App] 添加 ${newGifts.length} 个新礼物，总计 ${this.giftList.length} 个`);
-        }
-      }
-    }      
+    }     
 
     /**
      * 获取当前直播状态
@@ -854,7 +857,6 @@ if (typeof window.LiveApp === 'undefined') {
             giftCount: this.stateManager.giftList.length,
             interactionCount: this.stateManager.recommendedInteractions.length,
           });
-          this.updateHeader(); 
         } else {
           console.log('[Live App] 没有检测到活跃的直播数据，保持开始直播状态');
         }
@@ -918,7 +920,7 @@ if (typeof window.LiveApp === 'undefined') {
         setTimeout(() => {
           this.parseNewLiveData(); // 强制拉取首次加载的 PK/连麦数据
         }, 500); // 延迟确保消息已返回
-             
+
         // 更新界面
         this.updateAppContent();
       } catch (error) {
