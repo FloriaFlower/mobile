@@ -912,7 +912,7 @@ if (typeof window.LiveApp === 'undefined') {
         this.eventListener.startListening();
 
         // 发送开始直播消息到SillyTavern
-        const message = `用户开始直播，初始互动为（${initialInteraction}），请按照正确的直播格式要求生成本场人数，直播内容，弹幕，打赏和推荐互动。此次回复内仅生成一次本场人数和直播内容格式，直播内容需要简洁。最后需要生成四条推荐互动。禁止使用错误格式。`;
+        const message = `用户开始直播，初始互动为（${initialInteraction}），请按照正确的直播格式要求生成本场人数，直播内容，弹幕，打赏和推荐互动，最后需要生成四条推荐互动。若处于PK或粉丝连麦模式则必须在开头生成封面卡片，禁止使用错误格式。`;
         await this.sendToSillyTavern(message);
         setTimeout(() => {
           this.parseNewLiveData(); // 强制拉取首次加载的 PK/连麦数据
@@ -969,7 +969,7 @@ if (typeof window.LiveApp === 'undefined') {
         }
 
         // 发送继续直播消息到SillyTavern
-        const message = `用户继续直播，互动为（${interaction}），请按照正确的直播格式要求生成本场人数，直播内容，弹幕，打赏和推荐互动。此次回复内仅生成一次本场人数和直播内容格式，直播内容需要简洁。最后需要生成四条推荐互动。禁止使用错误格式。`;
+        const message = `用户继续直播，互动为（${interaction}），请按照正确的直播格式要求生成本场人数，直播内容，弹幕，打赏和推荐互动，最后需要生成四条推荐互动。若处于PK或粉丝连麦模式则必须在开头生成封面卡片，禁止使用错误格式。`;
 
         await this.sendToSillyTavern(message);
 
