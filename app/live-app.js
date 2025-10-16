@@ -431,65 +431,92 @@ if (typeof window.LiveApp === 'undefined') {
 
       return { danmakuList, giftList };
     }
+    // 新增：解析高光次数（兼容PK/连麦）
+    parseHighLight(content, liveTheme) {
+      const pattern = liveTheme === 'pk' ? this.patterns.highLight : this.patterns.linkHighLight;
+      const matches = [...content.matchAll(pattern)];
+      // 从最后一个匹配中获取数据
+      return matches.length ? matches[matches.length - 1][1].trim() : '0';
+    }    
     // 新增：解析PK封面动态数据（用户/对手信息、欲色币）
     parsePkCover(content) {
       const pkCovers = [];
       const matches = [...content.matchAll(this.patterns.pkCover)];
-      matches.forEach(match => {
+
+      // 如果没有找到任何PK封面的匹配项，就返回null
+      if (matches.length === 0) {
+        return null;
+      }
+
+      // 我们只关心最后出现的两个匹配项，那才是最新的数据
+      const latestMatches = matches.slice(-2);
+
+      latestMatches.forEach(match => {
         const type = match[1]?.trim();
         const imgUrl = match[2]?.trim();
-        const currency = match[3]?.trim() || '0'; 
+        const currency = match[3]?.trim() || '0';
         if (type && imgUrl) {
           pkCovers.push({ type, imgUrl, currency });
         }
       });
-      const userPk = pkCovers[0] || {
-        type: '主播', 
-        imgUrl: '默认主播图链接', 
-        currency: '0' 
+
+      // 用最新的数据来确定你和对手
+      const userPk = pkCovers.find(p => p.type === '洛洛') || pkCovers[0] || {
+        type: '主播',
+        imgUrl: '默认主播图链接',
+        currency: '0'
       };
-      const rivalPk = pkCovers[1] || { 
-        type: '未知对手', 
-        imgUrl: '默认对手图链接', 
-        currency: '0' 
+      const rivalPk = pkCovers.find(p => p.type !== '洛洛') || pkCovers[1] || {
+        type: '未知对手',
+        imgUrl: '默认对手图链接',
+        currency: '0'
       };
+
       return { userPk, rivalPk };
     }
+
     // 新增：解析连麦封面动态数据（用户/粉丝信息）
     parseLinkCover(content) {
       const linkCovers = [];
       const matches = [...content.matchAll(this.patterns.linkCover)];
-      matches.forEach(match => {
-        const type = match[1]?.trim(); // 类型：{{user}} 或 粉丝昵称
+
+      // 如果没有找到任何连麦封面的匹配项，就返回null
+      if (matches.length === 0) {
+          return null;
+      }
+
+      // 我们只关心最后出现的两个匹配项
+      const latestMatches = matches.slice(-2);
+
+      latestMatches.forEach(match => {
+        const type = match[1]?.trim(); // 类型：洛洛 或 粉丝昵称
         const imgUrl = match[2]?.trim(); // 照片链接
         if (type && imgUrl) {
           linkCovers.push({ type, imgUrl });
         }
       });
+
       // 提取用户和粉丝数据（容错）
-      const userLink = linkCovers.find(item => item.type === '{{user}}') || { type: '{{user}}', imgUrl: '默认主播图链接' };
-      const fanLink = linkCovers.find(item => item.type !== '{{user}}') || { type: '未知粉丝', imgUrl: '默认粉丝图链接' };
+      const userLink = linkCovers.find(item => item.type === '洛洛') || { type: '洛洛', imgUrl: '默认主播图链接' };
+      const fanLink = linkCovers.find(item => item.type !== '洛洛') || { type: '未知粉丝', imgUrl: '默认粉丝图链接' };
+
       return { userLink, fanLink };
     }
-    // 新增：解析高光次数（兼容PK/连麦）
-    parseHighLight(content, liveTheme) {
-      if (liveTheme === 'pk') {
-        const matches = [...content.matchAll(this.patterns.highLight)];
-        return matches.length ? matches[0][1].trim() : '0';
-      } else {
-        const matches = [...content.matchAll(this.patterns.linkHighLight)];
-        return matches.length ? matches[0][1].trim() : '0';
-      }
-    }
+
     // 新增：解析系统提示（兼容PK/连麦）
     parseSystemTips(content, liveTheme) {
-      if (liveTheme === 'pk') {
-        const matches = [...content.matchAll(this.patterns.pkTips)];
-        return matches.length ? { tip1: matches[0][1].trim(), tip2: matches[0][2].trim(), tip3: matches[0][3].trim() } : { tip1: 'PK加油！', tip2: '注意观众互动', tip3: '保持节奏' };
-      } else {
-        const matches = [...content.matchAll(this.patterns.linkTips)];
-        return matches.length ? { tip1: matches[0][1].trim(), tip2: matches[0][2].trim(), tip3: matches[0][3].trim() } : { tip1: '连麦愉快！', tip2: '倾听粉丝想法', tip3: '分享更多趣事' };
+      const pattern = liveTheme === 'pk' ? this.patterns.pkTips : this.patterns.linkTips;
+      const matches = [...content.matchAll(pattern)];
+      // 从最后一个匹配中获取数据
+      if (matches.length > 0) {
+          const lastMatch = matches[matches.length - 1];
+          return { tip1: lastMatch[1].trim(), tip2: lastMatch[2].trim(), tip3: lastMatch[3].trim() };
       }
+      // 如果没找到，返回默认提示
+      const defaultTips = liveTheme === 'pk'
+          ? { tip1: 'PK加油！', tip2: '注意观众互动', tip3: '保持节奏' }
+          : { tip1: '连麦愉快！', tip2: '倾听粉丝想法', tip3: '分享更多趣事' };
+      return defaultTips;
     }
     
     /**
