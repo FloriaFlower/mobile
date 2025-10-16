@@ -440,37 +440,37 @@ if (typeof window.LiveApp === 'undefined') {
     }    
     // 新增：解析PK封面动态数据（用户/对手信息、欲色币）
     parsePkCover(content) {
+      const pkCovers = [];
       const matches = [...content.matchAll(this.patterns.pkCover)];
+
+      // 如果没有找到任何PK封面的匹配项，就返回null
       if (matches.length === 0) {
         return null;
       }
 
-      let userPk = null;
-      let rivalPk = null;
+      // 我们只关心最后出现的两个匹配项，那才是最新的数据
+      const latestMatches = matches.slice(-2);
 
-      // 从后往前遍历所有匹配项，找到每个参与者最后一次出现的数据
-      for (let i = matches.length - 1; i >= 0; i--) {
-        const match = matches[i];
+      latestMatches.forEach(match => {
         const type = match[1]?.trim();
-
-        // 如果找到了{{user}}的数据，并且我们还没记录过，就记下来
-        if (type === '{{user}}' && !userPk) {
-          userPk = { type: type, imgUrl: match[2]?.trim(), currency: match[3]?.trim() || '0' };
+        const imgUrl = match[2]?.trim();
+        const currency = match[3]?.trim() || '0';
+        if (type && imgUrl) {
+          pkCovers.push({ type, imgUrl, currency });
         }
-        // 如果找到了非{{user}}的数据，并且我们还没记录过对手，就记下来
-        else if (type !== '{{user}}' && !rivalPk) {
-          rivalPk = { type: type, imgUrl: match[2]?.trim(), currency: match[3]?.trim() || '0' };
-        }
+      });
 
-        // 如果你和对手的最新信息都找到了，就不用再往前找了
-        if (userPk && rivalPk) {
-          break;
-        }
-      }
-
-      // 为了安全，如果始终没找到，就给一个默认值
-      userPk = userPk || { type: '{{user}}', imgUrl: '默认主播图链接', currency: '0' };
-      rivalPk = rivalPk || { type: '未知对手', imgUrl: '默认对手图链接', currency: '0' };
+      // 用最新的数据来确定你和对手
+      const userPk = pkCovers.find(p => p.type === '{{user}}') || pkCovers[0] || {
+        type: '主播',
+        imgUrl: '默认主播图链接',
+        currency: '0'
+      };
+      const rivalPk = pkCovers.find(p => p.type !== '{{user}}') || pkCovers[1] || {
+        type: '未知对手',
+        imgUrl: '默认对手图链接',
+        currency: '0'
+      };
 
       return { userPk, rivalPk };
     }
