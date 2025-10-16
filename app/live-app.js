@@ -1250,7 +1250,7 @@ if (typeof window.LiveApp === 'undefined') {
                     <div class="modal-body">
                       <div class="input-section">
                         <label>输入你要PK的主播</label>
-                        <input type="text" id="pk-anchor-input" placeholder="例如：嘿嘿（请迅速回忆男主名单）">
+                        <input type="text" id="pk-anchor-input" placeholder="例如：白羽、顾麟、温言、朝刃，或自定义主播">
                       </div>
                       <button class="start-live-btn" id="start-pk-live">提交</button>
                     </div>
@@ -1288,11 +1288,26 @@ if (typeof window.LiveApp === 'undefined') {
       `;
     }
     /**
+     * 将带单位的货币字符串转换为纯数字
+     */
+    parseCurrencyValue(currencyStr) {
+      if (!currencyStr) return 0;
+      const str = String(currencyStr).trim().toUpperCase();
+      const value = parseFloat(str);
+      if (str.endsWith('W')) {
+        return Math.floor(value * 10000);
+      }
+      if (str.endsWith('K')) {
+        return Math.floor(value * 1000);
+      }
+      return isNaN(value) ? 0 : parseInt(value, 10);
+    }
+    
+    /**
      * 渲染直播中界面
      */
     renderLiveView() {
       const state = this.stateManager.getCurrentState();
-      // 新增：获取直播主题（PK/连麦），用于差异化样式
       const liveTheme = state.pkCoverData ? 'pk' : (state.linkCoverData ? 'link' : '');
       const { pkCoverData, linkCoverData, highLightCount, systemTips } = state;
       let featureCardHtml = '';
@@ -1300,11 +1315,19 @@ if (typeof window.LiveApp === 'undefined') {
       // 1. PK 卡片样式
       if (pkCoverData) {
         const { userPk, rivalPk } = pkCoverData;
-        const userCurrency = parseInt(userPk.currency || '0', 10);
-        const rivalCurrency = parseInt(rivalPk.currency || '0', 10);
-        const total = userCurrency + rivalCurrency;
-        const userProgress = total > 0 ? Math.round((userCurrency / total) * 100) : 50;
+
+        // 使用新的小帮手函数来计算数值，用于进度条
+        const userCurrencyValue = this.parseCurrencyValue(userPk.currency);
+        const rivalCurrencyValue = this.parseCurrencyValue(rivalPk.currency);
+
+        // 直接使用原始的字符串来显示，保留 'W' 和 'K'
+        const userDisplayCurrency = userPk.currency || '0';
+        const rivalDisplayCurrency = rivalPk.currency || '0';
+
+        const total = userCurrencyValue + rivalCurrencyValue;
+        const userProgress = total > 0 ? Math.round((userCurrencyValue / total) * 100) : 50;
         const rivalProgress = 100 - userProgress;
+
         featureCardHtml = `
           <div class="feature-card ${liveTheme}-card">
             <div class="feature-card-toggle" id="pk-card-toggle">
@@ -1338,12 +1361,12 @@ if (typeof window.LiveApp === 'undefined') {
                   </div>
                 </div>
               </div>
-              <!-- PK进度条 -->
+              <!-- PK进度条 (已修复) -->
               <div class="pk-progress-bar" style="margin: 3px 0 8px; padding: 0 60px;">
-                <div class="pk-currency-left">${userCurrency}</div>
+                <div class="pk-currency-left">${userDisplayCurrency}</div>
                 <div class="pk-progress-left" style="width: ${userProgress}%;"></div>
                 <div class="pk-progress-right" style="width: ${rivalProgress}%;"></div>
-                <div class="pk-currency-right">${rivalCurrency}</div>
+                <div class="pk-currency-right">${rivalDisplayCurrency}</div>
               </div>
               <!-- 系统提示 -->
               <div class="high-tide-box" style="margin-top: 5px; padding: 8px 15px;">
@@ -1361,7 +1384,7 @@ if (typeof window.LiveApp === 'undefined') {
           </div>
         `;
       }
-      // 2. 连麦卡片样式
+      // 2. 连麦卡片样式 (保持不变)
       else if (linkCoverData) {
         const { userLink, fanLink } = linkCoverData;
         featureCardHtml = `
@@ -1371,7 +1394,7 @@ if (typeof window.LiveApp === 'undefined') {
             </div>
             <div class="feature-card-content" id="link-card-content" style="display: none; padding: 5px 15px; background: var(--card-gradient);">
               <div class="live-status-bar-heart-container">
-                <span class="live-status-bar-heart">💖</span>
+                                <span class="live-status-bar-heart">💖</span>
                 <span class="live-status-bar-heart">💗</span>
                 <span class="live-status-bar-heart">💕</span>
                 <span class="live-status-bar-heart">💞</span>
@@ -1398,9 +1421,9 @@ if (typeof window.LiveApp === 'undefined') {
                       </linearGradient>
                     </defs>
                     <rect width="60" height="60" clip-path="url(#heart-clip-shape)" fill="rgba(255,182,213,0.3)" filter="drop-shadow(0px 0px 3px #ff66b2)" />
-                    <path d="M10,20 L25,20 L30,15 L40,25 L50,5 L60,35 L65,20 L90,20" 
-                      stroke="url(#heartbeatGradient)" stroke-width="2.5" stroke-linecap="round" 
-                      stroke-linejoin="round" fill="none" stroke-dasharray="300" stroke-dashoffset="300" 
+                    <path d="M10,20 L25,20 L30,15 L40,25 L50,5 L60,35 L65,20 L90,20"
+                      stroke="url(#heartbeatGradient)" stroke-width="2.5" stroke-linecap="round"
+                      stroke-linejoin="round" fill="none" stroke-dasharray="300" stroke-dashoffset="300"
                       animation="draw-heartbeat 2.5s linear infinite" />
                   </svg>
                 </div>
@@ -1429,12 +1452,12 @@ if (typeof window.LiveApp === 'undefined') {
         `;
       }
 
-      // 2. 渲染推荐互动按钮
+      // 渲染推荐互动按钮 (保持不变)
       const recommendedButtons = state.recommendedInteractions
         .map(interaction => `<button class="rec-btn" data-interaction="${interaction}">${interaction}</button>`)
         .join('');
 
-      // 3. 渲染弹幕列表
+      // 渲染弹幕列表 (保持不变)
       const danmakuItems = state.danmakuList
         .map(danmaku => {
           const sig = this.createDanmakuSignature(danmaku);
@@ -1458,10 +1481,10 @@ if (typeof window.LiveApp === 'undefined') {
         })
         .join('');
 
-      // 4. 模板字符串中用${featureCardHtml}插入卡片
+      // 最终的HTML模板 (保持不变)
       return `
         <div class="live-app">
-          <div class="live-container">         
+          <div class="live-container">
             <!-- 插入特色直播卡片 -->
             ${featureCardHtml}
             <!-- 视频框 -->
@@ -1499,7 +1522,7 @@ if (typeof window.LiveApp === 'undefined') {
             <div class="modal-content">
               <div class="modal-header">
                 <h3>自定义互动</h3>
-                <button class="modal-close-btn">&times;</button>
+                <button class="modal-close-btn">×</button>
               </div>
               <form id="interaction-form">
                 <textarea id="custom-interaction-textarea" placeholder="输入你想说的内容..." rows="4"></textarea>
@@ -1513,7 +1536,7 @@ if (typeof window.LiveApp === 'undefined') {
             <div class="modal-content">
               <div class="modal-header">
                 <h3>礼物流水</h3>
-                <button class="modal-close-btn">&times;</button>
+                <button class="modal-close-btn">×</button>
               </div>
               <ul class="gift-list">
                 ${
@@ -1533,6 +1556,7 @@ if (typeof window.LiveApp === 'undefined') {
         </div>
       `;
     }
+
     
     /**
      * 直播中界面的点击事件处理器（单独提取，避免重复绑定）
