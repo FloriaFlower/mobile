@@ -1300,8 +1300,8 @@ if (typeof window.LiveApp === 'undefined') {
       // 1. PK 卡片样式
       if (pkCoverData) {
         const { userPk, rivalPk } = pkCoverData;
-        const userCurrency = this.parseCurrencyValue(userPk.currency);
-        const rivalCurrency = this.parseCurrencyValue(rivalPk.currency);
+        const userCurrency = parseInt(userPk.currency || '0', 10);
+        const rivalCurrency = parseInt(rivalPk.currency || '0', 10);
         const total = userCurrency + rivalCurrency;
         const userProgress = total > 0 ? Math.round((userCurrency / total) * 100) : 50;
         const rivalProgress = 100 - userProgress;
@@ -1339,11 +1339,11 @@ if (typeof window.LiveApp === 'undefined') {
                 </div>
               </div>
               <!-- PK进度条 -->
-              <div class="pk-progress-bar" style="margin: 3px 0 8px; padding: 0 60px;">
+              <div class="pk-progress-bar" style="margin: 3px 0 8px; padding: 0 60px;">           
                 <div class="pk-currency-left">${userCurrency}</div>
                 <div class="pk-progress-left" style="width: ${userProgress}%;"></div>
                 <div class="pk-progress-right" style="width: ${rivalProgress}%;"></div>
-                <div class="pk-currency-right">${rivalCurrency}</div>
+                <div class="pk-currency-right">${userCurrency}</div>
               </div>
               <!-- 系统提示 -->
               <div class="high-tide-box" style="margin-top: 5px; padding: 8px 15px;">
@@ -1398,9 +1398,9 @@ if (typeof window.LiveApp === 'undefined') {
                       </linearGradient>
                     </defs>
                     <rect width="60" height="60" clip-path="url(#heart-clip-shape)" fill="rgba(255,182,213,0.3)" filter="drop-shadow(0px 0px 3px #ff66b2)" />
-                    <path d="M10,20 L25,20 L30,15 L40,25 L50,5 L60,35 L65,20 L90,20"
-                      stroke="url(#heartbeatGradient)" stroke-width="2.5" stroke-linecap="round"
-                      stroke-linejoin="round" fill="none" stroke-dasharray="300" stroke-dashoffset="300"
+                    <path d="M10,20 L25,20 L30,15 L40,25 L50,5 L60,35 L65,20 L90,20" 
+                      stroke="url(#heartbeatGradient)" stroke-width="2.5" stroke-linecap="round" 
+                      stroke-linejoin="round" fill="none" stroke-dasharray="300" stroke-dashoffset="300" 
                       animation="draw-heartbeat 2.5s linear infinite" />
                   </svg>
                 </div>
@@ -1461,7 +1461,7 @@ if (typeof window.LiveApp === 'undefined') {
       // 4. 模板字符串中用${featureCardHtml}插入卡片
       return `
         <div class="live-app">
-          <div class="live-container">
+          <div class="live-container">         
             <!-- 插入特色直播卡片 -->
             ${featureCardHtml}
             <!-- 视频框 -->
@@ -1499,7 +1499,7 @@ if (typeof window.LiveApp === 'undefined') {
             <div class="modal-content">
               <div class="modal-header">
                 <h3>自定义互动</h3>
-                <button class="modal-close-btn">×</button>
+                <button class="modal-close-btn">&times;</button>
               </div>
               <form id="interaction-form">
                 <textarea id="custom-interaction-textarea" placeholder="输入你想说的内容..." rows="4"></textarea>
@@ -1513,7 +1513,7 @@ if (typeof window.LiveApp === 'undefined') {
             <div class="modal-content">
               <div class="modal-header">
                 <h3>礼物流水</h3>
-                <button class="modal-close-btn">×</button>
+                <button class="modal-close-btn">&times;</button>
               </div>
               <ul class="gift-list">
                 ${
