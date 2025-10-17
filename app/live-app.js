@@ -460,19 +460,22 @@ if (typeof window.LiveApp === 'undefined') {
         }
       });
 
-      // 用最新的数据来确定你和对手
-      const userPk = pkCovers.find(p => p.type === '{{user}}') || pkCovers[0] || {
+      // 用最新的数据来确定用户和对手
+      const userPk = pkCovers[0] || {
         type: '主播',
         imgUrl: '默认主播图链接',
         currency: '0'
       };
-      const rivalPk = pkCovers.find(p => p.type !== '{{user}}') || pkCovers[1] || {
+      const rivalPk = pkCovers[1] || {
         type: '未知对手',
         imgUrl: '默认对手图链接',
         currency: '0'
       };
+      // 兼容仍存在{{user}}标记的场景
+      const userPkWithFallback = pkCovers.find(p => p.type === '{{user}}') || userPk;
+      const rivalPkWithFallback = pkCovers.find(p => p.type !== '{{user}}' && p !== userPkWithFallback) || rivalPk;
 
-      return { userPk, rivalPk };
+      return { userPk: userPkWithFallback, rivalPk: rivalPkWithFallback };
     }
 
     // 新增：解析连麦封面动态数据（用户/粉丝信息）
