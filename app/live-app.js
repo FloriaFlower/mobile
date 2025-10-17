@@ -688,6 +688,12 @@ if (typeof window.LiveApp === 'undefined') {
       let hasChanged = false;
 
       // 更新所有数据，并检查是否有变化
+      if (liveData.pkCoverData) {
+        if (JSON.stringify(this.pkCoverData) !== JSON.stringify(liveData.pkCoverData)) {
+            this.pkCoverData = liveData.pkCoverData;
+            hasChanged = true;
+        }
+      }      
       if (JSON.stringify(this.pkCoverData) !== JSON.stringify(liveData.pkCoverData)) {
         this.pkCoverData = liveData.pkCoverData;
         hasChanged = true;
@@ -745,7 +751,7 @@ if (typeof window.LiveApp === 'undefined') {
 
       // 只要有任何数据变化，就毫不犹豫地触发UI更新
       if (hasChanged) {
-        console.log('[Live App] 检测到数据变化，触发UI更新。');
+        console.log('[Live App] 检测到数据变化，触发UI更新。新PK数据:', this.pkCoverData);
         if (this.liveApp && this.liveApp.updateAppContentDebounced) {
           this.liveApp.updateAppContentDebounced();
         }
