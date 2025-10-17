@@ -461,12 +461,12 @@ if (typeof window.LiveApp === 'undefined') {
       });
 
       // 用最新的数据来确定你和对手
-      const userPk = pkCovers.find(p => p.type === '主播') || pkCovers[0] || {
+      const userPk = pkCovers[0] || {
         type: '主播',
         imgUrl: '默认主播图链接',
         currency: '0'
       };
-      const rivalPk = pkCovers.find(p => p.type !== '对手') || pkCovers[1] || {
+      const rivalPk = pkCovers[1] || {
         type: '未知对手',
         imgUrl: '默认对手图链接',
         currency: '0'
@@ -489,16 +489,16 @@ if (typeof window.LiveApp === 'undefined') {
       const latestMatches = matches.slice(-2);
 
       latestMatches.forEach(match => {
-        const type = match[1]?.trim();
-        const imgUrl = match[2]?.trim();
+        const type = match[1]?.trim(); // 类型：{{user}} 或 粉丝昵称
+        const imgUrl = match[2]?.trim(); // 照片链接
         if (type && imgUrl) {
           linkCovers.push({ type, imgUrl });
         }
       });
 
-      // 提取用户和粉丝数据（容错）
-      const userLink = linkCovers.find(item => item.type === '主播') || { type: '主播', imgUrl: '默认主播图链接' };
-      const fanLink = linkCovers.find(item => item.type !== '粉丝') || { type: '未知粉丝', imgUrl: '默认粉丝图链接' };
+      // 提取用户和粉丝数据
+      const userLink = linkCovers[0] || { type: '主播', imgUrl: '默认主播图链接' };
+      const fanLink = linkCovers[1] || { type: '未知粉丝', imgUrl: '默认粉丝图链接' };
 
       return { userLink, fanLink };
     }
@@ -1361,7 +1361,7 @@ if (typeof window.LiveApp === 'undefined') {
                   </div>
                 </div>
               </div>
-              <!-- PK进度条 -->
+              <!-- PK进度条 (已修复) -->
               <div class="pk-progress-bar" style="margin: 3px 0 8px; padding: 0 60px;">
                 <div class="pk-currency-left">${userDisplayCurrency}</div>
                 <div class="pk-progress-left" style="width: ${userProgress}%;"></div>
