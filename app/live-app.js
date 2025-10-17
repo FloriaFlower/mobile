@@ -442,67 +442,40 @@ if (typeof window.LiveApp === 'undefined') {
     parsePkCover(content) {
       const pkCovers = [];
       const matches = [...content.matchAll(this.patterns.pkCover)];
-
-      // 如果没有找到任何PK封面的匹配项，就返回null
-      if (matches.length === 0) {
-        return null;
-      }
-
-      // 我们只关心最后出现的两个匹配项，那才是最新的数据
-      const latestMatches = matches.slice(-2);
-
-      latestMatches.forEach(match => {
+      matches.forEach(match => {
         const type = match[1]?.trim();
         const imgUrl = match[2]?.trim();
-        const currency = match[3]?.trim() || '0';
+        const currency = match[3]?.trim() || '0'; 
         if (type && imgUrl) {
           pkCovers.push({ type, imgUrl, currency });
         }
       });
-
-      // 用最新的数据来确定用户和对手
       const userPk = pkCovers[0] || {
-        type: '主播',
-        imgUrl: '默认主播图链接',
-        currency: '0'
+        type: '主播', 
+        imgUrl: '默认主播图链接', 
+        currency: '0' 
       };
-      const rivalPk = pkCovers[1] || {
-        type: '未知对手',
-        imgUrl: '默认对手图链接',
-        currency: '0'
+      const rivalPk = pkCovers[1] || { 
+        type: '未知对手', 
+        imgUrl: '默认对手图链接', 
+        currency: '0' 
       };
-      // 兼容仍存在{{user}}标记的场景
-      const userPkWithFallback = pkCovers.find(p => p.type === '{{user}}') || userPk;
-      const rivalPkWithFallback = pkCovers.find(p => p.type !== '{{user}}' && p !== userPkWithFallback) || rivalPk;
-
-      return { userPk: userPkWithFallback, rivalPk: rivalPkWithFallback };
+      return { userPk, rivalPk };
     }
-
     // 新增：解析连麦封面动态数据（用户/粉丝信息）
     parseLinkCover(content) {
       const linkCovers = [];
       const matches = [...content.matchAll(this.patterns.linkCover)];
-
-      // 如果没有找到任何连麦封面的匹配项，就返回null
-      if (matches.length === 0) {
-          return null;
-      }
-
-      // 我们只关心最后出现的两个匹配项
-      const latestMatches = matches.slice(-2);
-
-      latestMatches.forEach(match => {
+      matches.forEach(match => {
         const type = match[1]?.trim(); // 类型：{{user}} 或 粉丝昵称
         const imgUrl = match[2]?.trim(); // 照片链接
         if (type && imgUrl) {
           linkCovers.push({ type, imgUrl });
         }
       });
-
       // 提取用户和粉丝数据（容错）
       const userLink = linkCovers.find(item => item.type === '{{user}}') || { type: '{{user}}', imgUrl: '默认主播图链接' };
       const fanLink = linkCovers.find(item => item.type !== '{{user}}') || { type: '未知粉丝', imgUrl: '默认粉丝图链接' };
-
       return { userLink, fanLink };
     }
 
