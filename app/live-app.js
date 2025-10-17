@@ -440,28 +440,41 @@ if (typeof window.LiveApp === 'undefined') {
     }    
     // 新增：解析PK封面动态数据（用户/对手信息、欲色币）
     parsePkCover(content) {
-      const pkCovers = [];
       const matches = [...content.matchAll(this.patterns.pkCover)];
+      let userPk = null;
+      let rivalPk = null;
+
+      const participants = {};
       matches.forEach(match => {
         const type = match[1]?.trim();
         const imgUrl = match[2]?.trim();
-        const currency = match[3]?.trim() || '0'; 
-        if (type && imgUrl) {
-          pkCovers.push({ type, imgUrl, currency });
+        const currency = match[3]?.trim() || '0';
+
+        if (type) {
+            participants[type] = { type, imgUrl, currency };
         }
       });
-      const userPk = pkCovers[0] || {
-        type: '主播', 
-        imgUrl: '默认主播图链接', 
-        currency: '0' 
-      };
-      const rivalPk = pkCovers[1] || { 
-        type: '未知对手', 
-        imgUrl: '默认对手图链接', 
-        currency: '0' 
-      };
+
+      const participantNames = Object.keys(participants);
+
+      if (participantNames.length > 0) {
+        userPk = participants[participantNames[0]];
+      }
+      if (participantNames.length > 1) {
+        rivalPk = participants[participantNames[1]];
+      }
+
+      // 如果没找到，就给一个默认值，防止出错
+      if (!userPk) {
+        userPk = { type: '主播', imgUrl: '默认主播图链接', currency: '0' };
+      }
+      if (!rivalPk) {
+        rivalPk = { type: '未知对手', imgUrl: '默认对手图链接', currency: '0' };
+      }
+
       return { userPk, rivalPk };
     }
+
     // 新增：解析连麦封面动态数据（用户/粉丝信息）
     parseLinkCover(content) {
       const linkCovers = [];
