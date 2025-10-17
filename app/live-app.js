@@ -688,12 +688,10 @@ if (typeof window.LiveApp === 'undefined') {
       let hasChanged = false;
 
       // 更新所有数据，并检查是否有变化
-      if (liveData.pkCoverData) {
-        if (JSON.stringify(this.pkCoverData) !== JSON.stringify(liveData.pkCoverData)) {
-            this.pkCoverData = liveData.pkCoverData;
-            hasChanged = true;
-        }
-      }      
+      if (liveData.pkCoverData && JSON.stringify(this.pkCoverData) !== JSON.stringify(liveData.pkCoverData)) {
+          this.pkCoverData = liveData.pkCoverData;
+          hasChanged = true;
+      }
       if (JSON.stringify(this.pkCoverData) !== JSON.stringify(liveData.pkCoverData)) {
         this.pkCoverData = liveData.pkCoverData;
         hasChanged = true;
@@ -997,40 +995,57 @@ if (typeof window.LiveApp === 'undefined') {
      */
     async parseNewLiveData() {
       try {
-        console.log('[Live App] 开始解析新的直播数据');
+        console.log('[Live App] 开始解析新的直播数据 (优化版)');
 
-        // 获取完整的聊天内容
-        const chatContent = this.dataParser.getChatContent();
-        if (!chatContent) {
+        // 获取完整的聊天记录，用于累积弹幕等
+        const fullChatContent = this.dataParser.getChatContent();
+        // ★ 只获取AI最新的一条消息，用于解析动态数据（如分数）★
+        const latestMessageContent = this.getLatestFloorTextSafe();
+
+        if (!fullChatContent) {
           console.warn('[Live App] 无法获取聊天内容，跳过解析');
           return;
         }
 
-        // 记录现有弹幕和礼物的签名，用于识别新增项以实现动画
-        const existingDanmakuSigs = new Set(
-            (this.stateManager.danmakuList || []).map(item => this.createDanmakuSignature(item)),
-        );
-        const existingGiftSigs = new Set(
-            (this.stateManager.giftList || []).map(item => this.createGiftSignature(item)),
-        );
+        // --- 第1步: 从完整历史中解析需要累积的数据 (弹幕/礼物) ---
+        const historicalData = this.dataParser.parseLiveData(fullChatContent);
 
-        // 从完整的聊天内容中一次性解析所有类型的直播数据
-        const liveData = this.dataParser.parseLiveData(chatContent);
+        // --- 第2步: 从最新消息中解析需要实时更新的数据 ---
+        const latestData = this.dataParser.parseLiveData(latestMessageContent);
 
-        console.log('[Live App] 解析到的完整直播数据:', {
-          viewerCount: liveData.viewerCount,
-          liveContent: liveData.liveContent ? liveData.liveContent.substring(0, 50) + '...' : '',
-          danmakuCount: liveData.danmakuList.length,
-          giftCount: liveData.giftList.length,
-          interactionCount: liveData.recommendedInteractions.length,
-          pkCoverData: liveData.pkCoverData,
-          linkCoverData: liveData.linkCoverData,
-          highLightCount: liveData.highLightCount,
-          systemTips: liveData.systemTips
+        // --- 第3步: 合并数据，用最新的覆盖旧的 ---
+        const finalLiveData = historicalData; // 先以历史数据为基础
+
+        // 用最新消息里的数据，覆盖掉从历史里读到的旧数据
+        if (latestData.viewerCount) {
+          finalLiveData.viewerCount = latestData.viewerCount;
+        }
+        if (latestData.liveContent) {
+          finalLiveData.liveContent = latestData.liveContent;
+        }
+        if (latestData.pkCoverData) {
+          finalLiveData.pkCoverData = latestData.pkCoverData;
+        }
+        if (latestData.linkCoverData) {
+          finalLiveData.linkCoverData = latestData.linkCoverData;
+        }
+        if (latestData.highLightCount && latestData.highLightCount !== '0') {
+           finalLiveData.highLightCount = latestData.highLightCount;
+        }
+        if (latestData.systemTips && latestData.systemTips.tip1) {
+           finalLiveData.systemTips = latestData.systemTips;
+        }
+        // 推荐互动总是取最新的
+        finalLiveData.recommendedInteractions = latestData.recommendedInteractions;
+
+        console.log('[Live App] 解析到的最终合并直播数据:', {
+            pkCover: finalLiveData.pkCoverData,
+            viewers: finalLiveData.viewerCount,
+            content: finalLiveData.liveContent.substring(0,20)
         });
 
-        // 将解析出的新数据交给状态管理器去统一处理更新逻辑
-        this.stateManager.updateLiveData(liveData);
+        // 将最终的准确数据交给状态管理器
+        this.stateManager.updateLiveData(finalLiveData);
 
         // 仅从最新楼层判断需要播放动画的新增弹幕和礼物
         const latestFloorText = this.getLatestFloorTextSafe();
