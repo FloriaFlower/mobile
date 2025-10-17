@@ -1276,8 +1276,8 @@ if (typeof window.LiveApp === 'undefined') {
       // 1. PK 卡片样式
       if (pkCoverData) {
         const { userPk, rivalPk } = pkCoverData;
-        const userCurrency = parseInt(userPk.currency || '0', 10);
-        const rivalCurrency = parseInt(rivalPk.currency || '0', 10);
+        const userCurrency = this.parseCurrencyValue(userPk.currency);
+        const rivalCurrency = this.parseCurrencyValue(rivalPk.currency);
         const total = userCurrency + rivalCurrency;
         const userProgress = total > 0 ? Math.round((userCurrency / total) * 100) : 50;
         const rivalProgress = 100 - userProgress;
@@ -2448,6 +2448,27 @@ if (typeof window.LiveApp === 'undefined') {
           }, stepMsTailChunk);
         }
       }, stepMsHead);
+    }
+    /**
+     * 解析带单位的货币字符串（例如 '1.3K', '10W'）
+     */
+    parseCurrencyValue(currencyStr) {
+      if (typeof currencyStr !== 'string' || !currencyStr) {
+        return 0;
+      }
+      const str = currencyStr.trim().toUpperCase();
+      const lastChar = str.slice(-1);
+      let num;
+
+      if (lastChar === 'W') {
+        num = parseFloat(str.slice(0, -1)) * 10000;
+      } else if (lastChar === 'K') {
+        num = parseFloat(str.slice(0, -1)) * 1000;
+      } else {
+        num = parseFloat(str);
+      }
+
+      return isNaN(num) ? 0 : Math.round(num);
     }
 
     /**
