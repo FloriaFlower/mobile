@@ -935,7 +935,7 @@ if (typeof window.LiveApp === 'undefined') {
         this.eventListener.startListening();
 
         // 发送开始直播消息到SillyTavern
-        const message = `用户开始直播，初始互动为（${initialInteraction}），请按照正确的直播格式要求生成本场人数，直播内容，弹幕，打赏和推荐互动，最后需要生成四条推荐互动。若处于PK或粉丝连麦模式则必须在开头生成封面卡片，禁止使用错误格式。`;
+        const message = `用户开始直播，初始互动为（${initialInteraction}），请按照正确的直播格式要求生成本场人数，直播内容，弹幕，打赏，最后需要生成四条推荐互动。若处于PK或粉丝连麦模式则必须在开头生成封面卡片，禁止使用错误格式。`;
         await this.sendToSillyTavern(message);
         setTimeout(() => {
           this.parseNewLiveData(); // 强制拉取首次加载的 PK/连麦数据
@@ -991,8 +991,26 @@ if (typeof window.LiveApp === 'undefined') {
           return;
         }
 
-        // 发送继续直播消息到SillyTavern
-        const message = `用户继续直播，互动为（${interaction}），请按照正确的直播格式要求生成本场人数，直播内容，弹幕，打赏和推荐互动，最后需要生成四条推荐互动。若处于PK或粉丝连麦模式则必须在开头生成封面卡片，禁止使用错误格式。`;
+        // 获取当前的状态，用来判断直播模式
+        const state = this.stateManager.getCurrentState();
+        let message = '';
+        const baseMessagePart = `，互动为（${interaction}），请按照正确的直播格式要求生成本场人数，直播内容，弹幕，打赏，最后需要生成四条推荐互动。若处于PK或粉丝连麦模式则必须在开头生成封面卡片，禁止使用错误格式。`;
+
+        if (state.pkCoverData && state.pkCoverData.rivalPk) {
+            // PK 模式
+            const anchorName = state.pkCoverData.rivalPk.type;
+            message = `用户继续与${anchorName}进行直播PK。请按照正确的直播格式要求生成连麦封面，本场人数，直播内容，弹幕，打赏和推荐互动` + baseMessagePart;
+            console.log(`[Live App] 生成PK模式互动消息，对手: ${anchorName}`);
+        } else if (state.linkCoverData && state.linkCoverData.fanLink) {
+            // 连麦模式
+            const linkName = state.linkCoverData.fanLink.type;
+            message = `用户继续与${linkName}进行直播连麦。请按照正确的直播格式要求生成PK封面，本场人数，直播内容，弹幕，打赏和推荐互动` + baseMessagePart;
+            console.log(`[Live App] 生成连麦模式互动消息，对象: ${linkName}`);
+        } else {
+            // 自由直播模式
+            message = `用户继续直播，请按照正确的直播格式要求生成本场人数，直播内容，弹幕，打赏，最后需要生成四条推荐互动。禁止使用错误格式` + baseMessagePart;
+            console.log('[Live App] 生成自由直播模式互动消息');
+        }
 
         await this.sendToSillyTavern(message);
 
