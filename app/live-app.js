@@ -1028,11 +1028,14 @@ if (typeof window.LiveApp === 'undefined') {
      */
     async parseNewLiveData() {
       try {
-        console.log('[Live App] 开始解析新的直播数据 (优化版)');
+        console.log('[Live App] 开始解析新的直播数据 (最终修正版)');
 
-        // 获取完整的聊天记录，用于累积弹幕等
+        // ★ 核心修正：在所有操作之前，先记录下“已经存在”的弹幕和礼物
+        const existingDanmakuSigs = new Set(this.stateManager.danmakuList.map(item => this.createDanmakuSignature(item)));
+        const existingGiftSigs = new Set(this.stateManager.giftList.map(item => this.createGiftSignature(item)));
+
+        // 获取聊天内容
         const fullChatContent = this.dataParser.getChatContent();
-        // ★ 只获取AI最新的一条消息，用于解析动态数据（如分数）★
         const latestMessageContent = this.getLatestFloorTextSafe();
 
         if (!fullChatContent) {
@@ -1040,67 +1043,49 @@ if (typeof window.LiveApp === 'undefined') {
           return;
         }
 
-        // --- 第1步: 从完整历史中解析需要累积的数据 (弹幕/礼物) ---
+        // 第1步: 从完整历史中解析累积数据 (弹幕/礼物)
         const historicalData = this.dataParser.parseLiveData(fullChatContent);
 
-        // --- 第2步: 从最新消息中解析需要实时更新的数据 ---
+        // 第2步: 从最新消息中解析实时数据
         const latestData = this.dataParser.parseLiveData(latestMessageContent);
 
-        // --- 第3步: 合并数据，用最新的覆盖旧的 ---
-        const finalLiveData = historicalData; // 先以历史数据为基础
+        // 第3步: 合并数据，用最新的覆盖旧的动态数据
+        const finalLiveData = historicalData; // 基础是历史数据，保证弹幕列表是完整的
 
-        // 用最新消息里的数据，覆盖掉从历史里读到的旧数据
-        if (latestData.viewerCount) {
-          finalLiveData.viewerCount = latestData.viewerCount;
-        }
-        if (latestData.liveContent) {
-          finalLiveData.liveContent = latestData.liveContent;
-        }
-        if (latestData.pkCoverData) {
-          finalLiveData.pkCoverData = latestData.pkCoverData;
-        }
-        if (latestData.linkCoverData) {
-          finalLiveData.linkCoverData = latestData.linkCoverData;
-        }
-        if (latestData.highLightCount && latestData.highLightCount !== '0') {
-           finalLiveData.highLightCount = latestData.highLightCount;
-        }
-        if (latestData.systemTips && latestData.systemTips.tip1) {
-           finalLiveData.systemTips = latestData.systemTips;
-        }
-        // 推荐互动总是取最新的
-        finalLiveData.recommendedInteractions = latestData.recommendedInteractions;
+        if (latestData.viewerCount) { finalLiveData.viewerCount = latestData.viewerCount; }
+        if (latestData.liveContent) { finalLiveData.liveContent = latestData.liveContent; }
+        if (latestData.pkCoverData) { finalLiveData.pkCoverData = latestData.pkCoverData; }
+        if (latestData.linkCoverData) { finalLiveData.linkCoverData = latestData.linkCoverData; }
+        if (latestData.highLightCount && latestData.highLightCount !== '0') { finalLiveData.highLightCount = latestData.highLightCount; }
+        if (latestData.systemTips && latestData.systemTips.tip1) { finalLiveData.systemTips = latestData.systemTips; }
+        finalLiveData.recommendedInteractions = latestData.recommendedInteractions; // 推荐互动总是取最新的
 
         console.log('[Live App] 解析到的最终合并直播数据:', {
             pkCover: finalLiveData.pkCoverData,
+            linkCover: finalLiveData.linkCoverData,
             viewers: finalLiveData.viewerCount,
-            content: finalLiveData.liveContent.substring(0,20)
+            content: finalLiveData.liveContent ? finalLiveData.liveContent.substring(0, 20) : '',
         });
 
-        // 将最终的准确数据交给状态管理器
+        // 第4步: 识别出“新出现”的弹幕和礼物，为动画做准备
+        latestData.danmakuList.forEach(item => {
+            const sig = this.createDanmakuSignature(item);
+            if (!existingDanmakuSigs.has(sig)) {
+                this.pendingAppearDanmakuSigs.add(sig);
+            }
+        });
+        latestData.giftList.forEach(item => {
+            const sig = this.createGiftSignature(item);
+            if (!existingGiftSigs.has(sig)) {
+                this.pendingAppearGiftSigs.add(sig);
+            }
+        });
+
+        // 第5步: 将最准确、最完整的数据交给状态管理器
         this.stateManager.updateLiveData(finalLiveData);
 
-        // 仅从最新楼层判断需要播放动画的新增弹幕和礼物
-        const latestFloorText = this.getLatestFloorTextSafe();
-        if (latestFloorText) {
-            const latestLiveData = this.dataParser.parseLiveData(latestFloorText);
-
-            latestLiveData.danmakuList.forEach(item => {
-                const sig = this.createDanmakuSignature(item);
-                if (!existingDanmakuSigs.has(sig)) {
-                    this.pendingAppearDanmakuSigs.add(sig);
-                }
-            });
-
-            latestLiveData.giftList.forEach(item => {
-                const sig = this.createGiftSignature(item);
-                if (!existingGiftSigs.has(sig)) {
-                    this.pendingAppearGiftSigs.add(sig);
-                }
-            });
-        }
-
-        // 弹幕滚动和动画效果
+        // 第6步: 触发UI更新和动画（这部分逻辑不需要动）
+        // UI更新会在updateLiveData内部被调用，所以这里只需要处理动画
         setTimeout(() => {
           this.runAppearSequence();
           const danmakuContainer = document.getElementById('danmaku-container');
