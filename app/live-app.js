@@ -477,35 +477,37 @@ if (typeof window.LiveApp === 'undefined') {
 
     // 新增：解析连麦封面动态数据（用户/粉丝信息）
     parseLinkCover(content) {
-      const linkCovers = [];
       const matches = [...content.matchAll(this.patterns.linkCover)];
+      let userLink = null;
+      let fanLink = null;
+
+      const participants = {};
       matches.forEach(match => {
-        const type = match[1]?.trim(); // 类型：{{user}} 或 粉丝昵称
-        const imgUrl = match[2]?.trim(); // 照片链接
+        const type = match[1]?.trim();
+        const imgUrl = match[2]?.trim();
         if (type && imgUrl) {
-          linkCovers.push({ type, imgUrl });
+          participants[type] = { type, imgUrl };
         }
       });
-      // 提取用户和粉丝数据（容错）
-      const userLink = linkCovers.find(item => item.type === '{{user}}') || { type: '{{user}}', imgUrl: '默认主播图链接' };
-      const fanLink = linkCovers.find(item => item.type !== '{{user}}') || { type: '未知粉丝', imgUrl: '默认粉丝图链接' };
-      return { userLink, fanLink };
-    }
 
-    // 新增：解析系统提示（兼容PK/连麦）
-    parseSystemTips(content, liveTheme) {
-      const pattern = liveTheme === 'pk' ? this.patterns.pkTips : this.patterns.linkTips;
-      const matches = [...content.matchAll(pattern)];
-      // 从最后一个匹配中获取数据
-      if (matches.length > 0) {
-          const lastMatch = matches[matches.length - 1];
-          return { tip1: lastMatch[1].trim(), tip2: lastMatch[2].trim(), tip3: lastMatch[3].trim() };
+      const participantNames = Object.keys(participants);
+
+      if (participantNames.length > 0) {
+        userLink = participants[participantNames[0]];
       }
-      // 如果没找到，返回默认提示
-      const defaultTips = liveTheme === 'pk'
-          ? { tip1: 'PK加油！', tip2: '注意观众互动', tip3: '保持节奏' }
-          : { tip1: '连麦愉快！', tip2: '倾听粉丝想法', tip3: '分享更多趣事' };
-      return defaultTips;
+      if (participantNames.length > 1) {
+        fanLink = participants[participantNames[1]];
+      }
+
+      // 添加备用数据，以防万一什么都没匹配到，UI也能正常显示
+      if (!userLink) {
+        userLink = { type: '主播', imgUrl: '默认主播图链接' };
+      }
+      if (!fanLink) {
+        fanLink = { type: '未知粉丝', imgUrl: '默认粉丝图链接' };
+      }
+
+      return { userLink, fanLink };
     }
     
     /**
